@@ -123,3 +123,20 @@
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes nav-pill-scale {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.nav-pill-scale {
+  animation: nav-pill-scale 320ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  transform-origin: center;
+}

@@ -1,126 +1,194 @@
 
 
-# Artwork Page Spec (v0)
+# Artwork Page Spec (v0), one-shot build doc for Codex
 
-## 1. Purpose
+This spec is written to let Codex implement the Artwork page end-to-end with minimal back-and-forth.
 
-The Artwork page is the primary learning moment in the app. It presents one artwork with enough context to make it engaging and understandable, and it provides clear pathways to explore related content (artist, movement, tags).
+---
 
-## 2. Route
+## 0) What you are building
 
-* `/artwork/:id`
+A **generic** Artwork Detail page at route:
 
-## 3. Data Requirements (Supabase)
+- **Next.js App Router route:** `/artwork/[id]`
+- `id` is the **UUID** of a row in `public.artworks`.
 
-### Tables
+The UI is data-driven and must work for **any** artwork id.
 
-* `artworks`
-* `artists`
-* `movements` (optional)
-* `artwork_slides`
-* `tags` via `artwork_tags`
+**v0 constraints**
+- Read-only (no reactions feed, no save writes).
+- You may render a disabled Save icon or hide it.
+- AI Ask may be a UI-only stub.
 
-### Required fetch (minimum)
+---
 
-Given `artwork_id`:
+## 1) Source of truth
 
-1) Artwork core
-   * `artworks` row by `id`
-   * join `artists` via `artworks.artist_id`
-   * join `movements` via `artworks.movement_id` (nullable)
+- DB schema source of truth: `ai/project.md` (Supabase `public` schema).
+- Visual structure source of truth: Figma layer tree (below).
+- Do not invent tables/columns.
 
-2) Guided look content
-   * `artwork_slides` row by `artwork_id` (nullable for v0 if not generated yet)
+---
+
+## 2) Figma mapping (layer names → UI sections)
+
+Frame: **Artwork Detail** id=1034:194
+
+Top level under `Content` id=1034:195:
+
+1) `ArtworkFrame` id=1034:198
+   - `{artwork.image_url}` id=1034:424
+
+2) `ArtworkInfo` id=1034:200
+   - `Header` id=1034:201
+   - `ArtworkTitle` id=1034:202 → `{artwork.title}` text id=1034:203
+   - `ArtistInfo` id=1034:204
+     - `ArtistChip` id=1034:205
+       - `{artists.image}` id=1034:429
+       - `{artists.name}` text id=1034:208
+     - `{artworks.year}` text id=1034:210
+   - `SlidesCarousel` id=1034:211
+     - `Slides` id=1034:212
+       - slide01..slide05 frames
+
+3) `Tags` section id=1116:203
+   - Header text id=1116:204
+   - Tags frame id=1116:205
+
+4) `AIConversation` id=1034:225
+   - `{artwork_slides.reflection_question}` text id=1034:227
+
+5) `MoreArtworkInfo` id=1034:228
+   - `Movement` id=1034:272 → `MovementCard` id=1189:8
+   - `Craft` id=1240:76 → CraftCards + Technique/Medium/Representation cards
+
+**Important layout note**
+- You already have a global AppShell/TopNav. The internal Figma `Header` (id=1034:201) should be treated as **spacing only** (or omitted) to avoid double headers.
+
+---
+
+## 3) Data contract (Supabase) and where it goes
+
+### Tables used
+
+- `artworks`
+- `artists`
+- `movements` (optional)
+- `artwork_slides` (optional but preferred)
+- `artwork_tags` join → `tags`
+
+### Field → UI mapping
+
+Artwork
+- `artworks.title` → ArtworkTitle
+- `artworks.image_url` → Artwork image
+- `artworks.year` (nullable) → year text (hide if null)
+- `artworks.artist_id` → join artists
+- `artworks.movement_id` (nullable) → join movements (controls Movement section visibility)
+
+Artist
+- `artists.name` → ArtistChip label (links to `/artist/[id]`)
+- `artists.image_url` (nullable) → ArtistChip avatar (optional)
+
+Slides
+- `artwork_slides.slides` (jsonb) → SlidesCarousel
+- `artwork_slides.reflection_question` (text) → AIConversation prompt (read-only)
+
+Tags
+- `tags.category` → group label
+- `tags.name` → chip label
+- `tags.id` → chip link `/tag/[id]`
+
+Movement (optional)
+- `movements.name` → MovementCard title
+- `movements.summary` (nullable) → MovementCard description
+
+Craft (v0)
+- v0 may be static placeholders, do not invent tables.
+
+---
+
+## 4) Exact query plan (no guessing)
+
+Implement a single data fetch that returns this normalized object:
+
+```ts
+type Slide = { key?: string; title: string; body: string }
+
+type ArtworkPageData = {
+  artwork: {
+    id: string
+    title: string
+    year: number | null
+    image_url: string | null
+    artist_id: string
+    movement_id: string | null
+  }
+  artist: {
+    id: string
+    name: string
+    image_url: string | null
+  }
+  movement: {
+    id: string
+    name: string
+    summary: string | null
+  } | null
+  slides: Slide[] | null
+  reflectionQuestion: string | null
+  tagsByCategory: Record<string, { id: string; name: string; category: string }[]>
+}
+```
+
+### Preferred Supabase query approach
+
+Run these queries (joins allowed where supported by your existing Supabase helper patterns):
+
+1) Artwork + Artist + Movement in one query
+- Select from `public.artworks` by `id`
+- Join `artists` via `artist_id`
+- Join `movements` via `movement_id` (nullable)
+
+Minimum fields:
+- artworks: `id,title,year,image_url,artist_id,movement_id`
+- artists: `id,name,image_url`
+- movements: `id,name,summary`
+
+2) Slides
+- Select from `public.artwork_slides` where `artwork_id = artwork.id`
+- Fields: `slides, reflection_question`
 
 3) Tags
-   * `artwork_tags` rows by `artwork_id`
-   * join `tags` by `tag_id`
+- Select from `public.artwork_tags` where `artwork_id = artwork.id`
+- Join `public.tags` on `tag_id`
+- Fields from tags: `id,name,category`
 
-### Sorting rules
+### Sorting/grouping rules
 
-* Tags: group by `tags.category`, then sort within group by `tags.name` asc.
+- Group tags by `category`.
+- Within each category, sort tags by `name` ascending.
 
-## 4. UI Sections (vertical scroll)
+---
 
-1) **Header**
-   * Back
-   * Save/Favorite toggle (Phase 1 if `saves` table isn’t implemented, see Feature Flags)
+## 5) UI structure (vertical order)
 
-2) **Artwork Image Stage**
-   * High-quality image
-   * No overlapping UI on the image itself
+Inside AppShell main scroll area, render in this order:
 
-3) **Artwork Meta**
-   * Title
-   * Artist name (tap → Artist page)
-   * Year (from `artworks.year` if present)
+1) ArtworkFrame
+2) ArtworkTitle + ArtistChip + Year
+3) SlidesCarousel
+4) Tags
+5) AIConversation (reflection question)
+6) MovementCard (optional)
+7) Craft (optional, may be static)
 
-4) **Guided Look (Slides)**
-   * Horizontal carousel with snap paging
-   * Slide indicator required (dots or `1/5`)
-   * Content source: `artwork_slides.slides` (jsonb)
+---
 
-5) **Reflection Prompt**
-   * Display `artwork_slides.reflection_question` if present
-   * v0: read-only prompt (no reactions) unless reactions are implemented
+## 6) Slide JSON parsing rules (must be safe)
 
-6) **Tags**
-   * Chip groups by category (theme/technique/emotion/etc, based on your `tag_category` enum)
-   * Tap → Tag page
+`artwork_slides.slides` is jsonb. Parse defensively.
 
-7) **Movement Card** (optional)
-   * Only if `artworks.movement_id` exists
-   * Shows movement name + `movements.summary` (if present)
-   * Tap → Movement page
-
-8) **Artist Preview (optional)**
-   * Minimal artist card (name, portrait if available)
-   * Tap → Artist page
-
-## 5. Interactions
-
-* Tap artist → `/artist/:id`
-* Tap movement → `/movement/:id`
-* Tap tag → `/tag/:id`
-* Swipe slides horizontally
-* Scroll page vertically
-
-## 6. States and Edge Cases
-
-### Loading
-
-* Show skeletons for image, meta, and slide area.
-
-### Missing data
-
-* No `movement_id` → hide Movement section.
-* No `artwork_slides` row → hide slides + reflection prompt, or show a placeholder (“Story coming soon”).
-* No tags → hide tags section.
-* Missing `image_url` → show fallback image container and error text.
-
-### Error
-
-* Failed fetch → show simple error state with retry.
-
-## 7. Feature Flags (v0)
-
-Because v0 DB currently does not include certain tables:
-
-* **Save/Favorite**
-  * If `saves` table not implemented: show disabled state or hide.
-
-* **Reactions**
-  * Out of scope for v0 per backbone doc: do not render reaction composer or community feed.
-  * Only show `reflection_question` as read-only.
-
-* **AI Ask**
-  * If not implemented: render UI-only stub (button + modal shell) with placeholder response.
-
-## 8. Content Contract (slides json)
-
-Define and adhere to a single JSON shape so the frontend does not guess.
-
-Recommended shape:
+Expected shape:
 
 ```json
 [
@@ -132,16 +200,58 @@ Recommended shape:
 ]
 ```
 
-## 9. Analytics (optional, later)
+Rules:
+- If slides missing, not an array, or items missing title/body, treat as `slides = null`.
+- Carousel renders up to 5 slides.
+- Must include a slide indicator (dots or `1/5`).
 
-Not required for v0. Add only if you’re already wiring analytics.
-
-* `view_artwork`
-* `slide_change`
-* `tap_tag`
-* `tap_artist`
-* `tap_movement`
+Placeholder:
+- If `slides = null`, show a small placeholder block: “Story coming soon”.
 
 ---
 
-End of artwork page spec
+## 7) Required states
+
+- Loading: skeletons for image, meta, slides.
+- Error: simple error state with retry.
+- Missing image_url: show neutral container and “Image unavailable”.
+- Missing movement: hide movement section.
+- Missing reflectionQuestion: hide AIConversation section.
+- Missing tags: hide tags section.
+
+---
+
+## 8) Implementation details (what files to create/modify)
+
+Codex should:
+
+1) Create the route page
+- `app/artwork/[id]/page.tsx` (server component)
+
+2) Create minimal UI components (only if not already present)
+- `components/artwork/ArtworkImageStage.tsx`
+- `components/artwork/ArtworkMeta.tsx`
+- `components/artwork/SlidesCarousel.tsx` (client component if needed for snapping/indicator)
+- `components/tags/TagChipGroup.tsx`
+- `components/movements/MovementCard.tsx`
+
+3) Create data fetch helpers (reuse existing patterns if present)
+- `lib/supabase/server.ts` (or existing) to create a server Supabase client
+- `lib/data/getArtworkPageData.ts` that returns `ArtworkPageData`
+
+**Do not** implement `reactions` or `saves` writes.
+
+---
+
+## 9) Acceptance checklist
+
+- `/artwork/[id]` renders any artwork by UUID.
+- Mona Lisa id renders without crashes: `27c9797b-c924-44d8-b283-3622525d039e`.
+- Tags are grouped by category and sorted.
+- Movement card only shows when movement exists.
+- Slides carousel works, indicator present, safe parsing, placeholder when missing.
+- Only the main content scrolls (AppShell behavior).
+
+---
+
+End of spec
