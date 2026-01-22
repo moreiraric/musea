@@ -134,6 +134,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
         .eq("artwork_id", artworkId),
     ]);
 
+
   const slides = Array.isArray(slidesResult.data?.slides)
     ? slidesResult.data?.slides
     : [];
@@ -180,6 +181,28 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
 
   const artist = artistResult.data;
   const movement = movementResult.data;
+  const movementYear = movement?.start_year ?? null;
+
+  const [previousMovement, nextMovement] = await Promise.all([
+    movementYear
+      ? supabase
+          .from("movements")
+          .select("id,name,start_year")
+          .lt("start_year", movementYear)
+          .order("start_year", { ascending: false })
+          .limit(1)
+          .maybeSingle()
+      : Promise.resolve({ data: null, error: null }),
+    movementYear
+      ? supabase
+          .from("movements")
+          .select("id,name,start_year")
+          .gt("start_year", movementYear)
+          .order("start_year", { ascending: true })
+          .limit(1)
+          .maybeSingle()
+      : Promise.resolve({ data: null, error: null }),
+  ]);
 
   const movementImage = resolveMovementImage(
     movement?.slug ?? null,
@@ -191,7 +214,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
   );
 
   return (
-    <div className="flex w-full flex-col bg-white">
+    <div className="flex w-full flex-col overflow-x-hidden bg-white">
       <section className="flex w-full min-h-[393px] items-center justify-center bg-[#f5f5f5] px-[20px] py-[20px]">
         {artwork.image_url ? (
           <div className="w-full bg-[#d9d9d9]">
@@ -304,7 +327,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
               </p>
               <div className="flex w-full flex-col items-center justify-between rounded-[32px] border border-[#d9d9d9] bg-white px-[20px] py-[16px]">
                 <div className="flex w-full flex-col items-center">
-                  <div className="flex h-[132px] w-[132px] items-center justify-center overflow-hidden rounded-[28px] bg-[#f5f5f5]">
+                  <div className="flex h-[132px] w-[132px] items-center justify-center overflow-hidden rounded-[28px]">
                     {movementImage ? (
                       <img
                         alt={movement.name}
@@ -329,8 +352,9 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
                 </div>
                 <div className="flex w-full items-start justify-between pb-[8px] pt-[16px]">
                   <button
-                    className="flex items-center gap-[8px] rounded-bl-[100px] rounded-br-[4px] rounded-tl-[100px] rounded-tr-[4px] py-[8px]"
+                    className="flex items-center gap-[4px] rounded-bl-[100px] rounded-br-[4px] rounded-tl-[100px] rounded-tr-[4px] py-[8px]"
                     type="button"
+                    disabled={!previousMovement.data}
                   >
                     <img
                       alt=""
@@ -339,15 +363,16 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
                       src="/images/ui/nav/icon-caret-left.svg"
                     />
                     <span className="text-[14px] font-medium tracking-[-0.14px] text-[#757575] [font-family:var(--font-instrument-sans)]">
-                      Previous
+                      {previousMovement.data?.name ?? "Previous"}
                     </span>
                   </button>
                   <button
-                    className="flex items-center gap-[8px] rounded-bl-[4px] rounded-br-[100px] rounded-tl-[4px] rounded-tr-[100px] py-[8px] pl-[16px]"
+                    className="flex items-center gap-[4px] rounded-bl-[4px] rounded-br-[100px] rounded-tl-[4px] rounded-tr-[100px] py-[8px] pl-[16px]"
                     type="button"
+                    disabled={!nextMovement.data}
                   >
                     <span className="text-[14px] font-medium tracking-[-0.14px] text-[#757575] [font-family:var(--font-instrument-sans)]">
-                      Next
+                      {nextMovement.data?.name ?? "Next"}
                     </span>
                     <img
                       alt=""
@@ -367,7 +392,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
             <p className="text-[14px] font-medium uppercase text-[#757575] [font-family:'SF_Mono',var(--font-jetbrains-mono)]">
               Craft
             </p>
-            <div className="flex w-full gap-[16px] overflow-x-auto">
+            <div className="-mx-[20px] flex w-[calc(100%+40px)] gap-[16px] overflow-x-auto py-[2px] pl-[20px] pr-[20px] hide-scrollbar">
               {craftCards.map((card) => (
                 <article
                   key={card.label}

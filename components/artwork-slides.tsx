@@ -46,7 +46,7 @@ export function ArtworkSlides({ slides }: { slides: Slide[] }) {
           </article>
         ))}
       </div>
-      <div className="mt-[8px] flex justify-end">
+      <div className="mt-[8px] flex justify-end pr-[20px]">
         <span className="text-[12px] font-medium text-[#757575] [font-family:var(--font-instrument-sans)]">
           {activeIndex + 1} / {slides.length}
         </span>
