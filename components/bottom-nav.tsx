@@ -33,7 +33,9 @@ const navItems = [
 export function BottomNav() {
   const pathname = usePathname();
   const activeIndex = navItems.findIndex((item) =>
-    item.href === "/" ? pathname === "/" : pathname?.startsWith(item.href),
+    item.href === "/"
+      ? pathname === "/" || pathname?.startsWith("/artwork")
+      : pathname?.startsWith(item.href),
   );
   const clampedIndex = activeIndex === -1 ? 0 : activeIndex;
 
@@ -57,7 +59,7 @@ export function BottomNav() {
           {navItems.map((item) => {
             const isActive =
               item.href === "/"
-                ? pathname === "/"
+                ? pathname === "/" || pathname?.startsWith("/artwork")
                 : pathname?.startsWith(item.href);
 
             return (
