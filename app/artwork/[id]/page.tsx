@@ -144,8 +144,13 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
     .map((row) => row.tags)
     .filter(Boolean) as TagRow[];
 
+  const normalizeCategory = (category?: string | null) =>
+    (category ?? "other").toLowerCase();
+
   const sortedTags = [...tags].sort((a, b) => {
-    const categoryCompare = (a.category ?? "").localeCompare(b.category ?? "");
+    const categoryCompare = normalizeCategory(a.category).localeCompare(
+      normalizeCategory(b.category),
+    );
     if (categoryCompare !== 0) {
       return categoryCompare;
     }
@@ -154,7 +159,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
 
   const tagsByCategory = sortedTags.reduce<Record<string, TagRow[]>>(
     (acc, tag) => {
-      const key = tag.category ?? "other";
+      const key = normalizeCategory(tag.category);
       if (!acc[key]) {
         acc[key] = [];
       }
@@ -162,6 +167,11 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
       return acc;
     },
     {},
+  );
+
+  const tagDisplayOrder = ["theme", "emotion", "personality"];
+  const displayTags = tagDisplayOrder.flatMap((category) =>
+    sortedTags.filter((tag) => normalizeCategory(tag.category) === category),
   );
 
   const craftCards = craftCategoryConfig
@@ -280,13 +290,13 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
           )}
         </section>
 
-        {sortedTags.length > 0 ? (
+        {displayTags.length > 0 ? (
           <section className="flex w-full flex-col gap-[8px] pb-[32px]">
             <p className="text-[14px] font-medium uppercase text-[#757575] [font-family:'SF_Mono',var(--font-jetbrains-mono)]">
               Tags
             </p>
             <div className="-mx-[20px] flex w-[calc(100%+40px)] gap-[8px] overflow-x-auto pb-[4px] pl-[20px] pr-[20px] hide-scrollbar">
-              {sortedTags.map((tag) => (
+              {displayTags.map((tag) => (
                 <div
                   key={tag.id}
                   className="flex shrink-0 items-center gap-[8px] rounded-full border border-[#d9d9d9] px-[12px] py-[8px]"
@@ -336,7 +346,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
                       />
                     ) : null}
                   </div>
-                  <div className="mt-[12px] flex w-full flex-col items-center gap-[4px] text-center">
+                  <div className="mt-0 flex w-full flex-col items-center gap-[4px] text-center">
                     <p className="text-[20px] font-semibold leading-[28px] text-black [font-family:var(--font-literata)]">
                       {movement.name}
                     </p>
@@ -350,7 +360,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
                     </p>
                   </div>
                 </div>
-                <div className="flex w-full items-start justify-between pb-[8px] pt-[16px]">
+                <div className="flex w-full items-start justify-between pb-0 pt-[16px]">
                   <button
                     className="flex items-center gap-[4px] rounded-bl-[100px] rounded-br-[4px] rounded-tl-[100px] rounded-tr-[4px] py-[8px]"
                     type="button"
@@ -360,7 +370,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
                       alt=""
                       aria-hidden="true"
                       className="h-[20px] w-[20px]"
-                      src="/images/ui/nav/icon-caret-left.svg"
+                      src="/images/ui/other/icon-arrow-left.svg"
                     />
                     <span className="text-[14px] font-medium tracking-[-0.14px] text-[#757575] [font-family:var(--font-instrument-sans)]">
                       {previousMovement.data?.name ?? "Previous"}
@@ -377,8 +387,8 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
                     <img
                       alt=""
                       aria-hidden="true"
-                      className="h-[20px] w-[20px] rotate-180"
-                      src="/images/ui/nav/icon-caret-left.svg"
+                      className="h-[20px] w-[20px]"
+                      src="/images/ui/other/icon-arrow-right.svg"
                     />
                   </button>
                 </div>
