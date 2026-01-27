@@ -18,10 +18,29 @@ const STORAGE_KEY = "savedArtworks";
 export function ArtworkTopBar({ artwork }: ArtworkTopBarProps) {
   const router = useRouter();
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
+  const [isSaved, setIsSaved] = useState(false);
 
   useEffect(() => {
     setPortalTarget(document.getElementById("app-viewport"));
   }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    try {
+      const raw = window.localStorage.getItem(STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      const list = Array.isArray(parsed) ? parsed : [];
+      const exists = list.some(
+        (item: { id?: string; slug?: string }) =>
+          item?.id === artwork.id || (artwork.slug && item?.slug === artwork.slug),
+      );
+      setIsSaved(exists);
+    } catch {
+      setIsSaved(false);
+    }
+  }, [artwork.id, artwork.slug]);
 
   if (!portalTarget) {
     return null;
@@ -39,17 +58,45 @@ export function ArtworkTopBar({ artwork }: ArtworkTopBarProps) {
         (item: { id?: string; slug?: string }) =>
           item?.id === artwork.id || (artwork.slug && item?.slug === artwork.slug),
       );
-      if (!exists) {
-        list.unshift({
-          id: artwork.id,
-          slug: artwork.slug,
-          title: artwork.title,
-          image_url: artwork.image_url ?? null,
-        });
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+      let next = list;
+      if (exists) {
+        next = list.filter(
+          (item: { id?: string; slug?: string }) =>
+            item?.id !== artwork.id && (artwork.slug ? item?.slug !== artwork.slug : true),
+        );
+      } else {
+        next = [
+          {
+            id: artwork.id,
+            slug: artwork.slug,
+            title: artwork.title,
+            image_url: artwork.image_url ?? null,
+          },
+          ...list,
+        ];
       }
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      setIsSaved(!exists);
     } catch {
       // ignore storage errors
+    }
+  };
+
+  const handleShare = async () => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    const shareUrl = `${window.location.origin}/artwork/${artwork.slug ?? artwork.id}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: artwork.title,
+          url: shareUrl,
+        });
+        return;
+      } catch {
+        // ignore
+      }
     }
   };
 
@@ -82,13 +129,18 @@ export function ArtworkTopBar({ artwork }: ArtworkTopBarProps) {
               alt=""
               aria-hidden="true"
               className="h-[24px] w-[24px]"
-              src="/images/ui/nav/icon-save-outline.svg"
+              src={
+                isSaved
+                  ? "/images/ui/nav/icon-bookmark-filled.svg"
+                  : "/images/ui/nav/icon-save-outline.svg"
+              }
             />
           </button>
           <button
             className="flex h-[48px] items-center rounded-full bg-[rgba(217,217,217,0.33)] px-[12px] py-[8px] shadow-[0_0_32px_rgba(0,0,0,0.2)] backdrop-blur-[16px]"
             type="button"
             aria-label="Share artwork"
+            onClick={handleShare}
           >
             <img
               alt=""
