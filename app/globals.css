@@ -141,6 +141,22 @@
   transform-origin: center;
 }
 
+@keyframes sheet-in {
+  0% {
+    transform: translateY(100%);
+  }
+  70% {
+    transform: translateY(-8px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.sheet-in {
+  animation: sheet-in 520ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
 .hide-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;

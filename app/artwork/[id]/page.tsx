@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArtworkImageViewer } from "@/components/artwork-image-viewer";
+import { ArtworkReflectionChat } from "@/components/artwork-reflection-chat";
 import { ArtworkSlides } from "@/components/artwork-slides";
 import { ArtworkTopBar } from "@/components/artwork-top-bar";
 import { createSupabaseServerClient } from "@/lib/supabase";
@@ -327,22 +328,10 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
 
         {reflectionQuestion ? (
           <section className="flex w-full flex-col py-[32px]">
-            <div
-              className="rounded-full p-[1px] shadow-[0px_1px_10px_rgba(4,98,153,0.15),0px_-1px_10px_rgba(221,98,249,0.15)]"
-              style={{
-                background:
-                  "linear-gradient(95deg, #0296ED 0%, #F9A8D4 42%, #C287DE 100%)",
-              }}
-            >
-              <button
-                className="flex w-full items-center rounded-full bg-[#f5f5f5] px-[20px] py-[16px] text-left"
-                type="button"
-              >
-                <span className="text-[16px] text-[#707070] [font-family:var(--font-instrument-sans)]">
-                  {reflectionQuestion}
-                </span>
-              </button>
-            </div>
+            <ArtworkReflectionChat
+              artworkTitle={artwork.title}
+              question={reflectionQuestion}
+            />
           </section>
         ) : null}
 
