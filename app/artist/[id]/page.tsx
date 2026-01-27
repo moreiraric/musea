@@ -360,7 +360,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
                   {knownForTags.map((tag) => (
                     <div
                       key={tag.id}
-                      className="flex shrink-0 items-center gap-[8px] rounded-full bg-[#f5f5f5] px-[12px] py-[8px]"
+                      className="flex shrink-0 items-center gap-[8px] rounded-full border border-[#d9d9d9] bg-transparent px-[12px] py-[8px]"
                     >
                       <img
                         alt=""
@@ -386,7 +386,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
                   {themeTags.map((tag) => (
                     <Link
                       key={tag.id}
-                      className="flex shrink-0 items-center gap-[8px] rounded-full bg-[#f5f5f5] px-[12px] py-[8px]"
+                      className="flex shrink-0 items-center gap-[8px] rounded-full border border-[#d9d9d9] bg-transparent px-[12px] py-[8px]"
                       href={`/tag/${tag.slug ?? tag.id}`}
                     >
                       <img

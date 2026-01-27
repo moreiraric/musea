@@ -307,8 +307,8 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
   }
 
   const baseForMovement = intersectIds(
-    baseTagArtworkIds,
-    intersectIds(mediumArtworkIds ?? null, techniqueArtworkIds ?? null),
+    intersectIds(baseTagArtworkIds, mediumArtworkIds ?? null),
+    techniqueArtworkIds ?? null,
   );
 
   if (baseForMovement.length > 0) {
@@ -328,8 +328,8 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
   }
 
   const baseForMedium = intersectIds(
-    baseTagArtworkIds,
-    intersectIds(movementArtworkIds ?? null, techniqueArtworkIds ?? null),
+    intersectIds(baseTagArtworkIds, movementArtworkIds ?? null),
+    techniqueArtworkIds ?? null,
   );
 
   if (baseForMedium.length > 0 && mediumOptions.length > 0) {
@@ -351,8 +351,8 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
   }
 
   const baseForTechnique = intersectIds(
-    baseTagArtworkIds,
-    intersectIds(movementArtworkIds ?? null, mediumArtworkIds ?? null),
+    intersectIds(baseTagArtworkIds, movementArtworkIds ?? null),
+    mediumArtworkIds ?? null,
   );
 
   if (baseForTechnique.length > 0 && techniqueOptions.length > 0) {

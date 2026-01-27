@@ -179,7 +179,7 @@ export function TagFilters({
     <div className="-mx-[20px] flex w-[calc(100%+40px)] gap-[8px] overflow-x-auto overflow-y-visible px-[20px] pb-[4px] hide-scrollbar">
       <button
         type="button"
-        className="inline-flex items-center gap-[8px] rounded-full bg-[#f5f5f5] px-[12px] py-[8px]"
+        className="inline-flex items-center gap-[8px] rounded-full border border-[#d9d9d9] bg-transparent px-[12px] py-[8px]"
         onClick={() => setOpenSheet("movement")}
       >
         <span className="max-w-[140px] truncate text-[16px] font-medium text-black [font-family:var(--font-inter)]">
@@ -192,7 +192,7 @@ export function TagFilters({
 
       <button
         type="button"
-        className="inline-flex items-center gap-[8px] rounded-full bg-[#f5f5f5] px-[12px] py-[8px]"
+        className="inline-flex items-center gap-[8px] rounded-full border border-[#d9d9d9] bg-transparent px-[12px] py-[8px]"
         onClick={() => setOpenSheet("medium")}
       >
         <span className="max-w-[140px] truncate text-[16px] font-medium text-black [font-family:var(--font-inter)]">
@@ -205,7 +205,7 @@ export function TagFilters({
 
       <button
         type="button"
-        className="inline-flex items-center gap-[8px] rounded-full bg-[#f5f5f5] px-[12px] py-[8px]"
+        className="inline-flex items-center gap-[8px] rounded-full border border-[#d9d9d9] bg-transparent px-[12px] py-[8px]"
         onClick={() => setOpenSheet("technique")}
       >
         <span className="max-w-[140px] truncate text-[16px] font-medium text-black [font-family:var(--font-inter)]">
