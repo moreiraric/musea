@@ -431,7 +431,7 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
               artworks.map((artwork) => (
                 <Link
                   key={artwork.id}
-                  className="block h-[179px] overflow-hidden bg-[#d9d9d9]"
+                  className="block aspect-square w-full overflow-hidden bg-[#d9d9d9]"
                   href={`/artwork/${artwork.slug ?? artwork.id}`}
                 >
                   {artwork.image_url ? (
