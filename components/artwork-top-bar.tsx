@@ -4,7 +4,18 @@ import { createPortal } from "react-dom";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-export function ArtworkTopBar() {
+type ArtworkTopBarProps = {
+  artwork: {
+    id: string;
+    slug: string | null;
+    title: string;
+    image_url: string | null;
+  };
+};
+
+const STORAGE_KEY = "savedArtworks";
+
+export function ArtworkTopBar({ artwork }: ArtworkTopBarProps) {
   const router = useRouter();
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
 
@@ -15,6 +26,32 @@ export function ArtworkTopBar() {
   if (!portalTarget) {
     return null;
   }
+
+  const handleSave = () => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    try {
+      const raw = window.localStorage.getItem(STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      const list = Array.isArray(parsed) ? parsed : [];
+      const exists = list.some(
+        (item: { id?: string; slug?: string }) =>
+          item?.id === artwork.id || (artwork.slug && item?.slug === artwork.slug),
+      );
+      if (!exists) {
+        list.unshift({
+          id: artwork.id,
+          slug: artwork.slug,
+          title: artwork.title,
+          image_url: artwork.image_url ?? null,
+        });
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+      }
+    } catch {
+      // ignore storage errors
+    }
+  };
 
   return createPortal(
     <div className="absolute left-0 top-0 z-30 w-full bg-gradient-to-t from-[rgba(255,255,255,0)] from-50% to-[rgba(255,255,255,0.9)] px-[20px] pb-[8px] pt-[51px]">
@@ -39,6 +76,7 @@ export function ArtworkTopBar() {
             className="flex h-[48px] items-center rounded-full bg-[rgba(217,217,217,0.33)] px-[12px] py-[8px] shadow-[0_0_32px_rgba(0,0,0,0.2)] backdrop-blur-[16px]"
             type="button"
             aria-label="Save artwork"
+            onClick={handleSave}
           >
             <img
               alt=""
