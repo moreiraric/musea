@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { ArtworkImageViewer } from "@/components/artwork-image-viewer";
 import { ArtworkSlides } from "@/components/artwork-slides";
 import { createSupabaseServerClient } from "@/lib/supabase";
 
@@ -52,6 +54,14 @@ function resolveTagIcon(tag: TagRow) {
   return tagIconMap[normalized] ?? tagIconMap.theme;
 }
 
+function formatTagLabel(name: string) {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => word[0]?.toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
 function formatMovementYears(start?: number | null, end?: number | null) {
   if (start && end) {
     return `${start} - ${end}`;
@@ -71,26 +81,18 @@ function resolveMovementImage(slug?: string | null, iconUrl?: string | null) {
 
 export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
   const resolvedParams = await Promise.resolve(params);
-  const artworkId = typeof resolvedParams?.id === "string" ? resolvedParams.id : "";
-
-  if (!uuidRegex.test(artworkId)) {
-    return (
-      <div className="p-6">
-        <h1 className="text-2xl font-semibold">Invalid artwork id</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          The route id was {artworkId || "(empty)"}.
-        </p>
-      </div>
-    );
-  }
+  const artworkParam = typeof resolvedParams?.id === "string" ? resolvedParams.id : "";
 
   const supabase = createSupabaseServerClient();
 
-  const { data: artwork, error: artworkError } = await supabase
+  const artworkQuery = supabase
     .from("artworks")
-    .select("id,title,year,image_url,artist_id,movement_id")
-    .eq("id", artworkId)
-    .maybeSingle();
+    .select("id,slug,title,year,image_url,artist_id,movement_id")
+    .limit(1);
+
+  const { data: artwork, error: artworkError } = uuidRegex.test(artworkParam)
+    ? await artworkQuery.eq("id", artworkParam).maybeSingle()
+    : await artworkQuery.eq("slug", artworkParam).maybeSingle();
 
   if (artworkError) {
     throw new Error(artworkError.message);
@@ -101,11 +103,13 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
       <div className="p-6">
         <h1 className="text-2xl font-semibold">Artwork not found</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          No row returned for id {params.id}.
+          No row returned for {params.id}.
         </p>
       </div>
     );
   }
+
+  const artworkId = artwork.id;
 
   const [artistResult, movementResult, slidesResult, tagsResult] =
     await Promise.all([
@@ -228,9 +232,8 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
       <section className="flex w-full min-h-[393px] items-center justify-center bg-[#f5f5f5] px-[20px] py-[20px]">
         {artwork.image_url ? (
           <div className="w-full bg-[#d9d9d9]">
-            <img
+            <ArtworkImageViewer
               alt={artwork.title}
-              className="h-auto w-full"
               src={artwork.image_url}
             />
           </div>
@@ -251,7 +254,10 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
 
           <div className="flex w-full items-center justify-between">
             {artist ? (
-              <div className="flex items-center gap-[12px] rounded-full bg-[#f5f5f5] pl-[8px] pr-[16px] py-[8px]">
+              <Link
+                className="flex items-center gap-[12px] rounded-full bg-[#f5f5f5] pl-[8px] pr-[16px] py-[8px]"
+                href={`/artist/${artist.slug ?? artist.id}`}
+              >
                 <div className="h-[32px] w-[24px] overflow-hidden rounded-full bg-[#d9d9d9]">
                   {artist.image_url ? (
                     <img
@@ -266,7 +272,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
                 <p className="text-[16px] text-black tracking-[-0.16px] [font-family:var(--font-jetbrains-mono)]">
                   {artist.name}
                 </p>
-              </div>
+              </Link>
             ) : (
               <div className="flex items-center gap-[12px] rounded-full bg-[#f5f5f5] px-[16px] py-[8px]">
                 <p className="text-[16px] text-[#757575] [font-family:var(--font-jetbrains-mono)]">
@@ -297,9 +303,10 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
             </p>
             <div className="-mx-[20px] flex w-[calc(100%+40px)] gap-[8px] overflow-x-auto pb-[4px] pl-[20px] pr-[20px] hide-scrollbar">
               {displayTags.map((tag) => (
-                <div
+                <Link
                   key={tag.id}
                   className="flex shrink-0 items-center gap-[8px] rounded-full border border-[#d9d9d9] px-[12px] py-[8px]"
+                  href={`/tag/${tag.slug ?? tag.id}`}
                 >
                   <img
                     alt=""
@@ -308,9 +315,9 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
                     src={resolveTagIcon(tag)}
                   />
                   <span className="text-[16px] font-medium text-black [font-family:var(--font-inter)]">
-                    {tag.name}
+                    {formatTagLabel(tag.name)}
                   </span>
-                </div>
+                </Link>
               ))}
             </div>
           </section>
@@ -318,14 +325,22 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
 
         {reflectionQuestion ? (
           <section className="flex w-full flex-col py-[32px]">
-            <button
-              className="flex w-full items-center rounded-full border border-[#0296ed] bg-[#f5f5f5] px-[20px] py-[16px] text-left shadow-[0px_1px_10px_rgba(4,98,153,0.15),0px_-1px_10px_rgba(221,98,249,0.15)]"
-              type="button"
+            <div
+              className="rounded-full p-[1px] shadow-[0px_1px_10px_rgba(4,98,153,0.15),0px_-1px_10px_rgba(221,98,249,0.15)]"
+              style={{
+                background:
+                  "linear-gradient(95deg, #0296ED 0%, #F9A8D4 42%, #C287DE 100%)",
+              }}
             >
-              <span className="text-[16px] text-[#707070] [font-family:var(--font-instrument-sans)]">
-                {reflectionQuestion}
-              </span>
-            </button>
+              <button
+                className="flex w-full items-center rounded-full bg-[#f5f5f5] px-[20px] py-[16px] text-left"
+                type="button"
+              >
+                <span className="text-[16px] text-[#707070] [font-family:var(--font-instrument-sans)]">
+                  {reflectionQuestion}
+                </span>
+              </button>
+            </div>
           </section>
         ) : null}
 

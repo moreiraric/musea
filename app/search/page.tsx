@@ -25,7 +25,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   if (query) {
     const { data, error } = await supabase
       .from("artworks")
-      .select("id,title,image_url,artists(name)")
+      .select("id,slug,title,image_url,artists(name)")
       .or(`title.ilike.%${query}%,artists.name.ilike.%${query}%`)
       .order("title", { ascending: true })
       .limit(30);
@@ -73,7 +73,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           {results.map((artwork) => (
             <Link
               key={artwork.id}
-              href={`/artwork/${artwork.id}`}
+              href={`/artwork/${artwork.slug ?? artwork.id}`}
               className="flex items-center gap-[16px] rounded-[20px] border border-[#e6e6e6] bg-white px-[16px] py-[12px] transition hover:border-[#d0d0d0]"
             >
               <div className="h-[64px] w-[64px] shrink-0 overflow-hidden rounded-[14px] bg-[#f0f0f0]">

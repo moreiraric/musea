@@ -58,6 +58,7 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${literata.variable} ${instrumentSans.variable} ${inter.variable} ${jetbrainsMono.variable} antialiased`}
+        suppressHydrationWarning
       >
         <AppShell>{children}</AppShell>
       </body>

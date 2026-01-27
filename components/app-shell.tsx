@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { BottomNav } from "@/components/bottom-nav";
 import { TopNav } from "@/components/top-nav";
+import { ElasticScroll } from "@/components/elastic-scroll";
 
 type AppShellProps = {
   children: ReactNode;
@@ -14,9 +15,12 @@ export function AppShell({ children }: AppShellProps) {
         <div className="absolute left-[-4px] top-[130px] h-[64px] w-[6px] rounded-full bg-[#1a1a1a]" />
         <div className="absolute left-[-4px] top-[210px] h-[96px] w-[6px] rounded-full bg-[#1a1a1a]" />
         <div className="absolute right-[-4px] top-[180px] h-[96px] w-[6px] rounded-full bg-[#1a1a1a]" />
-        <div className="relative flex h-full flex-col overflow-hidden rounded-[50px] bg-background">
+        <div
+          id="app-viewport"
+          className="relative flex h-full flex-col overflow-hidden rounded-[50px] bg-background"
+        >
           <TopNav />
-          <main className="flex-1 overflow-y-auto pb-[100px]">{children}</main>
+          <ElasticScroll>{children}</ElasticScroll>
           <div className="absolute bottom-0 left-0 right-0">
             <BottomNav />
           </div>
