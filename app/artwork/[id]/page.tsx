@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArtworkImageViewer } from "@/components/artwork-image-viewer";
 import { ArtworkSlides } from "@/components/artwork-slides";
+import { ArtworkTopBar } from "@/components/artwork-top-bar";
 import { createSupabaseServerClient } from "@/lib/supabase";
 
 type ArtworkPageProps = {
@@ -228,7 +229,8 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
   );
 
   return (
-    <div className="flex w-full flex-col overflow-x-hidden bg-white">
+    <div className="flex w-full flex-col overflow-x-hidden bg-white pt-[107px]">
+      <ArtworkTopBar />
       <section className="flex w-full min-h-[393px] items-center justify-center bg-[#f5f5f5] px-[20px] py-[20px]">
         {artwork.image_url ? (
           <div className="w-full bg-[#d9d9d9]">
