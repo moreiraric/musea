@@ -137,8 +137,20 @@ export function ArtworkReflectionChat({
     if (!isOpen) {
       return;
     }
-    const id = requestAnimationFrame(() => setIsActive(true));
-    return () => cancelAnimationFrame(id);
+    setIsActive(false);
+    let raf1: number | null = null;
+    let raf2: number | null = null;
+    raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => setIsActive(true));
+    });
+    return () => {
+      if (raf1 !== null) {
+        cancelAnimationFrame(raf1);
+      }
+      if (raf2 !== null) {
+        cancelAnimationFrame(raf2);
+      }
+    };
   }, [isOpen]);
 
   useEffect(() => {
@@ -581,14 +593,10 @@ export function ArtworkReflectionChat({
                 onClick={handleClose}
               />
               <div
-                className={`absolute bottom-0 left-0 right-0 flex h-[92%] flex-col rounded-t-[36px] bg-white shadow-[0_-16px_40px_rgba(0,0,0,0.18)] ${
-                  isActive
-                    ? "sheet-in"
-                    : "translate-y-full transition-transform duration-250 ease-in"
+                className={`absolute bottom-0 left-0 right-0 flex h-[92%] flex-col rounded-t-[36px] bg-white shadow-[0_-16px_40px_rgba(0,0,0,0.18)] transition-transform duration-700 ease-[cubic-bezier(0.22,1.2,0.36,1)] ${
+                  isActive ? "translate-y-0" : "translate-y-full"
                 }`}
-                style={{
-                  willChange: "transform",
-                }}
+                style={{ willChange: "transform" }}
                 role="dialog"
                 aria-modal="true"
                 aria-label={`Conversation about ${artworkTitle}`}
