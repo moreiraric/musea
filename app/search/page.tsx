@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { createSupabaseServerClient } from "@/lib/supabase";
-import { SearchForm } from "@/components/search-form";
 
 export const dynamic = "force-dynamic";
 
@@ -47,8 +46,6 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           Find paintings by title or artist.
         </h1>
       </header>
-
-      <SearchForm initialQuery={query} />
 
       {errorMessage ? (
         <div className="rounded-[16px] border border-[#f0d6d6] bg-[#fff7f7] px-[16px] py-[12px] text-[14px] text-[#a64040]">
