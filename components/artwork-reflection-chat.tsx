@@ -124,6 +124,7 @@ export function ArtworkReflectionChat({
   const shouldAutoScrollRef = useRef(true);
   const pendingExitFocusRef = useRef(false);
   const touchStartYRef = useRef<number | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     setPortalTarget(document.getElementById("app-viewport"));
@@ -333,12 +334,18 @@ export function ArtworkReflectionChat({
 
     let receivedDelta = false;
     let hadError = false;
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => {
+      controller.abort();
+    }, 20000);
+
     try {
       const response = await fetch("/api/ai-chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+        signal: controller.signal,
         body: JSON.stringify({
           artworkId,
           artworkTitle,
@@ -408,9 +415,11 @@ export function ArtworkReflectionChat({
     } catch (error) {
       hadError = true;
       const fallback =
-        error instanceof Error && error.message.trim()
-          ? error.message
-          : "Sorry, something went wrong. Please try again.";
+        error instanceof DOMException && error.name === "AbortError"
+          ? "This is taking too long. Please try again."
+          : error instanceof Error && error.message.trim()
+            ? error.message
+            : "Sorry, something went wrong. Please try again.";
       setMessages((prev) => {
         const next = prev.map((message) =>
           message.id === assistantMessage.id ? { ...message, text: fallback } : message,
@@ -419,6 +428,7 @@ export function ArtworkReflectionChat({
         return next;
       });
     } finally {
+      window.clearTimeout(timeoutId);
       if (!receivedDelta && !hadError) {
         setMessages((prev) => {
           const next = prev.map((message) =>
@@ -434,6 +444,9 @@ export function ArtworkReflectionChat({
         });
       }
       finalizeStream();
+      window.setTimeout(() => {
+        inputRef.current?.focus();
+      }, 0);
     }
   };
 
@@ -625,15 +638,16 @@ export function ArtworkReflectionChat({
                     >
                       <div className="flex h-[45px] w-full items-center justify-between rounded-[100px] bg-[#f5f5f5] pl-[16px] pr-[8px] py-[8px]">
                         <div className="flex flex-1 items-center">
-                          <input
-                            className="w-full bg-transparent text-[16px] text-[#1e1e1e] placeholder:text-[#b3b3b3] outline-none [font-family:var(--font-instrument-sans)]"
-                            placeholder="Ask about the artwork"
-                            value={inputValue}
-                            onChange={(event) => handleInputChange(event.target.value)}
-                            onKeyDown={handleInputKeyDown}
-                            maxLength={MAX_INPUT_CHARS}
-                            disabled={isThinking}
-                          />
+                        <input
+                          className="w-full bg-transparent text-[16px] text-[#1e1e1e] placeholder:text-[#b3b3b3] outline-none [font-family:var(--font-instrument-sans)]"
+                          placeholder="Ask about the artwork"
+                          value={inputValue}
+                          onChange={(event) => handleInputChange(event.target.value)}
+                          onKeyDown={handleInputKeyDown}
+                          maxLength={MAX_INPUT_CHARS}
+                          disabled={isThinking}
+                          ref={inputRef}
+                        />
                         </div>
                         <button
                           type="button"
