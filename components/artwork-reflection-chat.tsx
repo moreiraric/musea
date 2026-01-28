@@ -287,6 +287,16 @@ export function ArtworkReflectionChat({
     window.setTimeout(() => setIsOpen(false), 260);
   };
 
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+    const id = window.setTimeout(() => {
+      inputRef.current?.focus();
+    }, 0);
+    return () => window.clearTimeout(id);
+  }, [isOpen]);
+
   const title = useMemo(() => {
     if (artistName) {
       return `${artworkTitle} by ${artistName}`;

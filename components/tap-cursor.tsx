@@ -46,7 +46,9 @@ export function TapCursor() {
       setIsVisible(false);
     };
 
-    const handleDown = () => {
+    const handleDown = (event: MouseEvent) => {
+      setIsVisible(true);
+      updatePosition(event);
       setIsPressed(true);
       if (timeoutRef.current !== null) {
         window.clearTimeout(timeoutRef.current);
