@@ -577,18 +577,25 @@ export function ArtworkReflectionChat({
   return (
     <>
       <div
-        className="rounded-full p-[1px] shadow-[0px_1px_10px_rgba(4,98,153,0.15),0px_-1px_10px_rgba(221,98,249,0.15)]"
+        className="w-full rounded-full shadow-[0px_1px_10px_rgba(4,98,153,0.15),0px_-1px_10px_rgba(221,98,249,0.15)]"
         style={{
           background:
-            "linear-gradient(95deg, #0296ED 0%, #F9A8D4 42%, #C287DE 100%)",
+            "linear-gradient(95deg, rgba(2,150,237,0.5) 0%, rgba(249,168,212,0.5) 42%, rgba(194,135,222,0.5) 100%)",
+          padding: "0.5px",
         }}
       >
         <button
-          className="flex w-full items-center rounded-full bg-[#f5f5f5] px-[20px] py-[16px] text-left"
+          className="flex w-full items-end gap-[8px] rounded-full bg-[#f5f5f5] px-[20px] py-[16px] text-left"
           type="button"
           onClick={handleOpen}
         >
-          <span className="text-[16px] text-[#707070] [font-family:var(--font-instrument-sans)]">
+          <img
+            alt=""
+            aria-hidden="true"
+            className="h-[24px] w-[24px]"
+            src="/images/ui/other/icoon-sparkle-outline.svg"
+          />
+          <span className="text-[16px] leading-[22px] text-[#707070] [font-family:var(--font-instrument-sans)]">
             {question}
           </span>
         </button>
@@ -676,21 +683,7 @@ export function ArtworkReflectionChat({
                         ref={scrollContentRef}
                         className="flex min-h-full flex-col items-start will-change-transform"
                       >
-                        {showEmptyState ? (
-                          <div className="flex w-full flex-1 flex-col items-center justify-end px-[20px] py-[16px]">
-                            <button
-                              type="button"
-                              className="rounded-[24px] border border-[#d9d9d9] px-[16px] py-[12px] text-left"
-                              onClick={() => handleSend(question)}
-                              aria-label="Send suggested prompt"
-                              disabled={isThinking}
-                            >
-                              <span className="text-[16px] text-[#1e1e1e] [font-family:var(--font-instrument-sans)]">
-                                {question}
-                              </span>
-                            </button>
-                          </div>
-                        ) : showFocus ? (
+                        {showEmptyState ? null : showFocus ? (
                           <div className="w-full px-[20px] py-[16px]">
                             {latestUser ? (
                               <div className="flex w-full justify-end pb-[12px]">
@@ -749,11 +742,46 @@ export function ArtworkReflectionChat({
                       </div>
                     </div>
 
+                    {showEmptyState ? (
+                      <div className="pointer-events-none absolute inset-0">
+                        <div
+                          className="absolute inset-0 flex flex-col items-center justify-center gap-[16px] px-[20px] text-center"
+                          style={{ transform: "translateY(-40px)" }}
+                        >
+                          <img
+                            alt=""
+                            aria-hidden="true"
+                            className="h-[64px] w-[64px] opacity-80"
+                            src="/images/ui/other/icoon-sparkle-outline.svg"
+                          />
+                          <p className="text-[16px] font-medium text-[#757575] [font-family:var(--font-instrument-sans)]">
+                            Curious? I can explain what you're seeing.
+                          </p>
+                        </div>
+                        <div
+                          className="pointer-events-auto absolute left-0 right-0 flex justify-center px-[20px]"
+                          style={{ bottom: "104px" }}
+                        >
+                          <button
+                            type="button"
+                            className="flex items-center justify-center rounded-[24px] border border-[#d9d9d9] px-[16px] py-[12px] text-center"
+                            onClick={() => handleSend(question)}
+                            aria-label="Send suggested prompt"
+                            disabled={isThinking}
+                          >
+                            <span className="text-[16px] text-[#1e1e1e] [font-family:var(--font-instrument-sans)]">
+                              {question}
+                            </span>
+                          </button>
+                        </div>
+                      </div>
+                    ) : null}
+
                     <div
-                      className="absolute bottom-0 left-0 right-0 flex w-full flex-col items-center gap-[8px] px-[20px] pb-[16px]"
+                      className="absolute bottom-0 left-0 right-0 flex w-full flex-col items-center gap-[8px] px-[20px] pb-[16px] pt-[8px]"
                       style={{
                         backgroundImage:
-                          "linear-gradient(180.3579103542304deg, rgba(255, 255, 255, 0) 1.4162%, rgb(255, 255, 255) 56.069%)",
+                          "linear-gradient(182.07663391795057deg, rgba(255, 255, 255, 0) 6.6889%, rgb(255, 255, 255) 38.723%)",
                       }}
                     >
                       <div className="flex h-[45px] w-full items-center justify-between rounded-[100px] bg-[#f5f5f5] pl-[16px] pr-[8px] py-[8px]">

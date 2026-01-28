@@ -36,7 +36,7 @@ function DefaultNav() {
 
   return (
     <nav className="w-full bg-gradient-to-b from-[rgba(255,255,255,0)] to-[rgba(255,255,255,0.9)] pb-[env(safe-area-inset-bottom)]">
-      <div className="mx-auto flex h-[100px] max-w-4xl items-start gap-[10px] px-[10px] py-[8px]">
+      <div className="mx-auto flex h-[100px] w-full max-w-[393px] items-start gap-[10px] px-[20px] py-[8px]">
         <div className="relative flex flex-1 items-center rounded-full border border-white bg-white/30 px-[6px] py-[4px] shadow-[0_0_32px_rgba(0,0,0,0.1)] backdrop-blur-[16px]">
           <div
             aria-hidden="true"
@@ -129,7 +129,7 @@ function SearchNav() {
 
   return (
     <nav className="w-full bg-gradient-to-b from-[rgba(255,255,255,0)] to-[rgba(255,255,255,0.9)] pb-[env(safe-area-inset-bottom)]">
-      <div className="mx-auto flex h-[100px] max-w-4xl items-start gap-[10px] px-[10px] py-[8px]">
+      <div className="mx-auto flex h-[100px] w-full max-w-[393px] items-center gap-[10px] px-[20px] py-[8px]">
         <form
           className="flex flex-1 items-center gap-[8px] rounded-full border border-white bg-white/30 px-[12px] py-[4px] shadow-[0_0_32px_rgba(0,0,0,0.1)] backdrop-blur-[16px]"
           onSubmit={handleSubmit}
