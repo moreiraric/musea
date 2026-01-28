@@ -338,7 +338,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
         ) : null}
 
         {movement ? (
-          <section className="flex w-full flex-col pt-[32px]">
+          <section className="flex w-full flex-col pb-[32px] pt-[32px]">
             <div className="flex w-full flex-col gap-[8px]">
               <p className="text-[14px] font-medium uppercase text-[#757575] [font-family:'SF_Mono',var(--font-jetbrains-mono)]">
                 Movement
