@@ -87,6 +87,14 @@ export function ElasticScroll({ children }: ElasticScrollProps) {
     const updateScrollLock = () => {
       const overlayOpen =
         viewport.getAttribute("data-overlay-open") === "true";
+      if (overlayOpen) {
+        if (rafRef.current !== null) {
+          cancelAnimationFrame(rafRef.current);
+          rafRef.current = null;
+        }
+        offsetRef.current = 0;
+        contentRef.current?.style.setProperty("transform", "translateY(0px)");
+      }
       container.style.overflowY = overlayOpen ? "hidden" : initialOverflowRef.current || "auto";
       container.style.pointerEvents = overlayOpen
         ? "none"

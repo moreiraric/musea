@@ -317,7 +317,7 @@ export function ArtworkReflectionChat({
       return;
     }
     const id = window.setTimeout(() => {
-      inputRef.current?.focus();
+      inputRef.current?.focus({ preventScroll: true });
     }, 0);
     return () => window.clearTimeout(id);
   }, [isOpen]);
