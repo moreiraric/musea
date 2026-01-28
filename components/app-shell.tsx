@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { BottomNav } from "@/components/bottom-nav";
 import { TopNav } from "@/components/top-nav";
 import { ElasticScroll } from "@/components/elastic-scroll";
+import { TapCursor } from "@/components/tap-cursor";
 
 type AppShellProps = {
   children: ReactNode;
@@ -24,13 +25,14 @@ export function AppShell({ children }: AppShellProps) {
         <div className="absolute right-[-4px] top-[180px] h-[96px] w-[6px] rounded-full bg-[#1a1a1a]" />
         <div
           id="app-viewport"
-          className="relative flex h-full flex-col overflow-hidden rounded-[50px] bg-background"
+          className="relative flex h-full cursor-none flex-col overflow-hidden rounded-[50px] bg-background"
         >
           {hideTopNav ? null : <TopNav />}
           <ElasticScroll>{children}</ElasticScroll>
           <div className="absolute bottom-0 left-0 right-0">
             <BottomNav />
           </div>
+          <TapCursor />
         </div>
       </div>
     </div>
