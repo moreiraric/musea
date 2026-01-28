@@ -1,7 +1,15 @@
 "use client";
 
 import { createPortal } from "react-dom";
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react";
 
 type ChatMessage = {
   id: string;
@@ -41,12 +49,61 @@ function trimMessagesToTokenLimit(messages: ChatMessage[], maxTokens: number) {
 
 function DotLoader() {
   return (
-    <div className="flex items-center gap-[6px] rounded-[24px] bg-[#f5f5f5] px-[16px] py-[12px]">
+    <div className="flex items-center gap-[6px]">
       <span className="dot-loader" />
       <span className="dot-loader dot-loader--delay-1" />
       <span className="dot-loader dot-loader--delay-2" />
     </div>
   );
+}
+
+function renderInlineMarkdown(text: string) {
+  const segments = text.split(/(\*\*\*[^*]+\*\*\*|\*\*[^*]+\*\*|\*[^*]+\*)/g);
+  let key = 0;
+  return segments.map((segment) => {
+    if (!segment) {
+      return null;
+    }
+    if (segment.startsWith("***") && segment.endsWith("***")) {
+      const content = segment.slice(3, -3);
+      return (
+        <strong key={`bolditalic-${key++}`}>
+          <em>{content}</em>
+        </strong>
+      );
+    }
+    if (segment.startsWith("**") && segment.endsWith("**")) {
+      const content = segment.slice(2, -2);
+      return <strong key={`bold-${key++}`}>{content}</strong>;
+    }
+    if (segment.startsWith("*") && segment.endsWith("*")) {
+      const content = segment.slice(1, -1);
+      return <em key={`italic-${key++}`}>{content}</em>;
+    }
+    const cleaned = segment.replace(/(?<=\w)\*{1,3}|\*{1,3}(?=\w)/g, "");
+    return <span key={`text-${key++}`}>{cleaned}</span>;
+  });
+}
+
+function renderMarkdown(text: string, className: string) {
+  const paragraphs = text.split(/\n{2,}/);
+  return paragraphs.map((paragraph, index) => {
+    const lines = paragraph.split("\n");
+    const lineNodes: ReactNode[] = [];
+    lines.forEach((line, lineIndex) => {
+      if (lineIndex > 0) {
+        lineNodes.push(<br key={`br-${index}-${lineIndex}`} />);
+      }
+      lineNodes.push(
+        <span key={`line-${index}-${lineIndex}`}>{renderInlineMarkdown(line)}</span>,
+      );
+    });
+    return (
+      <p key={`para-${index}`} className={className}>
+        {lineNodes}
+      </p>
+    );
+  });
 }
 
 export function ArtworkReflectionChat({
@@ -65,6 +122,8 @@ export function ArtworkReflectionChat({
   const latestMessagesRef = useRef<ChatMessage[]>([]);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const shouldAutoScrollRef = useRef(true);
+  const pendingExitFocusRef = useRef(false);
+  const touchStartYRef = useRef<number | null>(null);
 
   useEffect(() => {
     setPortalTarget(document.getElementById("app-viewport"));
@@ -93,7 +152,7 @@ export function ArtworkReflectionChat({
     container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
   }, [isOpen, focusLatest, messages, isThinking]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!focusLatest) {
       return;
     }
@@ -101,7 +160,19 @@ export function ArtworkReflectionChat({
     if (!container) {
       return;
     }
-    container.scrollTo({ top: 0 });
+    container.scrollTop = container.scrollHeight;
+  }, [focusLatest, messages, isThinking]);
+
+  useEffect(() => {
+    if (focusLatest || !pendingExitFocusRef.current) {
+      return;
+    }
+    pendingExitFocusRef.current = false;
+    const container = scrollRef.current;
+    if (!container) {
+      return;
+    }
+    container.scrollTo({ top: container.scrollHeight });
   }, [focusLatest]);
 
   useEffect(() => {
@@ -172,7 +243,6 @@ export function ArtworkReflectionChat({
 
   const finalizeStream = () => {
     setIsThinking(false);
-    setFocusLatest(false);
   };
 
   const handleScroll = () => {
@@ -180,9 +250,49 @@ export function ArtworkReflectionChat({
     if (!container) {
       return;
     }
+    if (focusLatest) {
+      return;
+    }
     const distanceFromBottom =
       container.scrollHeight - container.scrollTop - container.clientHeight;
     shouldAutoScrollRef.current = distanceFromBottom < 80;
+  };
+
+  const handleExitFocus = () => {
+    if (!focusLatest) {
+      return;
+    }
+    pendingExitFocusRef.current = true;
+    setFocusLatest(false);
+    shouldAutoScrollRef.current = false;
+  };
+
+  const handleWheel = (event: React.WheelEvent<HTMLDivElement>) => {
+    if (!focusLatest) {
+      return;
+    }
+    if (event.deltaY > 6) {
+      handleExitFocus();
+    }
+  };
+
+  const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    touchStartYRef.current = event.touches[0]?.clientY ?? null;
+  };
+
+  const handleTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
+    if (!focusLatest) {
+      return;
+    }
+    const startY = touchStartYRef.current;
+    const currentY = event.touches[0]?.clientY;
+    if (startY == null || currentY == null) {
+      return;
+    }
+    if (startY - currentY > 6) {
+      handleExitFocus();
+      touchStartYRef.current = null;
+    }
   };
 
   const handleSend = async () => {
@@ -206,7 +316,7 @@ export function ArtworkReflectionChat({
     };
     setInputValue("");
     setIsThinking(true);
-    setFocusLatest(true);
+    setFocusLatest(false);
     setMessages((prev) => {
       const next = [...prev, userMessage, assistantMessage];
       saveMessages(next);
@@ -222,6 +332,7 @@ export function ArtworkReflectionChat({
     }));
 
     let receivedDelta = false;
+    let hadError = false;
     try {
       const response = await fetch("/api/ai-chat", {
         method: "POST",
@@ -272,9 +383,9 @@ export function ArtworkReflectionChat({
             return;
           }
           const parsed = JSON.parse(payload) as { delta?: string; error?: string };
-          if (parsed.error) {
-            throw new Error(parsed.error);
-          }
+            if (parsed.error) {
+              throw new Error(parsed.error);
+            }
           if (parsed.delta) {
             receivedDelta = true;
             appendToAssistant(assistantMessage.id, parsed.delta);
@@ -294,21 +405,21 @@ export function ArtworkReflectionChat({
           }
         }
       }
-    } catch {
+    } catch (error) {
+      hadError = true;
+      const fallback =
+        error instanceof Error && error.message.trim()
+          ? error.message
+          : "Sorry, something went wrong. Please try again.";
       setMessages((prev) => {
         const next = prev.map((message) =>
-          message.id === assistantMessage.id
-            ? {
-                ...message,
-                text: "Sorry, something went wrong. Please try again.",
-              }
-            : message,
+          message.id === assistantMessage.id ? { ...message, text: fallback } : message,
         );
         saveMessages(next);
         return next;
       });
     } finally {
-      if (!receivedDelta) {
+      if (!receivedDelta && !hadError) {
         setMessages((prev) => {
           const next = prev.map((message) =>
             message.id === assistantMessage.id
@@ -424,6 +535,9 @@ export function ArtworkReflectionChat({
                     ref={scrollRef}
                     className="flex-1 overflow-y-auto"
                     onScroll={handleScroll}
+                    onWheel={handleWheel}
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
                   >
                     <div className="flex min-h-full flex-col items-start">
                       {showEmptyState ? (
@@ -449,9 +563,12 @@ export function ArtworkReflectionChat({
                             <DotLoader />
                           ) : null}
                           {latestAssistant && latestAssistant.text ? (
-                            <p className="mt-[16px] text-[16px] leading-[22px] text-[#1e1e1e] [font-family:var(--font-instrument-sans)] whitespace-pre-wrap">
-                              {latestAssistant.text}
-                            </p>
+                            <div className="mt-[16px] space-y-[8px]">
+                              {renderMarkdown(
+                                latestAssistant.text,
+                                "text-[16px] leading-[22px] text-[#1e1e1e] [font-family:var(--font-instrument-sans)]",
+                              )}
+                            </div>
                           ) : null}
                         </div>
                       ) : (
@@ -466,9 +583,16 @@ export function ArtworkReflectionChat({
                               }
                             >
                               {message.role === "assistant" ? (
-                                <p className="text-[16px] leading-[22px] text-[#1e1e1e] [font-family:var(--font-instrument-sans)] whitespace-pre-wrap">
-                                  {message.text}
-                                </p>
+                                message.text ? (
+                                  <div className="space-y-[8px]">
+                                    {renderMarkdown(
+                                      message.text,
+                                      "text-[16px] leading-[22px] text-[#1e1e1e] [font-family:var(--font-instrument-sans)]",
+                                    )}
+                                  </div>
+                                ) : (
+                                  <DotLoader />
+                                )
                               ) : (
                                 <div className="max-w-[327px] rounded-[24px] bg-[#f5f5f5] px-[16px] py-[12px]">
                                   <p className="text-[16px] leading-[22px] text-[#1e1e1e] [font-family:var(--font-instrument-sans)] whitespace-pre-wrap">
