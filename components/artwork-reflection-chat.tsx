@@ -114,7 +114,6 @@ export function ArtworkReflectionChat({
 }: ArtworkReflectionChatProps) {
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
   const [isOpen, setIsOpen] = useState(false);
-  const [isActive, setIsActive] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isThinking, setIsThinking] = useState(false);
@@ -134,21 +133,36 @@ export function ArtworkReflectionChat({
   }, []);
 
   useEffect(() => {
+    const viewport = document.getElementById("app-viewport");
+    if (!viewport) {
+      return;
+    }
+    if (isOpen) {
+      viewport.setAttribute("data-overlay-open", "true");
+    } else {
+      viewport.removeAttribute("data-overlay-open");
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    const body = document.body;
+    const main = document.querySelector("#app-viewport main") as HTMLElement | null;
     if (!isOpen) {
       return;
     }
-    setIsActive(false);
-    let raf1: number | null = null;
-    let raf2: number | null = null;
-    raf1 = requestAnimationFrame(() => {
-      raf2 = requestAnimationFrame(() => setIsActive(true));
-    });
+    const previousBodyOverflow = body.style.overflow;
+    const previousMainOverflow = main?.style.overflowY;
+    const previousMainPointerEvents = main?.style.pointerEvents;
+    body.style.overflow = "hidden";
+    if (main) {
+      main.style.overflowY = "hidden";
+      main.style.pointerEvents = "none";
+    }
     return () => {
-      if (raf1 !== null) {
-        cancelAnimationFrame(raf1);
-      }
-      if (raf2 !== null) {
-        cancelAnimationFrame(raf2);
+      body.style.overflow = previousBodyOverflow;
+      if (main) {
+        main.style.overflowY = previousMainOverflow ?? "";
+        main.style.pointerEvents = previousMainPointerEvents ?? "";
       }
     };
   }, [isOpen]);
@@ -295,8 +309,7 @@ export function ArtworkReflectionChat({
   };
 
   const handleClose = () => {
-    setIsActive(false);
-    window.setTimeout(() => setIsOpen(false), 260);
+    setIsOpen(false);
   };
 
   useEffect(() => {
@@ -581,20 +594,37 @@ export function ArtworkReflectionChat({
         </button>
       </div>
 
-      {isOpen && portalTarget
+      {portalTarget
         ? createPortal(
-            <div className="absolute inset-0 z-40">
+            <div
+              className={`absolute inset-0 z-40 transition-opacity duration-300 ${
+                isOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
+              }`}
+              onWheel={(event) => {
+                if (isOpen) {
+                  event.preventDefault();
+                  event.stopPropagation();
+                }
+              }}
+              onTouchMove={(event) => {
+                if (isOpen) {
+                  event.preventDefault();
+                  event.stopPropagation();
+                }
+              }}
+              aria-hidden={!isOpen}
+            >
               <button
                 type="button"
                 className={`absolute inset-0 bg-black/40 transition-opacity duration-300 ${
-                  isActive ? "opacity-100" : "opacity-0"
+                  isOpen ? "opacity-100" : "opacity-0"
                 }`}
                 aria-label="Close conversation"
                 onClick={handleClose}
               />
               <div
-                className={`absolute bottom-0 left-0 right-0 flex h-[92%] flex-col rounded-t-[36px] bg-white shadow-[0_-16px_40px_rgba(0,0,0,0.18)] transition-transform duration-700 ease-[cubic-bezier(0.22,1.2,0.36,1)] ${
-                  isActive ? "translate-y-0" : "translate-y-full"
+                className={`absolute bottom-0 left-0 right-0 flex h-[92%] flex-col rounded-t-[36px] bg-white shadow-[0_-16px_40px_rgba(0,0,0,0.18)] transition-transform duration-500 ease-out ${
+                  isOpen ? "translate-y-0" : "translate-y-full"
                 }`}
                 style={{ willChange: "transform" }}
                 role="dialog"

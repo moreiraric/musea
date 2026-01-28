@@ -11,6 +11,8 @@ export function ElasticScroll({ children }: ElasticScrollProps) {
   const contentRef = useRef<HTMLDivElement | null>(null);
   const offsetRef = useRef(0);
   const rafRef = useRef<number | null>(null);
+  const initialOverflowRef = useRef<string | null>(null);
+  const initialPointerEventsRef = useRef<string | null>(null);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -42,6 +44,13 @@ export function ElasticScroll({ children }: ElasticScrollProps) {
     };
 
     const onWheel = (event: WheelEvent) => {
+      const overlayOpen =
+        document
+          .getElementById("app-viewport")
+          ?.getAttribute("data-overlay-open") === "true";
+      if (overlayOpen) {
+        return;
+      }
       const maxScroll = container.scrollHeight - container.clientHeight;
       const atTop = container.scrollTop <= 0;
       const atBottom = container.scrollTop >= maxScroll - 1;
@@ -62,6 +71,40 @@ export function ElasticScroll({ children }: ElasticScrollProps) {
       if (rafRef.current !== null) {
         cancelAnimationFrame(rafRef.current);
       }
+    };
+  }, []);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    const viewport = document.getElementById("app-viewport");
+    if (!container || !viewport) {
+      return;
+    }
+
+    initialOverflowRef.current = container.style.overflowY || "";
+    initialPointerEventsRef.current = container.style.pointerEvents || "";
+
+    const updateScrollLock = () => {
+      const overlayOpen =
+        viewport.getAttribute("data-overlay-open") === "true";
+      container.style.overflowY = overlayOpen ? "hidden" : initialOverflowRef.current || "auto";
+      container.style.pointerEvents = overlayOpen
+        ? "none"
+        : initialPointerEventsRef.current || "auto";
+    };
+
+    updateScrollLock();
+
+    const observer = new MutationObserver(updateScrollLock);
+    observer.observe(viewport, {
+      attributes: true,
+      attributeFilter: ["data-overlay-open"],
+    });
+
+    return () => {
+      observer.disconnect();
+      container.style.overflowY = initialOverflowRef.current || "";
+      container.style.pointerEvents = initialPointerEventsRef.current || "";
     };
   }, []);
 

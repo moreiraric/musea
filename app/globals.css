@@ -157,6 +157,32 @@
   animation: sheet-in 520ms cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
+@keyframes sheet-slide-in {
+  0% {
+    transform: translateY(100%);
+  }
+  100% {
+    transform: translateY(0%);
+  }
+}
+
+@keyframes sheet-slide-out {
+  0% {
+    transform: translateY(0%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+.sheet-slide-in {
+  animation: sheet-slide-in 520ms cubic-bezier(0.22, 1.2, 0.36, 1) both;
+}
+
+.sheet-slide-out {
+  animation: sheet-slide-out 260ms ease-in both;
+}
+
 @keyframes dot-bounce {
   0%,
   80%,
@@ -233,6 +259,10 @@
 #app-viewport,
 #app-viewport * {
   cursor: none !important;
+}
+
+#app-viewport[data-overlay-open="true"] main {
+  overflow: hidden;
 }
 
 .hide-scrollbar {
