@@ -501,7 +501,8 @@ export function ArtworkReflectionChat({
                 aria-modal="true"
                 aria-label={`Conversation about ${artworkTitle}`}
               >
-                <div className="flex h-full flex-col">
+                <div className="relative flex h-full flex-col">
+                  <div className="pointer-events-none absolute left-1/2 top-[8px] h-[4px] w-[48px] -translate-x-1/2 rounded-full bg-[#d9d9d9]" />
                   <div
                     className="flex h-[100px] w-full items-end bg-gradient-to-t from-[rgba(255,255,255,0)] to-white px-[20px] pb-[16px]"
                     style={{
