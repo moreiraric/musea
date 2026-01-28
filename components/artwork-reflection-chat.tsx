@@ -121,10 +121,13 @@ export function ArtworkReflectionChat({
   const [focusLatest, setFocusLatest] = useState(false);
   const latestMessagesRef = useRef<ChatMessage[]>([]);
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const scrollContentRef = useRef<HTMLDivElement | null>(null);
   const shouldAutoScrollRef = useRef(true);
   const pendingExitFocusRef = useRef(false);
   const touchStartYRef = useRef<number | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const elasticOffsetRef = useRef(0);
+  const elasticRafRef = useRef<number | null>(null);
 
   useEffect(() => {
     setPortalTarget(document.getElementById("app-viewport"));
@@ -193,6 +196,72 @@ export function ArtworkReflectionChat({
       // ignore cache errors
     }
   }, [artworkId]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+    const container = scrollRef.current;
+    const content = scrollContentRef.current;
+    if (!container || !content) {
+      return;
+    }
+
+    const setOffset = (value: number) => {
+      elasticOffsetRef.current = value;
+      content.style.transform = `translateY(${value}px)`;
+    };
+
+    const animateBack = () => {
+      if (elasticRafRef.current !== null) {
+        cancelAnimationFrame(elasticRafRef.current);
+      }
+      const step = () => {
+        const current = elasticOffsetRef.current;
+        if (Math.abs(current) < 0.5) {
+          setOffset(0);
+          elasticRafRef.current = null;
+          return;
+        }
+        setOffset(current * 0.85);
+        elasticRafRef.current = requestAnimationFrame(step);
+      };
+      elasticRafRef.current = requestAnimationFrame(step);
+    };
+
+    const onWheel = (event: WheelEvent) => {
+      const maxScroll = container.scrollHeight - container.clientHeight;
+      const atTop = container.scrollTop <= 0;
+      const atBottom = container.scrollTop >= maxScroll - 1;
+      const delta = event.deltaY;
+
+      if ((atTop && delta < 0) || (atBottom && delta > 0)) {
+        event.preventDefault();
+        const next = elasticOffsetRef.current - delta * 0.3;
+        const clamped = Math.max(-90, Math.min(90, next));
+        setOffset(clamped);
+        animateBack();
+        return;
+      }
+
+      // Subtle elastic feel during normal scrolling (desktop).
+      if (delta !== 0) {
+        const next = elasticOffsetRef.current - delta * 0.06;
+        const clamped = Math.max(-24, Math.min(24, next));
+        setOffset(clamped);
+        animateBack();
+      }
+    };
+
+    container.addEventListener("wheel", onWheel, { passive: false });
+
+    return () => {
+      container.removeEventListener("wheel", onWheel);
+      if (elasticRafRef.current !== null) {
+        cancelAnimationFrame(elasticRafRef.current);
+      }
+    };
+  }, [isOpen]);
 
   const saveMessages = (nextMessages: ChatMessage[]) => {
     if (typeof window === "undefined") {
@@ -555,7 +624,10 @@ export function ArtworkReflectionChat({
                       onTouchStart={handleTouchStart}
                       onTouchMove={handleTouchMove}
                     >
-                      <div className="flex min-h-full flex-col items-start">
+                      <div
+                        ref={scrollContentRef}
+                        className="flex min-h-full flex-col items-start will-change-transform"
+                      >
                         {showEmptyState ? (
                           <div className="flex w-full flex-1 flex-col items-center justify-end px-[20px] py-[16px]">
                             <button
