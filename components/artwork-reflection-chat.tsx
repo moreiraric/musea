@@ -531,120 +531,123 @@ export function ArtworkReflectionChat({
                     </div>
                   </div>
 
-                  <div
-                    ref={scrollRef}
-                    className="flex-1 overflow-y-auto"
-                    onScroll={handleScroll}
-                    onWheel={handleWheel}
-                    onTouchStart={handleTouchStart}
-                    onTouchMove={handleTouchMove}
-                  >
-                    <div className="flex min-h-full flex-col items-start">
-                      {showEmptyState ? (
-                        <div className="flex w-full flex-1 flex-col items-center justify-end px-[20px] py-[16px]">
-                          <div className="rounded-[24px] border border-[#d9d9d9] px-[16px] py-[12px]">
-                            <p className="text-[16px] text-[#1e1e1e] [font-family:var(--font-instrument-sans)]">
-                              {question}
-                            </p>
+                  <div className="relative flex-1">
+                    <div
+                      ref={scrollRef}
+                      className="absolute inset-0 overflow-y-auto"
+                      style={{ paddingBottom: "140px", scrollPaddingBottom: "140px" }}
+                      onScroll={handleScroll}
+                      onWheel={handleWheel}
+                      onTouchStart={handleTouchStart}
+                      onTouchMove={handleTouchMove}
+                    >
+                      <div className="flex min-h-full flex-col items-start">
+                        {showEmptyState ? (
+                          <div className="flex w-full flex-1 flex-col items-center justify-end px-[20px] py-[16px]">
+                            <div className="rounded-[24px] border border-[#d9d9d9] px-[16px] py-[12px]">
+                              <p className="text-[16px] text-[#1e1e1e] [font-family:var(--font-instrument-sans)]">
+                                {question}
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                      ) : showFocus ? (
-                        <div className="w-full px-[20px] py-[16px]">
-                          {latestUser ? (
-                            <div className="flex w-full justify-end pb-[12px]">
-                              <div className="max-w-[327px] rounded-[24px] bg-[#f5f5f5] px-[16px] py-[12px]">
-                                <p className="text-[16px] leading-[22px] text-[#1e1e1e] [font-family:var(--font-instrument-sans)] whitespace-pre-wrap">
-                                  {latestUser.text}
-                                </p>
-                              </div>
-                            </div>
-                          ) : null}
-                          {latestAssistant && latestAssistant.text === "" ? (
-                            <DotLoader />
-                          ) : null}
-                          {latestAssistant && latestAssistant.text ? (
-                            <div className="mt-[16px] space-y-[8px]">
-                              {renderMarkdown(
-                                latestAssistant.text,
-                                "text-[16px] leading-[22px] text-[#1e1e1e] [font-family:var(--font-instrument-sans)]",
-                              )}
-                            </div>
-                          ) : null}
-                        </div>
-                      ) : (
-                        <>
-                          {messages.map((message) => (
-                            <div
-                              key={message.id}
-                              className={
-                                message.role === "assistant"
-                                  ? "w-full px-[20px] py-[16px]"
-                                  : "flex w-full justify-end px-[20px] py-[16px]"
-                              }
-                            >
-                              {message.role === "assistant" ? (
-                                message.text ? (
-                                  <div className="space-y-[8px]">
-                                    {renderMarkdown(
-                                      message.text,
-                                      "text-[16px] leading-[22px] text-[#1e1e1e] [font-family:var(--font-instrument-sans)]",
-                                    )}
-                                  </div>
-                                ) : (
-                                  <DotLoader />
-                                )
-                              ) : (
+                        ) : showFocus ? (
+                          <div className="w-full px-[20px] py-[16px]">
+                            {latestUser ? (
+                              <div className="flex w-full justify-end pb-[12px]">
                                 <div className="max-w-[327px] rounded-[24px] bg-[#f5f5f5] px-[16px] py-[12px]">
                                   <p className="text-[16px] leading-[22px] text-[#1e1e1e] [font-family:var(--font-instrument-sans)] whitespace-pre-wrap">
-                                    {message.text}
+                                    {latestUser.text}
                                   </p>
                                 </div>
-                              )}
-                            </div>
-                          ))}
-                        </>
-                      )}
-                    </div>
-                  </div>
-
-                  <div
-                    className={`flex w-full items-center px-[20px] ${
-                      showEmptyState ? "h-[70px]" : "h-[80px]"
-                    }`}
-                    style={{
-                      backgroundImage: showEmptyState
-                        ? "linear-gradient(181.27300566469665deg, rgba(255, 255, 255, 0) 5.5319%, rgb(255, 255, 255) 62.715%)"
-                        : "linear-gradient(180.34086741623048deg, rgba(255, 255, 255, 0) 1.4162%, rgb(255, 255, 255) 56.069%)",
-                    }}
-                  >
-                    <div className="flex h-[45px] w-full items-center justify-between rounded-[100px] bg-[#f5f5f5] pl-[16px] pr-[8px] py-[8px]">
-                      <div className="flex flex-1 items-center">
-                        <input
-                          className="w-full bg-transparent text-[16px] text-[#1e1e1e] placeholder:text-[#b3b3b3] outline-none [font-family:var(--font-instrument-sans)]"
-                          placeholder="Ask about the artwork"
-                          value={inputValue}
-                          onChange={(event) => handleInputChange(event.target.value)}
-                          onKeyDown={handleInputKeyDown}
-                          maxLength={MAX_INPUT_CHARS}
-                          disabled={isThinking}
-                        />
+                              </div>
+                            ) : null}
+                            {latestAssistant && latestAssistant.text === "" ? (
+                              <DotLoader />
+                            ) : null}
+                            {latestAssistant && latestAssistant.text ? (
+                              <div className="mt-[16px] space-y-[8px]">
+                                {renderMarkdown(
+                                  latestAssistant.text,
+                                  "text-[16px] leading-[22px] text-[#1e1e1e] [font-family:var(--font-instrument-sans)]",
+                                )}
+                              </div>
+                            ) : null}
+                          </div>
+                        ) : (
+                          <>
+                            {messages.map((message) => (
+                              <div
+                                key={message.id}
+                                className={
+                                  message.role === "assistant"
+                                    ? "w-full px-[20px] py-[16px]"
+                                    : "flex w-full justify-end px-[20px] py-[16px]"
+                                }
+                              >
+                                {message.role === "assistant" ? (
+                                  message.text ? (
+                                    <div className="space-y-[8px]">
+                                      {renderMarkdown(
+                                        message.text,
+                                        "text-[16px] leading-[22px] text-[#1e1e1e] [font-family:var(--font-instrument-sans)]",
+                                      )}
+                                    </div>
+                                  ) : (
+                                    <DotLoader />
+                                  )
+                                ) : (
+                                  <div className="max-w-[327px] rounded-[24px] bg-[#f5f5f5] px-[16px] py-[12px]">
+                                    <p className="text-[16px] leading-[22px] text-[#1e1e1e] [font-family:var(--font-instrument-sans)] whitespace-pre-wrap">
+                                      {message.text}
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </>
+                        )}
                       </div>
-                      <button
-                        type="button"
-                        className={`flex h-[32px] w-[32px] items-center justify-center rounded-full ${
-                          inputValue.trim() ? "bg-[#2c2c2c]" : "bg-[#2c2c2c]/50"
-                        }`}
-                        onClick={handleSend}
-                        aria-label="Send"
-                        disabled={!inputValue.trim() || isThinking}
-                      >
-                        <img
-                          alt=""
-                          aria-hidden="true"
-                          className="h-[20px] w-[20px]"
-                          src="/images/ui/other/icon-arrow-up.png"
-                        />
-                      </button>
+                    </div>
+
+                    <div
+                      className="absolute bottom-0 left-0 right-0 flex w-full flex-col items-center gap-[8px] px-[20px] pb-[16px]"
+                      style={{
+                        backgroundImage:
+                          "linear-gradient(180.3579103542304deg, rgba(255, 255, 255, 0) 1.4162%, rgb(255, 255, 255) 56.069%)",
+                      }}
+                    >
+                      <div className="flex h-[45px] w-full items-center justify-between rounded-[100px] bg-[#f5f5f5] pl-[16px] pr-[8px] py-[8px]">
+                        <div className="flex flex-1 items-center">
+                          <input
+                            className="w-full bg-transparent text-[16px] text-[#1e1e1e] placeholder:text-[#b3b3b3] outline-none [font-family:var(--font-instrument-sans)]"
+                            placeholder="Ask about the artwork"
+                            value={inputValue}
+                            onChange={(event) => handleInputChange(event.target.value)}
+                            onKeyDown={handleInputKeyDown}
+                            maxLength={MAX_INPUT_CHARS}
+                            disabled={isThinking}
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          className={`flex h-[32px] w-[32px] items-center justify-center rounded-full ${
+                            inputValue.trim() ? "bg-[#2c2c2c]" : "bg-[#2c2c2c]/50"
+                          }`}
+                          onClick={handleSend}
+                          aria-label="Send"
+                          disabled={!inputValue.trim() || isThinking}
+                        >
+                          <img
+                            alt=""
+                            aria-hidden="true"
+                            className="h-[20px] w-[20px]"
+                            src="/images/ui/other/icon-arrow-up.png"
+                          />
+                        </button>
+                      </div>
+                      <p className="text-[12px] text-[#757575] [font-family:var(--font-instrument-sans)]">
+                        Generated from web results, but may still contain errors.
+                      </p>
                     </div>
                   </div>
                 </div>
