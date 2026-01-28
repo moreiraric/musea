@@ -329,7 +329,9 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
         {reflectionQuestion ? (
           <section className="flex w-full flex-col py-[32px]">
             <ArtworkReflectionChat
+              artworkId={artwork.id}
               artworkTitle={artwork.title}
+              artistName={artist?.name ?? null}
               question={reflectionQuestion}
             />
           </section>

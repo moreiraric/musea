@@ -1,17 +1,70 @@
 "use client";
 
 import { createPortal } from "react-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
+
+type ChatMessage = {
+  id: string;
+  role: "assistant" | "user";
+  text: string;
+};
 
 type ArtworkReflectionChatProps = {
   question: string;
   artworkTitle: string;
+  artistName?: string | null;
+  artworkId: string;
 };
 
-export function ArtworkReflectionChat({ question, artworkTitle }: ArtworkReflectionChatProps) {
+const MAX_INPUT_CHARS = 600;
+const MAX_HISTORY_TOKENS = 1500;
+const MAX_STORED_MESSAGES = 50;
+
+function approximateTokens(text: string) {
+  return Math.ceil(text.length / 4);
+}
+
+function trimMessagesToTokenLimit(messages: ChatMessage[], maxTokens: number) {
+  let totalTokens = 0;
+  const trimmed: ChatMessage[] = [];
+  for (let i = messages.length - 1; i >= 0; i -= 1) {
+    const message = messages[i];
+    const tokenCount = approximateTokens(message.text);
+    if (totalTokens + tokenCount > maxTokens && trimmed.length > 0) {
+      break;
+    }
+    totalTokens += tokenCount;
+    trimmed.push(message);
+  }
+  return trimmed.reverse();
+}
+
+function DotLoader() {
+  return (
+    <div className="flex items-center gap-[6px] rounded-[24px] bg-[#f5f5f5] px-[16px] py-[12px]">
+      <span className="dot-loader" />
+      <span className="dot-loader dot-loader--delay-1" />
+      <span className="dot-loader dot-loader--delay-2" />
+    </div>
+  );
+}
+
+export function ArtworkReflectionChat({
+  question,
+  artworkTitle,
+  artistName,
+  artworkId,
+}: ArtworkReflectionChatProps) {
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [isActive, setIsActive] = useState(false);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [inputValue, setInputValue] = useState("");
+  const [isThinking, setIsThinking] = useState(false);
+  const [focusLatest, setFocusLatest] = useState(false);
+  const latestMessagesRef = useRef<ChatMessage[]>([]);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const shouldAutoScrollRef = useRef(true);
 
   useEffect(() => {
     setPortalTarget(document.getElementById("app-viewport"));
@@ -25,6 +78,65 @@ export function ArtworkReflectionChat({ question, artworkTitle }: ArtworkReflect
     return () => cancelAnimationFrame(id);
   }, [isOpen]);
 
+  useEffect(() => {
+    latestMessagesRef.current = messages;
+  }, [messages]);
+
+  useEffect(() => {
+    if (!isOpen || focusLatest) {
+      return;
+    }
+    const container = scrollRef.current;
+    if (!container || !shouldAutoScrollRef.current) {
+      return;
+    }
+    container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
+  }, [isOpen, focusLatest, messages, isThinking]);
+
+  useEffect(() => {
+    if (!focusLatest) {
+      return;
+    }
+    const container = scrollRef.current;
+    if (!container) {
+      return;
+    }
+    container.scrollTo({ top: 0 });
+  }, [focusLatest]);
+
+  useEffect(() => {
+    if (!artworkId || typeof window === "undefined") {
+      return;
+    }
+    try {
+      const raw = window.localStorage.getItem(`artwork-chat:${artworkId}`);
+      if (!raw) {
+        return;
+      }
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        setMessages(parsed as ChatMessage[]);
+      }
+    } catch {
+      // ignore cache errors
+    }
+  }, [artworkId]);
+
+  const saveMessages = (nextMessages: ChatMessage[]) => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    const capped = nextMessages.slice(-MAX_STORED_MESSAGES);
+    try {
+      window.localStorage.setItem(
+        `artwork-chat:${artworkId}`,
+        JSON.stringify(capped),
+      );
+    } catch {
+      // ignore cache errors
+    }
+  };
+
   const handleOpen = () => {
     setIsOpen(true);
   };
@@ -34,13 +146,210 @@ export function ArtworkReflectionChat({ question, artworkTitle }: ArtworkReflect
     window.setTimeout(() => setIsOpen(false), 260);
   };
 
+  const title = useMemo(() => {
+    if (artistName) {
+      return `${artworkTitle} by ${artistName}`;
+    }
+    return artworkTitle;
+  }, [artworkTitle, artistName]);
+
+  const handleInputChange = (value: string) => {
+    const next = value.slice(0, MAX_INPUT_CHARS);
+    setInputValue(next);
+  };
+
+  const appendToAssistant = (assistantId: string, delta: string) => {
+    setMessages((prev) => {
+      const next = prev.map((message) =>
+        message.id === assistantId
+          ? { ...message, text: message.text + delta }
+          : message,
+      );
+      saveMessages(next);
+      return next;
+    });
+  };
+
+  const finalizeStream = () => {
+    setIsThinking(false);
+    setFocusLatest(false);
+  };
+
+  const handleScroll = () => {
+    const container = scrollRef.current;
+    if (!container) {
+      return;
+    }
+    const distanceFromBottom =
+      container.scrollHeight - container.scrollTop - container.clientHeight;
+    shouldAutoScrollRef.current = distanceFromBottom < 80;
+  };
+
+  const handleSend = async () => {
+    if (isThinking) {
+      return;
+    }
+    const trimmed = inputValue.trim();
+    if (!trimmed) {
+      return;
+    }
+    const timestamp = Date.now();
+    const userMessage: ChatMessage = {
+      id: `user-${timestamp}`,
+      role: "user",
+      text: trimmed,
+    };
+    const assistantMessage: ChatMessage = {
+      id: `assistant-${timestamp}`,
+      role: "assistant",
+      text: "",
+    };
+    setInputValue("");
+    setIsThinking(true);
+    setFocusLatest(true);
+    setMessages((prev) => {
+      const next = [...prev, userMessage, assistantMessage];
+      saveMessages(next);
+      return next;
+    });
+
+    const sendHistory = trimMessagesToTokenLimit(
+      [...latestMessagesRef.current, userMessage],
+      MAX_HISTORY_TOKENS,
+    ).map((message) => ({
+      role: message.role,
+      content: message.text,
+    }));
+
+    let receivedDelta = false;
+    try {
+      const response = await fetch("/api/ai-chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          artworkId,
+          artworkTitle,
+          artworkName: artistName ?? "",
+          artistName: artistName ?? "",
+          messages: sendHistory,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "Streaming failed.");
+      }
+
+      if (!response.body) {
+        throw new Error("Streaming failed.");
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) {
+          break;
+        }
+        buffer += decoder.decode(value, { stream: true });
+        buffer = buffer.replace(/\r\n/g, "\n");
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+        for (const line of lines) {
+          if (!line.startsWith("data:")) {
+            continue;
+          }
+          const payload = line.replace("data:", "").trim();
+          if (!payload) {
+            continue;
+          }
+          if (payload === "[DONE]") {
+            finalizeStream();
+            return;
+          }
+          const parsed = JSON.parse(payload) as { delta?: string; error?: string };
+          if (parsed.error) {
+            throw new Error(parsed.error);
+          }
+          if (parsed.delta) {
+            receivedDelta = true;
+            appendToAssistant(assistantMessage.id, parsed.delta);
+          }
+        }
+      }
+      if (buffer.trim()) {
+        const payload = buffer.replace("data:", "").trim();
+        if (payload && payload !== "[DONE]") {
+          const parsed = JSON.parse(payload) as { delta?: string; error?: string };
+          if (parsed.error) {
+            throw new Error(parsed.error);
+          }
+          if (parsed.delta) {
+            receivedDelta = true;
+            appendToAssistant(assistantMessage.id, parsed.delta);
+          }
+        }
+      }
+    } catch {
+      setMessages((prev) => {
+        const next = prev.map((message) =>
+          message.id === assistantMessage.id
+            ? {
+                ...message,
+                text: "Sorry, something went wrong. Please try again.",
+              }
+            : message,
+        );
+        saveMessages(next);
+        return next;
+      });
+    } finally {
+      if (!receivedDelta) {
+        setMessages((prev) => {
+          const next = prev.map((message) =>
+            message.id === assistantMessage.id
+              ? {
+                  ...message,
+                  text: "Sorry, I couldn't generate a response. Please try again.",
+                }
+              : message,
+          );
+          saveMessages(next);
+          return next;
+        });
+      }
+      finalizeStream();
+    }
+  };
+
+  const handleInputKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      handleSend();
+    }
+  };
+
   if (!question) {
     return null;
   }
 
+  const showEmptyState = messages.length === 0 && !isThinking;
+  const showFocus = focusLatest && messages.length > 0;
+  const latestUser = showFocus
+    ? [...messages].reverse().find((message) => message.role === "user") ?? null
+    : null;
+  const latestAssistant = showFocus
+    ? [...messages].reverse().find((message) => message.role === "assistant") ?? null
+    : null;
+
   return (
     <>
-      <div className="rounded-full p-[1px] shadow-[0px_1px_10px_rgba(4,98,153,0.15),0px_-1px_10px_rgba(221,98,249,0.15)]"
+      <div
+        className="rounded-full p-[1px] shadow-[0px_1px_10px_rgba(4,98,153,0.15),0px_-1px_10px_rgba(221,98,249,0.15)]"
         style={{
           background:
             "linear-gradient(95deg, #0296ED 0%, #F9A8D4 42%, #C287DE 100%)",
@@ -81,62 +390,139 @@ export function ArtworkReflectionChat({ question, artworkTitle }: ArtworkReflect
                 aria-modal="true"
                 aria-label={`Conversation about ${artworkTitle}`}
               >
-                <div className="flex items-center justify-between px-[20px] pb-[8px] pt-[12px]">
-                  <div className="h-[4px] w-[48px] rounded-full bg-[#d9d9d9]" />
-                  <button
-                    type="button"
-                    className="flex h-[32px] w-[32px] items-center justify-center rounded-full bg-[#f1f1f1] text-[#1e1e1e]"
-                    onClick={handleClose}
-                    aria-label="Close"
+                <div className="flex h-full flex-col">
+                  <div
+                    className="flex h-[100px] w-full items-end bg-gradient-to-t from-[rgba(255,255,255,0)] to-white px-[20px] pb-[16px]"
+                    style={{
+                      backgroundImage:
+                        "linear-gradient(180.34086741623048deg, rgba(255, 255, 255, 0) 1.4162%, rgb(255, 255, 255) 56.069%)",
+                    }}
                   >
-                    <span className="text-[18px] leading-none">×</span>
-                  </button>
-                </div>
-
-                <div className="flex flex-col gap-[6px] px-[20px] pb-[12px]">
-                  <p className="text-[18px] font-semibold text-black [font-family:var(--font-literata)]">
-                    Talk about this painting
-                  </p>
-                  <p className="text-[14px] text-[#757575] [font-family:var(--font-instrument-sans)]">
-                    Ask anything about the artwork or explore its mood, symbolism, and techniques.
-                  </p>
-                </div>
-
-                <div className="flex-1 overflow-y-auto px-[20px]">
-                  <div className="rounded-[20px] border border-[#e5e5e5] bg-[#fafafa] px-[16px] py-[14px]">
-                    <p className="text-[14px] uppercase tracking-[0.08em] text-[#9b9b9b] [font-family:'SF_Mono',var(--font-jetbrains-mono)]">
-                      Starter prompt
-                    </p>
-                    <p className="mt-[8px] text-[16px] text-[#1e1e1e] [font-family:var(--font-literata)]">
-                      {question}
-                    </p>
+                    <div className="flex w-full items-center gap-[16px]">
+                      <div className="flex items-center">
+                        <button
+                          type="button"
+                          className="flex h-[48px] w-[48px] items-center justify-center rounded-full bg-[rgba(217,217,217,0.33)] p-[8px] shadow-[0px_0px_32px_0px_rgba(0,0,0,0.2)] backdrop-blur-[16px]"
+                          onClick={handleClose}
+                          aria-label="Close"
+                        >
+                          <img
+                            alt=""
+                            aria-hidden="true"
+                            className="h-[24px] w-[24px]"
+                            src="/images/ui/other/icon-x-outline.svg"
+                          />
+                        </button>
+                      </div>
+                      <p className="flex-1 truncate text-[16px] font-medium text-[#1e1e1e] [font-family:var(--font-instrument-sans)]">
+                        {title}
+                      </p>
+                    </div>
                   </div>
 
-                  <div className="mt-[16px] rounded-[20px] border border-dashed border-[#d9d9d9] bg-white px-[16px] py-[16px]">
-                    <p className="text-[15px] text-[#757575] [font-family:var(--font-instrument-sans)]">
-                      Conversation history will appear here once messages are sent.
-                    </p>
+                  <div
+                    ref={scrollRef}
+                    className="flex-1 overflow-y-auto"
+                    onScroll={handleScroll}
+                  >
+                    <div className="flex min-h-full flex-col items-start">
+                      {showEmptyState ? (
+                        <div className="flex w-full flex-1 flex-col items-center justify-end px-[20px] py-[16px]">
+                          <div className="rounded-[24px] border border-[#d9d9d9] px-[16px] py-[12px]">
+                            <p className="text-[16px] text-[#1e1e1e] [font-family:var(--font-instrument-sans)]">
+                              {question}
+                            </p>
+                          </div>
+                        </div>
+                      ) : showFocus ? (
+                        <div className="w-full px-[20px] py-[16px]">
+                          {latestUser ? (
+                            <div className="flex w-full justify-end pb-[12px]">
+                              <div className="max-w-[327px] rounded-[24px] bg-[#f5f5f5] px-[16px] py-[12px]">
+                                <p className="text-[16px] leading-[22px] text-[#1e1e1e] [font-family:var(--font-instrument-sans)] whitespace-pre-wrap">
+                                  {latestUser.text}
+                                </p>
+                              </div>
+                            </div>
+                          ) : null}
+                          {latestAssistant && latestAssistant.text === "" ? (
+                            <DotLoader />
+                          ) : null}
+                          {latestAssistant && latestAssistant.text ? (
+                            <p className="mt-[16px] text-[16px] leading-[22px] text-[#1e1e1e] [font-family:var(--font-instrument-sans)] whitespace-pre-wrap">
+                              {latestAssistant.text}
+                            </p>
+                          ) : null}
+                        </div>
+                      ) : (
+                        <>
+                          {messages.map((message) => (
+                            <div
+                              key={message.id}
+                              className={
+                                message.role === "assistant"
+                                  ? "w-full px-[20px] py-[16px]"
+                                  : "flex w-full justify-end px-[20px] py-[16px]"
+                              }
+                            >
+                              {message.role === "assistant" ? (
+                                <p className="text-[16px] leading-[22px] text-[#1e1e1e] [font-family:var(--font-instrument-sans)] whitespace-pre-wrap">
+                                  {message.text}
+                                </p>
+                              ) : (
+                                <div className="max-w-[327px] rounded-[24px] bg-[#f5f5f5] px-[16px] py-[12px]">
+                                  <p className="text-[16px] leading-[22px] text-[#1e1e1e] [font-family:var(--font-instrument-sans)] whitespace-pre-wrap">
+                                    {message.text}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </>
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                <div className="border-t border-[#ededed] px-[20px] pb-[20px] pt-[12px]">
-                  <div className="flex items-end gap-[10px] rounded-[18px] border border-[#d9d9d9] bg-white px-[12px] py-[10px]">
-                    <textarea
-                      className="min-h-[56px] flex-1 resize-none bg-transparent text-[16px] text-[#1e1e1e] outline-none [font-family:var(--font-instrument-sans)]"
-                      placeholder="Ask about the light, color, or story..."
-                      disabled
-                    />
-                    <button
-                      type="button"
-                      className="flex h-[36px] items-center justify-center rounded-[12px] bg-[#111111] px-[12px] text-[14px] font-medium text-white opacity-50"
-                      disabled
-                    >
-                      Send
-                    </button>
+                  <div
+                    className={`flex w-full items-center px-[20px] ${
+                      showEmptyState ? "h-[70px]" : "h-[80px]"
+                    }`}
+                    style={{
+                      backgroundImage: showEmptyState
+                        ? "linear-gradient(181.27300566469665deg, rgba(255, 255, 255, 0) 5.5319%, rgb(255, 255, 255) 62.715%)"
+                        : "linear-gradient(180.34086741623048deg, rgba(255, 255, 255, 0) 1.4162%, rgb(255, 255, 255) 56.069%)",
+                    }}
+                  >
+                    <div className="flex h-[45px] w-full items-center justify-between rounded-[100px] bg-[#f5f5f5] pl-[16px] pr-[8px] py-[8px]">
+                      <div className="flex flex-1 items-center">
+                        <input
+                          className="w-full bg-transparent text-[16px] text-[#1e1e1e] placeholder:text-[#b3b3b3] outline-none [font-family:var(--font-instrument-sans)]"
+                          placeholder="Ask about the artwork"
+                          value={inputValue}
+                          onChange={(event) => handleInputChange(event.target.value)}
+                          onKeyDown={handleInputKeyDown}
+                          maxLength={MAX_INPUT_CHARS}
+                          disabled={isThinking}
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        className={`flex h-[32px] w-[32px] items-center justify-center rounded-full ${
+                          inputValue.trim() ? "bg-[#2c2c2c]" : "bg-[#2c2c2c]/50"
+                        }`}
+                        onClick={handleSend}
+                        aria-label="Send"
+                        disabled={!inputValue.trim() || isThinking}
+                      >
+                        <img
+                          alt=""
+                          aria-hidden="true"
+                          className="h-[20px] w-[20px]"
+                          src="/images/ui/other/icon-arrow-up.png"
+                        />
+                      </button>
+                    </div>
                   </div>
-                  <p className="mt-[8px] text-[12px] text-[#9b9b9b] [font-family:var(--font-instrument-sans)]">
-                    AI chat is coming soon.
-                  </p>
                 </div>
               </div>
             </div>,
