@@ -295,11 +295,11 @@ export function ArtworkReflectionChat({
     }
   };
 
-  const handleSend = async () => {
+  const handleSend = async (overrideText?: string) => {
     if (isThinking) {
       return;
     }
-    const trimmed = inputValue.trim();
+    const trimmed = (overrideText ?? inputValue).trim();
     if (!trimmed) {
       return;
     }
@@ -545,11 +545,17 @@ export function ArtworkReflectionChat({
                       <div className="flex min-h-full flex-col items-start">
                         {showEmptyState ? (
                           <div className="flex w-full flex-1 flex-col items-center justify-end px-[20px] py-[16px]">
-                            <div className="rounded-[24px] border border-[#d9d9d9] px-[16px] py-[12px]">
-                              <p className="text-[16px] text-[#1e1e1e] [font-family:var(--font-instrument-sans)]">
+                            <button
+                              type="button"
+                              className="rounded-[24px] border border-[#d9d9d9] px-[16px] py-[12px] text-left"
+                              onClick={() => handleSend(question)}
+                              aria-label="Send suggested prompt"
+                              disabled={isThinking}
+                            >
+                              <span className="text-[16px] text-[#1e1e1e] [font-family:var(--font-instrument-sans)]">
                                 {question}
-                              </p>
-                            </div>
+                              </span>
+                            </button>
                           </div>
                         ) : showFocus ? (
                           <div className="w-full px-[20px] py-[16px]">
