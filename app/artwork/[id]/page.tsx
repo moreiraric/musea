@@ -409,6 +409,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
                   ? {
                       name: artworkRow.artists.name,
                       imageUrl: artworkRow.artists.image_url,
+                      href: `/artist/${artworkRow.artists.slug ?? artworkRow.artists.id}`,
                     }
                   : null,
               }
@@ -430,6 +431,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
       id: artistRow.id,
       name: artistRow.name,
       imageUrl: artistRow.image_url,
+      href: artistRow.slug ? `/artist/${artistRow.slug}` : `/artist/${artistRow.id}`,
     }));
 
   const movementArtworks = (movementArtworksResult.data ?? []) as MovementArtworkRow[];
@@ -437,6 +439,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
     id: artworkRow.id,
     title: artworkRow.title,
     imageUrl: artworkRow.image_url,
+    href: `/artwork/${artworkRow.slug ?? artworkRow.id}`,
   }));
 
   return (

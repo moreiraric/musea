@@ -49,12 +49,14 @@ type MovementArtist = {
   id: string;
   name: string;
   imageUrl?: string | null;
+  href?: string | null;
 };
 
 type MovementArtwork = {
   id: string;
   title: string;
   imageUrl?: string | null;
+  href?: string | null;
 };
 
 type MovementSheetProps = {
@@ -173,17 +175,48 @@ function MovementEssaySection({
   );
 }
 
-function ArtistPortrait({ name, imageUrl }: MovementArtist) {
-  return (
-    <div className="flex w-[100px] flex-col items-center justify-center gap-[8px]">
+function ArtistPortrait({ name, imageUrl, href }: MovementArtist) {
+  const formatSurname = (fullName: string) => {
+    const parts = fullName.trim().split(/\s+/).filter(Boolean);
+    if (parts.length <= 1) {
+      return fullName;
+    }
+    const remainder = parts.slice(1).join(" ");
+    if (!remainder) {
+      return fullName;
+    }
+    const firstChar = remainder[0];
+    const next =
+      firstChar && firstChar === firstChar.toLowerCase()
+        ? `${firstChar.toUpperCase()}${remainder.slice(1)}`
+        : remainder;
+    return next;
+  };
+
+  const content = (
+    <>
       <div className="h-[150px] w-[100px] overflow-hidden rounded-full bg-[#d9d9d9]">
         {imageUrl ? (
           <img alt={name} className="h-full w-full object-cover" src={imageUrl} />
         ) : null}
       </div>
       <p className="text-[16px] text-black [font-family:var(--font-inter)]">
-        {name}
+        {formatSurname(name)}
       </p>
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link className="flex w-[100px] flex-col items-center justify-center gap-[8px]" href={href}>
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <div className="flex w-[100px] flex-col items-center justify-center gap-[8px]">
+      {content}
     </div>
   );
 }
@@ -452,7 +485,7 @@ export function MovementSheet({
                   />
                 </button>
               </div>
-              <div className="flex-1 overflow-y-auto pb-[16px] pt-0">
+              <div className="flex-1 overflow-y-auto pb-[16px] pt-[76px]">
                 <div className="flex flex-col items-center gap-[16px] pb-[32px]">
                   <div className="flex flex-col items-center gap-0">
                     <div className="flex h-[200px] w-[200px] items-center justify-center overflow-hidden">
@@ -501,7 +534,7 @@ export function MovementSheet({
 
                 <section className="flex w-full flex-col gap-[8px] overflow-hidden py-[32px]">
                   <div className="flex w-full items-center px-[20px]">
-                    <p className="text-[14px] font-semibold uppercase tracking-[-0.42px] text-[#757575] [font-family:'SF_Mono',var(--font-jetbrains-mono)]">
+                    <p className="text-[14px] font-semibold uppercase tracking-[0.02em] text-[#757575] [font-family:'SF_Mono',var(--font-jetbrains-mono)]">
                       About
                     </p>
                   </div>
@@ -518,7 +551,7 @@ export function MovementSheet({
 
                 <section className="flex w-full flex-col gap-[8px] px-[20px] py-[32px]">
                   <div className="flex items-end py-[8px]">
-                    <p className="text-[20px] font-semibold text-[#1e1e1e] [font-family:var(--font-instrument-sans)]">
+                    <p className="text-[14px] font-semibold uppercase tracking-[0.02em] text-[#757575] [font-family:'SF_Mono',var(--font-jetbrains-mono)]">
                       Artists
                     </p>
                   </div>
@@ -531,18 +564,24 @@ export function MovementSheet({
 
                 <section className="flex w-full flex-col gap-[8px] px-[20px] py-[32px]">
                   <div className="flex items-end py-[8px]">
-                    <p className="text-[20px] font-semibold text-[#1e1e1e] [font-family:var(--font-instrument-sans)]">
+                    <p className="text-[14px] font-semibold uppercase tracking-[0.02em] text-[#757575] [font-family:'SF_Mono',var(--font-jetbrains-mono)]">
                       Artworks
                     </p>
                   </div>
                   <div className="grid grid-cols-2 gap-[16px]">
                     {resolvedArtworks.map((artwork) => (
-                      <ArtworkFrameSmall
+                      <Link
                         key={artwork.id}
-                        imageUrl={getThumbnailUrl(artwork.imageUrl ?? null)}
-                        alt={artwork.title}
-                        className="w-full min-h-[168px]"
-                      />
+                        href={artwork.href ?? "#"}
+                        onClick={() => setIsOpen(false)}
+                        className={artwork.href ? "block" : "pointer-events-none"}
+                      >
+                        <ArtworkFrameSmall
+                          imageUrl={getThumbnailUrl(artwork.imageUrl ?? null)}
+                          alt={artwork.title}
+                          className="w-full min-h-[168px]"
+                        />
+                      </Link>
                     ))}
                   </div>
                 </section>
