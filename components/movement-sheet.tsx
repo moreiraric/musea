@@ -188,6 +188,34 @@ function ArtistPortrait({ name, imageUrl }: MovementArtist) {
   );
 }
 
+function getThumbnailUrl(url?: string | null) {
+  if (!url) {
+    return null;
+  }
+  try {
+    const parsed = new URL(url);
+    if (parsed.pathname.includes("/storage/v1/render/image/")) {
+      parsed.searchParams.set("width", "400");
+      parsed.searchParams.set("quality", "80");
+      parsed.searchParams.set("resize", "contain");
+      return parsed.toString();
+    }
+    if (parsed.pathname.includes("/storage/v1/object/public/")) {
+      parsed.pathname = parsed.pathname.replace(
+        "/storage/v1/object/public/",
+        "/storage/v1/render/image/public/",
+      );
+      parsed.searchParams.set("width", "400");
+      parsed.searchParams.set("quality", "80");
+      parsed.searchParams.set("resize", "contain");
+      return parsed.toString();
+    }
+    return url;
+  } catch {
+    return url;
+  }
+}
+
 export function MovementSheet({
   movement,
   trigger,
@@ -490,11 +518,11 @@ export function MovementSheet({
 
                 <section className="flex w-full flex-col gap-[8px] px-[20px] py-[32px]">
                   <div className="flex items-end py-[8px]">
-                    <p className="text-[20px] font-semibold text-black [font-family:var(--font-instrument-sans)]">
+                    <p className="text-[20px] font-semibold text-[#1e1e1e] [font-family:var(--font-instrument-sans)]">
                       Artists
                     </p>
                   </div>
-                  <div className="flex items-center gap-[16px] overflow-x-auto pb-[4px] hide-scrollbar">
+                  <div className="-mx-[20px] flex w-[calc(100%+40px)] items-center gap-[16px] overflow-x-auto pb-[4px] pl-[20px] pr-[20px] hide-scrollbar">
                     {resolvedArtists.map((artist) => (
                       <ArtistPortrait key={artist.id} {...artist} />
                     ))}
@@ -503,7 +531,7 @@ export function MovementSheet({
 
                 <section className="flex w-full flex-col gap-[8px] px-[20px] py-[32px]">
                   <div className="flex items-end py-[8px]">
-                    <p className="text-[20px] font-semibold text-black [font-family:var(--font-instrument-sans)]">
+                    <p className="text-[20px] font-semibold text-[#1e1e1e] [font-family:var(--font-instrument-sans)]">
                       Artworks
                     </p>
                   </div>
@@ -511,9 +539,9 @@ export function MovementSheet({
                     {resolvedArtworks.map((artwork) => (
                       <ArtworkFrameSmall
                         key={artwork.id}
-                        imageUrl={artwork.imageUrl ?? null}
+                        imageUrl={getThumbnailUrl(artwork.imageUrl ?? null)}
                         alt={artwork.title}
-                        className="w-full min-h-0 aspect-square"
+                        className="w-full min-h-[168px]"
                       />
                     ))}
                   </div>

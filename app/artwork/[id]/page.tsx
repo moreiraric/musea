@@ -51,6 +51,21 @@ type EssayArtworkRow = {
   artists?: { id: string; name: string; slug: string | null; image_url: string | null } | null;
 };
 
+type MovementArtistRow = {
+  id: string;
+  name: string;
+  slug: string | null;
+  image_url: string | null;
+};
+
+type MovementArtworkRow = {
+  id: string;
+  title: string;
+  image_url: string | null;
+  slug: string | null;
+  year: number | null;
+};
+
 const tagIconMap: Record<string, string> = {
   theme: "/images/ui/components_and_tags/icon-theme.png",
   emotion: "/images/ui/components_and_tags/icon-emotion.png",
@@ -156,6 +171,8 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
     tagsResult,
     movementsResult,
     essaysResult,
+    movementArtistsResult,
+    movementArtworksResult,
   ] =
     await Promise.all([
       artwork.artist_id
@@ -195,6 +212,20 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
             .order("created_at", { ascending: false })
             .limit(1)
         : Promise.resolve({ data: null, error: null }),
+      movementId
+        ? adminSupabase
+            .from("artworks")
+            .select("artists(id,name,slug,image_url)")
+            .eq("movement_id", movementId)
+        : Promise.resolve({ data: [], error: null }),
+      movementId
+        ? adminSupabase
+            .from("artworks")
+            .select("id,title,image_url,slug,year")
+            .eq("movement_id", movementId)
+            .order("year", { ascending: true, nullsFirst: false })
+            .order("title", { ascending: true })
+        : Promise.resolve({ data: [], error: null }),
     ]);
 
 
@@ -258,6 +289,14 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
 
   if (essaysResult.error) {
     throw new Error(essaysResult.error.message);
+  }
+
+  if (movementArtistsResult.error) {
+    throw new Error(movementArtistsResult.error.message);
+  }
+
+  if (movementArtworksResult.error) {
+    throw new Error(movementArtworksResult.error.message);
   }
   const artist = artistResult.data;
   const movement = movementResult.data as MovementRow | null;
@@ -378,6 +417,28 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
       })
     : undefined;
 
+  const artistRows = (movementArtistsResult.data ?? [])
+    .map((row) => row.artists)
+    .filter(Boolean) as MovementArtistRow[];
+  const uniqueArtists = new Map<string, MovementArtistRow>();
+  artistRows.forEach((artistRow) => {
+    uniqueArtists.set(artistRow.id, artistRow);
+  });
+  const movementArtistCards = Array.from(uniqueArtists.values())
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((artistRow) => ({
+      id: artistRow.id,
+      name: artistRow.name,
+      imageUrl: artistRow.image_url,
+    }));
+
+  const movementArtworks = (movementArtworksResult.data ?? []) as MovementArtworkRow[];
+  const movementArtworkCards = movementArtworks.map((artworkRow) => ({
+    id: artworkRow.id,
+    title: artworkRow.title,
+    imageUrl: artworkRow.image_url,
+  }));
+
   return (
     <div className="flex w-full flex-col overflow-x-hidden bg-white pt-[107px]">
       <ArtworkTopBar artwork={artwork} />
@@ -472,6 +533,8 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
             }}
             timeline={movementTimeline}
             essays={movementEssays}
+            artists={movementArtistCards}
+            artworks={movementArtworkCards}
             trigger={
               <section className="flex w-full flex-col pb-[32px] pt-[32px]">
                 <div className="flex w-full flex-col gap-[8px]">

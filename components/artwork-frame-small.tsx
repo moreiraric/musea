@@ -4,6 +4,8 @@ type ArtworkFrameSmallProps = {
   imageUrl?: string | null;
   alt?: string;
   image?: ReactNode;
+  loading?: "lazy" | "eager";
+  decoding?: "async" | "auto" | "sync";
   className?: string;
 };
 
@@ -11,6 +13,8 @@ export function ArtworkFrameSmall({
   imageUrl,
   alt,
   image,
+  loading = "lazy",
+  decoding = "async",
   className,
 }: ArtworkFrameSmallProps) {
   const frameClassName = [
@@ -25,7 +29,13 @@ export function ArtworkFrameSmall({
       {image ? (
         image
       ) : imageUrl ? (
-        <img alt={alt ?? ""} className="block h-auto w-full" src={imageUrl} />
+        <img
+          alt={alt ?? ""}
+          className="block h-auto w-full"
+          src={imageUrl}
+          loading={loading}
+          decoding={decoding}
+        />
       ) : (
         <div className="min-h-px min-w-px w-full flex-1 bg-[#d9d9d9]" />
       )}
