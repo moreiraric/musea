@@ -261,7 +261,10 @@ export function MovementSheet({
   }, [isOpen, resolvedTimeline]);
 
   const resolvedEssays = useMemo(() => {
-    if (essays && essays.length > 0) {
+    const hasEssayContent = essays?.some(
+      (essay) => essay.title.trim() || essay.body.trim(),
+    );
+    if (essays && hasEssayContent) {
       return essays;
     }
     return [

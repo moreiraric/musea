@@ -5,7 +5,7 @@ import { ArtworkSlides } from "@/components/artwork-slides";
 import { ArtworkTopBar } from "@/components/artwork-top-bar";
 import { ArtworkFull } from "@/components/artwork-full";
 import { MovementSheet } from "@/components/movement-sheet";
-import { createSupabaseServerClient } from "@/lib/supabase";
+import { createSupabaseServerAdminClient, createSupabaseServerClient } from "@/lib/supabase";
 
 type ArtworkPageProps = {
   params: { id: string };
@@ -28,6 +28,27 @@ type MovementRow = {
   end_year: number | null;
   summary: string | null;
   icon_url: string | null;
+};
+
+type MovementEssayRow = {
+  p1_title: string;
+  p1_text: string;
+  p1_artwork_id: string | null;
+  p2_title: string;
+  p2_text: string;
+  p2_artwork_id: string | null;
+  p3_title: string;
+  p3_text: string;
+  p3_artwork_id: string | null;
+};
+
+type EssayArtworkRow = {
+  id: string;
+  title: string;
+  year: number | null;
+  image_url: string | null;
+  slug: string | null;
+  artists?: { id: string; name: string; slug: string | null; image_url: string | null } | null;
 };
 
 const tagIconMap: Record<string, string> = {
@@ -98,6 +119,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
   const artworkParam = typeof resolvedParams?.id === "string" ? resolvedParams.id : "";
 
   const supabase = createSupabaseServerClient();
+  const adminSupabase = createSupabaseServerAdminClient();
 
   const artworkQuery = supabase
     .from("artworks")
@@ -125,7 +147,16 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
 
   const artworkId = artwork.id;
 
-  const [artistResult, movementResult, slidesResult, tagsResult, movementsResult] =
+  const movementId = artwork.movement_id;
+
+  const [
+    artistResult,
+    movementResult,
+    slidesResult,
+    tagsResult,
+    movementsResult,
+    essaysResult,
+  ] =
     await Promise.all([
       artwork.artist_id
         ? supabase
@@ -134,11 +165,11 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
             .eq("id", artwork.artist_id)
             .maybeSingle()
         : Promise.resolve({ data: null, error: null }),
-      artwork.movement_id
+      movementId
         ? supabase
             .from("movements")
             .select("id,name,slug,start_year,end_year,summary,icon_url")
-            .eq("id", artwork.movement_id)
+            .eq("id", movementId)
             .maybeSingle()
         : Promise.resolve({ data: null, error: null }),
       supabase
@@ -154,6 +185,16 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
         .from("movements")
         .select("id,name,slug,start_year,icon_url")
         .order("start_year", { ascending: true }),
+      movementId
+        ? adminSupabase
+            .from("movement_essays")
+            .select(
+              "p1_title,p1_text,p1_artwork_id,p2_title,p2_text,p2_artwork_id,p3_title,p3_text,p3_artwork_id",
+            )
+            .eq("movement_id", movementId)
+            .order("created_at", { ascending: false })
+            .limit(1)
+        : Promise.resolve({ data: null, error: null }),
     ]);
 
 
@@ -215,6 +256,9 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
     throw new Error(movementsResult.error.message);
   }
 
+  if (essaysResult.error) {
+    throw new Error(essaysResult.error.message);
+  }
   const artist = artistResult.data;
   const movement = movementResult.data as MovementRow | null;
   const movements = (movementsResult.data ?? []) as MovementRow[];
@@ -264,6 +308,75 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
     isActive: row.id === movement?.id,
     href: row.slug ? `/movement/${row.slug}` : undefined,
   }));
+
+  const essayRow = Array.isArray(essaysResult.data)
+    ? ((essaysResult.data[0] ?? null) as MovementEssayRow | null)
+    : null;
+  if (movementId && !essayRow) {
+    console.warn(`No movement_essays row found for movement_id ${movementId}`);
+  }
+  const essayArtworkIds = essayRow
+    ? ([essayRow.p1_artwork_id, essayRow.p2_artwork_id, essayRow.p3_artwork_id].filter(
+        Boolean,
+      ) as string[])
+    : [];
+  let essayArtworks: EssayArtworkRow[] = [];
+  if (essayArtworkIds.length > 0) {
+    const { data, error } = await adminSupabase
+      .from("artworks")
+      .select("id,title,year,image_url,slug,artists(id,name,slug,image_url)")
+      .in("id", essayArtworkIds);
+    if (error) {
+      throw new Error(error.message);
+    }
+    essayArtworks = (data ?? []) as EssayArtworkRow[];
+  }
+  const essayArtworkMap = new Map(essayArtworks.map((row) => [row.id, row]));
+  const movementEssays = essayRow
+    ? [
+        {
+          id: "movement-essay-1",
+          title: essayRow.p1_title,
+          body: essayRow.p1_text,
+          artworkId: essayRow.p1_artwork_id,
+        },
+        {
+          id: "movement-essay-2",
+          title: essayRow.p2_title,
+          body: essayRow.p2_text,
+          artworkId: essayRow.p2_artwork_id,
+        },
+        {
+          id: "movement-essay-3",
+          title: essayRow.p3_title,
+          body: essayRow.p3_text,
+          artworkId: essayRow.p3_artwork_id,
+        },
+      ].map((section) => {
+        const artworkRow = section.artworkId
+          ? essayArtworkMap.get(section.artworkId)
+          : undefined;
+        return {
+          id: section.id,
+          title: section.title,
+          body: section.body,
+          artwork: artworkRow
+            ? {
+                title: artworkRow.title,
+                year: artworkRow.year,
+                imageUrl: artworkRow.image_url,
+                artist: artworkRow.artists
+                  ? {
+                      name: artworkRow.artists.name,
+                      imageUrl: artworkRow.artists.image_url,
+                      href: `/artist/${artworkRow.artists.slug ?? artworkRow.artists.id}`,
+                    }
+                  : null,
+              }
+            : undefined,
+        };
+      })
+    : undefined;
 
   return (
     <div className="flex w-full flex-col overflow-x-hidden bg-white pt-[107px]">
@@ -358,6 +471,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
               iconUrl: movementImage,
             }}
             timeline={movementTimeline}
+            essays={movementEssays}
             trigger={
               <section className="flex w-full flex-col pb-[32px] pt-[32px]">
                 <div className="flex w-full flex-col gap-[8px]">
