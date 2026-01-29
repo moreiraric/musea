@@ -190,7 +190,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
 
   const movementId = artist.primary_movement_id ?? highlightArtwork?.movement_id ?? null;
 
-  const [movementResult, tagsResult] = await Promise.all([
+  const [movementResult, tagsResult, movementsResult] = await Promise.all([
     movementId
       ? supabase
           .from("movements")
@@ -207,6 +207,10 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
             artworkList.map((artwork) => artwork.id),
           )
       : Promise.resolve({ data: [], error: null }),
+    supabase
+      .from("movements")
+      .select("id,name,slug,start_year,icon_url")
+      .order("start_year", { ascending: true }),
   ]);
 
   if (movementResult.error) {
@@ -217,7 +221,20 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
     throw new Error(tagsResult.error.message);
   }
 
+  if (movementsResult.error) {
+    throw new Error(movementsResult.error.message);
+  }
+
   const movement = movementResult.data as MovementRow | null;
+  const movements = (movementsResult.data ?? []) as MovementRow[];
+  const missingStartYears = movements.filter((row) => row.start_year === null);
+  if (missingStartYears.length > 0) {
+    throw new Error(
+      `Movements missing start_year: ${missingStartYears
+        .map((row) => row.slug ?? row.id)
+        .join(", ")}`,
+    );
+  }
   const movementYears = formatMovementYears(
     movement?.start_year ?? null,
     movement?.end_year ?? null,
@@ -226,6 +243,13 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
     movement?.slug ?? null,
     movement?.icon_url ?? null,
   );
+  const movementTimeline = movements.map((row) => ({
+    id: row.id,
+    name: row.name,
+    iconUrl: resolveMovementImage(row.slug ?? null, row.icon_url ?? null),
+    isActive: row.id === movement?.id,
+    href: row.slug ? `/movement/${row.slug}` : undefined,
+  }));
 
   const tagCounts = new Map<string, { tag: TagRow; count: number }>();
   (tagsResult.data ?? []).forEach((row) => {
@@ -331,6 +355,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
               endYear: movement.end_year,
               iconUrl: movementImage,
             }}
+            timeline={movementTimeline}
             trigger={
               <section className="flex w-full flex-col">
                 <div className="flex w-full flex-col gap-[8px]">

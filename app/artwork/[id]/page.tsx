@@ -20,6 +20,16 @@ type TagRow = {
   description: string | null;
 };
 
+type MovementRow = {
+  id: string;
+  name: string;
+  slug: string | null;
+  start_year: number | null;
+  end_year: number | null;
+  summary: string | null;
+  icon_url: string | null;
+};
+
 const tagIconMap: Record<string, string> = {
   theme: "/images/ui/components_and_tags/icon-theme.png",
   emotion: "/images/ui/components_and_tags/icon-emotion.png",
@@ -115,7 +125,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
 
   const artworkId = artwork.id;
 
-  const [artistResult, movementResult, slidesResult, tagsResult] =
+  const [artistResult, movementResult, slidesResult, tagsResult, movementsResult] =
     await Promise.all([
       artwork.artist_id
         ? supabase
@@ -140,6 +150,10 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
         .from("artwork_tags")
         .select("tags(id,name,slug,category,short_description,description)")
         .eq("artwork_id", artworkId),
+      supabase
+        .from("movements")
+        .select("id,name,slug,start_year,icon_url")
+        .order("start_year", { ascending: true }),
     ]);
 
 
@@ -197,8 +211,21 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
     })
     .filter(Boolean);
 
+  if (movementsResult.error) {
+    throw new Error(movementsResult.error.message);
+  }
+
   const artist = artistResult.data;
-  const movement = movementResult.data;
+  const movement = movementResult.data as MovementRow | null;
+  const movements = (movementsResult.data ?? []) as MovementRow[];
+  const missingStartYears = movements.filter((row) => row.start_year === null);
+  if (missingStartYears.length > 0) {
+    throw new Error(
+      `Movements missing start_year: ${missingStartYears
+        .map((row) => row.slug ?? row.id)
+        .join(", ")}`,
+    );
+  }
   const movementYear = movement?.start_year ?? null;
 
   const [previousMovement, nextMovement] = await Promise.all([
@@ -230,6 +257,13 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
     movement?.start_year ?? null,
     movement?.end_year ?? null,
   );
+  const movementTimeline = movements.map((row) => ({
+    id: row.id,
+    name: row.name,
+    iconUrl: resolveMovementImage(row.slug ?? null, row.icon_url ?? null),
+    isActive: row.id === movement?.id,
+    href: row.slug ? `/movement/${row.slug}` : undefined,
+  }));
 
   return (
     <div className="flex w-full flex-col overflow-x-hidden bg-white pt-[107px]">
@@ -323,6 +357,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
               endYear: movement.end_year,
               iconUrl: movementImage,
             }}
+            timeline={movementTimeline}
             trigger={
               <section className="flex w-full flex-col pb-[32px] pt-[32px]">
                 <div className="flex w-full flex-col gap-[8px]">

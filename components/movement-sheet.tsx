@@ -7,6 +7,7 @@ import type {
 } from "react";
 import { createPortal } from "react-dom";
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { ArtworkFull } from "@/components/artwork-full";
 import { ArtworkFrameSmall } from "@/components/artwork-frame-small";
 
@@ -23,6 +24,7 @@ type MovementTimelineItem = {
   id: string;
   name: string;
   iconUrl?: string | null;
+  href?: string;
   isActive?: boolean;
 };
 
@@ -73,29 +75,26 @@ function formatMovementYears(start?: number | null, end?: number | null) {
 function MovementChip({
   name,
   iconUrl,
+  href,
   isActive = false,
 }: {
   name: string;
   iconUrl?: string | null;
+  href?: string;
   isActive?: boolean;
 }) {
   const chipClassName = isActive
     ? "flex shrink-0 items-center gap-[4px] rounded-[16px] border border-[#d9d9d9] bg-[#d9d9d9] pl-[8px] pr-[16px] py-[8px] leading-none"
     : "flex shrink-0 items-center gap-[4px] rounded-[16px] border border-[#d9d9d9] bg-white pl-[8px] pr-[16px] py-[8px] leading-none";
 
-  return (
-    <button
-      type="button"
-      className={chipClassName}
-      disabled={isActive}
-      aria-current={isActive ? "true" : "false"}
-    >
+  const content = (
+    <>
       {iconUrl ? (
         <img
           alt=""
           className="h-[27px] w-[27px] shrink-0 object-contain"
           src={iconUrl}
-          style={{ filter: "grayscale(1) brightness(0.5)" }}
+          style={isActive ? { filter: "grayscale(1) brightness(0.5)" } : undefined}
         />
       ) : null}
       <span
@@ -106,7 +105,26 @@ function MovementChip({
       >
         {name}
       </span>
-    </button>
+    </>
+  );
+
+  if (!href || isActive) {
+    return (
+      <button
+        type="button"
+        className={chipClassName}
+        disabled={isActive}
+        aria-current={isActive ? "true" : "false"}
+      >
+        {content}
+      </button>
+    );
+  }
+
+  return (
+    <Link className={chipClassName} href={href}>
+      {content}
+    </Link>
   );
 }
 
@@ -380,6 +398,7 @@ export function MovementSheet({
                         name={item.name}
                         iconUrl={item.iconUrl}
                         isActive={item.isActive}
+                        href={item.href}
                       />
                     ))}
                   </div>
