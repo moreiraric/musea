@@ -393,7 +393,8 @@ export function MovementSheet({
           >
             <div className="relative flex h-full flex-col">
               <div className="pointer-events-none absolute left-1/2 top-[8px] h-[4px] w-[48px] -translate-x-1/2 rounded-full bg-[#d9d9d9]" />
-              <div className="flex-1 overflow-y-auto pb-[24px] pt-[20px]">
+              <div className="pointer-events-none absolute left-0 right-0 top-0 h-[24px] bg-gradient-to-t from-transparent to-white/90" />
+              <div className="flex-1 overflow-y-auto pb-[24px] pt-[24px]">
                 <div className="flex flex-col items-center gap-[16px] pb-[32px]">
                   <div className="flex flex-col items-center gap-0">
                     <div className="flex h-[200px] w-[200px] items-center justify-center overflow-hidden">
@@ -440,11 +441,18 @@ export function MovementSheet({
                   </div>
                 </div>
 
-                <div className="flex w-full flex-col gap-[64px]">
-                  {resolvedEssays.map((essay) => (
-                    <MovementEssaySection key={essay.id} {...essay} />
-                  ))}
-                </div>
+                <section className="flex w-full flex-col gap-[8px] overflow-hidden py-[32px]">
+                  <div className="flex w-full items-center px-[20px]">
+                    <p className="text-[14px] font-semibold uppercase tracking-[-0.42px] text-[#757575] [font-family:'SF_Mono',var(--font-jetbrains-mono)]">
+                      About
+                    </p>
+                  </div>
+                  <div className="flex w-full flex-col gap-[64px]">
+                    {resolvedEssays.map((essay) => (
+                      <MovementEssaySection key={essay.id} {...essay} />
+                    ))}
+                  </div>
+                </section>
 
                 <section className="flex w-full flex-col gap-[8px] px-[20px] py-[32px]">
                   <div className="flex items-end py-[8px]">
