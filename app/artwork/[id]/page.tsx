@@ -378,7 +378,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
                       alt=""
                       aria-hidden="true"
                       className="h-[20px] w-[20px]"
-                      src="/images/ui/other/icon-arrow-left.svg"
+                      src="/images/ui/other/icon-caret-left.svg"
                     />
                     <span className="text-[14px] font-medium tracking-[-0.14px] text-[#757575] [font-family:var(--font-instrument-sans)]">
                       {previousMovement.data?.name ?? "Previous"}
@@ -396,7 +396,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
                       alt=""
                       aria-hidden="true"
                       className="h-[20px] w-[20px]"
-                      src="/images/ui/other/icon-arrow-right.svg"
+                      src="/images/ui/other/icon-caret-right.svg"
                     />
                   </button>
                 </div>
