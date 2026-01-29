@@ -233,33 +233,35 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
   return (
     <div className="flex w-full flex-col overflow-x-hidden bg-white pt-[107px]">
       <ArtworkTopBar artwork={artwork} />
-      <ArtworkFull
-        title={artwork.title}
-        year={artwork.year ?? ""}
-        artist={
-          artist
-            ? {
-                name: artist.name,
-                imageUrl: artist.image_url,
-                href: `/artist/${artist.slug ?? artist.id}`,
-              }
-            : null
-        }
-        image={
-          artwork.image_url ? (
-            <div className="w-full bg-[#d9d9d9]">
-              <ArtworkImageViewer
-                alt={artwork.title}
-                src={artwork.image_url}
-              />
-            </div>
-          ) : (
-            <div className="flex min-h-[232px] w-full items-center justify-center bg-[#d9d9d9] text-sm text-[#757575]">
-              Image unavailable
-            </div>
-          )
-        }
-      />
+      <div className="mt-[16px]">
+        <ArtworkFull
+          title={artwork.title}
+          year={artwork.year ?? ""}
+          artist={
+            artist
+              ? {
+                  name: artist.name,
+                  imageUrl: artist.image_url,
+                  href: `/artist/${artist.slug ?? artist.id}`,
+                }
+              : null
+          }
+          image={
+            artwork.image_url ? (
+              <div className="w-full bg-[#d9d9d9]">
+                <ArtworkImageViewer
+                  alt={artwork.title}
+                  src={artwork.image_url}
+                />
+              </div>
+            ) : (
+              <div className="flex min-h-[232px] w-full items-center justify-center bg-[#d9d9d9] text-sm text-[#757575]">
+                Image unavailable
+              </div>
+            )
+          }
+        />
+      </div>
 
       <div className="flex w-full flex-col px-[20px] pb-[16px]">
         <section className="w-full border-t border-[#d9d9d9] pb-[32px] pt-[16px]">

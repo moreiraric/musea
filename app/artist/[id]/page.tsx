@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArtistEssay } from "@/components/artist-essay";
+import { ArtworkFrameSmall } from "@/components/artwork-frame-small";
 import { createSupabaseServerClient } from "@/lib/supabase";
 
 type ArtistPageProps = {
@@ -417,20 +418,17 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
             <p className="text-[24px] font-semibold text-black [font-family:var(--font-inter)]">
               Masterpieces
             </p>
-            <div className="grid w-full grid-cols-2 gap-[16px]">
+            <div className="grid w-full grid-cols-2 justify-items-center gap-[16px]">
               {masterpieces.map((artwork) => (
                 <Link
                   key={artwork.id}
-                  className="block h-[179px] overflow-hidden rounded-none bg-[#d9d9d9]"
+                  className="flex w-full justify-center"
                   href={`/artwork/${artwork.slug ?? artwork.id}`}
                 >
-                  {artwork.image_url ? (
-                    <img
-                      alt={artwork.title}
-                      className="h-full w-full object-cover"
-                      src={artwork.image_url}
-                    />
-                  ) : null}
+                  <ArtworkFrameSmall
+                    imageUrl={artwork.image_url}
+                    alt={artwork.title}
+                  />
                 </Link>
               ))}
             </div>

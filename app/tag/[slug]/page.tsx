@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
 import { TagFilters } from "@/components/tag-filters";
+import { ArtworkFrameSmall } from "@/components/artwork-frame-small";
 import { createSupabaseServerClient } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
@@ -482,23 +483,20 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
         </section>
 
         <section className="flex w-full flex-col items-start justify-center pb-[32px]">
-          <div className="grid w-full grid-cols-2 gap-[20px]">
+          <div className="grid w-full grid-cols-2 justify-items-center gap-[16px]">
             {artworks.length > 0 ? (
               artworks.map((artwork) => (
                 <Link
                   key={artwork.id}
-                  className="block aspect-square w-full overflow-hidden bg-[#d9d9d9]"
+                  className="flex w-full justify-center"
                   href={`/artwork/${artwork.slug ?? artwork.id}`}
                 >
-                  {artwork.image_url ? (
-                    <img
-                      alt={artwork.title}
-                      className="h-full w-full object-cover"
-                      src={getGridImageUrl(artwork.image_url)}
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  ) : null}
+                  <ArtworkFrameSmall
+                    imageUrl={
+                      artwork.image_url ? getGridImageUrl(artwork.image_url) : null
+                    }
+                    alt={artwork.title}
+                  />
                 </Link>
               ))
             ) : (
