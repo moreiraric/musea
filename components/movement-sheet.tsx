@@ -36,6 +36,7 @@ type MovementEssay = {
     title: string;
     year?: number | string | null;
     imageUrl?: string | null;
+    href?: string | null;
     artist?: {
       name: string;
       imageUrl?: string | null;
@@ -128,7 +129,29 @@ function MovementChip({
   );
 }
 
-function MovementEssaySection({ title, body, artwork }: MovementEssay) {
+function MovementEssaySection({
+  title,
+  body,
+  artwork,
+  onArtworkClick,
+}: MovementEssay & { onArtworkClick?: () => void }) {
+  const artworkContent = (
+    <ArtworkFull
+      className="w-full"
+      frameClassName="w-full"
+      title={artwork?.title ?? "Artwork Title"}
+      year={artwork?.year ?? "0000"}
+      imageUrl={artwork?.imageUrl ?? null}
+      artist={
+        artwork?.artist ?? {
+          name: "Artist Name",
+          imageUrl: null,
+          href: null,
+        }
+      }
+    />
+  );
+
   return (
     <div className="flex w-full flex-col gap-[16px]">
       <div className="flex w-full flex-col gap-[4px] px-[20px]">
@@ -139,20 +162,13 @@ function MovementEssaySection({ title, body, artwork }: MovementEssay) {
           {body}
         </p>
       </div>
-      <ArtworkFull
-        className="w-full"
-        frameClassName="w-full"
-        title={artwork?.title ?? "Artwork Title"}
-        year={artwork?.year ?? "0000"}
-        imageUrl={artwork?.imageUrl ?? null}
-        artist={
-          artwork?.artist ?? {
-            name: "Artist Name",
-            imageUrl: null,
-            href: null,
-          }
-        }
-      />
+      {artwork?.href ? (
+        <Link className="w-full" href={artwork.href} onClick={onArtworkClick}>
+          {artworkContent}
+        </Link>
+      ) : (
+        artworkContent
+      )}
     </div>
   );
 }
@@ -392,9 +408,23 @@ export function MovementSheet({
             aria-label={`Movement details for ${movement.name}`}
           >
             <div className="relative flex h-full flex-col">
-              <div className="pointer-events-none absolute left-1/2 top-[8px] h-[4px] w-[48px] -translate-x-1/2 rounded-full bg-[#d9d9d9]" />
-              <div className="pointer-events-none absolute left-0 right-0 top-0 h-[24px] bg-gradient-to-t from-transparent to-white/90" />
-              <div className="flex-1 overflow-y-auto pb-[24px] pt-[24px]">
+              <div className="pointer-events-none absolute left-0 right-0 top-0 z-10 h-[76px] bg-gradient-to-t from-transparent to-white/90" />
+              <div className="absolute left-0 right-0 top-0 z-20 flex items-center px-[20px] pb-[8px] pt-[20px]">
+                <button
+                  type="button"
+                  className="flex h-[48px] w-[48px] items-center justify-center rounded-full bg-[rgba(217,217,217,0.33)] p-[8px] shadow-[0px_0px_32px_rgba(0,0,0,0.2)] backdrop-blur-[16px]"
+                  aria-label="Close movement details"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <img
+                    alt=""
+                    aria-hidden="true"
+                    className="h-[24px] w-[24px]"
+                    src="/images/ui/other/icon-x-outline.svg"
+                  />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto pb-[16px] pt-0">
                 <div className="flex flex-col items-center gap-[16px] pb-[32px]">
                   <div className="flex flex-col items-center gap-0">
                     <div className="flex h-[200px] w-[200px] items-center justify-center overflow-hidden">
@@ -449,7 +479,11 @@ export function MovementSheet({
                   </div>
                   <div className="flex w-full flex-col gap-[64px]">
                     {resolvedEssays.map((essay) => (
-                      <MovementEssaySection key={essay.id} {...essay} />
+                      <MovementEssaySection
+                        key={essay.id}
+                        {...essay}
+                        onArtworkClick={() => setIsOpen(false)}
+                      />
                     ))}
                   </div>
                 </section>

@@ -343,11 +343,11 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
                 title: artworkRow.title,
                 year: artworkRow.year,
                 imageUrl: artworkRow.image_url,
+                href: `/artwork/${artworkRow.slug ?? artworkRow.id}`,
                 artist: artworkRow.artists
                   ? {
                       name: artworkRow.artists.name,
                       imageUrl: artworkRow.artists.image_url,
-                      href: `/artist/${artworkRow.artists.slug ?? artworkRow.artists.id}`,
                     }
                   : null,
               }
