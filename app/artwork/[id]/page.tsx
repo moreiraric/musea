@@ -4,6 +4,7 @@ import { ArtworkReflectionChat } from "@/components/artwork-reflection-chat";
 import { ArtworkSlides } from "@/components/artwork-slides";
 import { ArtworkTopBar } from "@/components/artwork-top-bar";
 import { ArtworkFull } from "@/components/artwork-full";
+import { MovementSheet } from "@/components/movement-sheet";
 import { createSupabaseServerClient } from "@/lib/supabase";
 
 type ArtworkPageProps = {
@@ -313,71 +314,85 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
         ) : null}
 
         {movement ? (
-          <section className="flex w-full flex-col pb-[32px] pt-[32px]">
-            <div className="flex w-full flex-col gap-[8px]">
-              <p className="text-[14px] font-medium uppercase text-[#757575] [font-family:'SF_Mono',var(--font-jetbrains-mono)]">
-                Movement
-              </p>
-              <div className="flex w-full flex-col items-center justify-between rounded-[32px] border border-[#d9d9d9] bg-white px-[20px] py-[16px]">
-                <div className="flex w-full flex-col items-center">
-                  <div className="flex h-[132px] w-[132px] items-center justify-center overflow-hidden rounded-[28px]">
-                    {movementImage ? (
-                      <img
-                        alt={movement.name}
-                        className="h-full w-full object-cover"
-                        src={movementImage}
-                      />
-                    ) : null}
-                  </div>
-                  <div className="mt-0 flex w-full flex-col items-center gap-[4px] text-center">
-                    <p className="text-[20px] font-semibold leading-[28px] text-black [font-family:var(--font-literata)]">
-                      {movement.name}
-                    </p>
-                    {movementYears ? (
-                      <p className="text-[14px] font-medium tracking-[-0.14px] text-[#757575] [font-family:var(--font-instrument-sans)]">
-                        {movementYears}
-                      </p>
-                    ) : null}
-                    <p className="text-[16px] leading-[26px] text-[#1e1e1e] [font-family:var(--font-literata)]">
-                      {movement.summary ?? ""}
-                    </p>
+          <MovementSheet
+            movement={{
+              id: movement.id,
+              slug: movement.slug,
+              name: movement.name,
+              startYear: movement.start_year,
+              endYear: movement.end_year,
+              iconUrl: movementImage,
+            }}
+            trigger={
+              <section className="flex w-full flex-col pb-[32px] pt-[32px]">
+                <div className="flex w-full flex-col gap-[8px]">
+                  <p className="text-[14px] font-medium uppercase text-[#757575] [font-family:'SF_Mono',var(--font-jetbrains-mono)]">
+                    Movement
+                  </p>
+                  <div className="flex w-full flex-col items-center justify-between rounded-[32px] border border-[#d9d9d9] bg-white px-[20px] py-[16px]">
+                    <div className="flex w-full flex-col items-center">
+                      <div className="flex h-[132px] w-[132px] items-center justify-center overflow-hidden rounded-[28px]">
+                        {movementImage ? (
+                          <img
+                            alt={movement.name}
+                            className="h-full w-full object-cover"
+                            src={movementImage}
+                          />
+                        ) : null}
+                      </div>
+                      <div className="mt-0 flex w-full flex-col items-center gap-[4px] text-center">
+                        <p className="text-[20px] font-semibold leading-[28px] text-black [font-family:var(--font-literata)]">
+                          {movement.name}
+                        </p>
+                        {movementYears ? (
+                          <p className="text-[14px] font-medium tracking-[-0.14px] text-[#757575] [font-family:var(--font-instrument-sans)]">
+                            {movementYears}
+                          </p>
+                        ) : null}
+                        <p className="text-[16px] leading-[26px] text-[#1e1e1e] [font-family:var(--font-literata)]">
+                          {movement.summary ?? ""}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex w-full items-start justify-between pb-0 pt-[16px]">
+                      <button
+                        className="flex items-center gap-[4px] rounded-bl-[100px] rounded-br-[4px] rounded-tl-[100px] rounded-tr-[4px] py-[8px]"
+                        type="button"
+                        disabled={!previousMovement.data}
+                        data-movement-sheet-ignore
+                      >
+                        <img
+                          alt=""
+                          aria-hidden="true"
+                          className="h-[20px] w-[20px]"
+                          src="/images/ui/other/icon-caret-left.svg"
+                        />
+                        <span className="text-[14px] font-medium tracking-[-0.14px] text-[#757575] [font-family:var(--font-instrument-sans)]">
+                          {previousMovement.data?.name ?? "Previous"}
+                        </span>
+                      </button>
+                      <button
+                        className="flex items-center gap-[4px] rounded-bl-[4px] rounded-br-[100px] rounded-tl-[4px] rounded-tr-[100px] py-[8px] pl-[16px]"
+                        type="button"
+                        disabled={!nextMovement.data}
+                        data-movement-sheet-ignore
+                      >
+                        <span className="text-[14px] font-medium tracking-[-0.14px] text-[#757575] [font-family:var(--font-instrument-sans)]">
+                          {nextMovement.data?.name ?? "Next"}
+                        </span>
+                        <img
+                          alt=""
+                          aria-hidden="true"
+                          className="h-[20px] w-[20px]"
+                          src="/images/ui/other/icon-caret-right.svg"
+                        />
+                      </button>
+                    </div>
                   </div>
                 </div>
-                <div className="flex w-full items-start justify-between pb-0 pt-[16px]">
-                  <button
-                    className="flex items-center gap-[4px] rounded-bl-[100px] rounded-br-[4px] rounded-tl-[100px] rounded-tr-[4px] py-[8px]"
-                    type="button"
-                    disabled={!previousMovement.data}
-                  >
-                    <img
-                      alt=""
-                      aria-hidden="true"
-                      className="h-[20px] w-[20px]"
-                      src="/images/ui/other/icon-caret-left.svg"
-                    />
-                    <span className="text-[14px] font-medium tracking-[-0.14px] text-[#757575] [font-family:var(--font-instrument-sans)]">
-                      {previousMovement.data?.name ?? "Previous"}
-                    </span>
-                  </button>
-                  <button
-                    className="flex items-center gap-[4px] rounded-bl-[4px] rounded-br-[100px] rounded-tl-[4px] rounded-tr-[100px] py-[8px] pl-[16px]"
-                    type="button"
-                    disabled={!nextMovement.data}
-                  >
-                    <span className="text-[14px] font-medium tracking-[-0.14px] text-[#757575] [font-family:var(--font-instrument-sans)]">
-                      {nextMovement.data?.name ?? "Next"}
-                    </span>
-                    <img
-                      alt=""
-                      aria-hidden="true"
-                      className="h-[20px] w-[20px]"
-                      src="/images/ui/other/icon-caret-right.svg"
-                    />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </section>
+              </section>
+            }
+          />
         ) : null}
 
         {craftCards.length > 0 ? (

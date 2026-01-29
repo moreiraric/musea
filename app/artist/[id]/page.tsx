@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArtistEssay } from "@/components/artist-essay";
 import { ArtworkFrameSmall } from "@/components/artwork-frame-small";
+import { MovementSheet } from "@/components/movement-sheet";
 import { createSupabaseServerClient } from "@/lib/supabase";
 
 type ArtistPageProps = {
@@ -321,33 +322,45 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
         </section>
 
         {movement ? (
-          <section className="flex w-full flex-col">
-            <div className="flex w-full flex-col gap-[8px]">
-              <div className="flex w-full items-center justify-between rounded-[24px] border border-[#d9d9d9] bg-white px-[4px] py-0">
-                <div className="flex items-center gap-[6px]">
-                  <div className="flex h-[96px] w-[96px] items-center justify-center overflow-hidden rounded-[20px]">
-                    {movementImage ? (
-                      <img
-                        alt={movement.name}
-                        className="h-full w-full object-cover"
-                        src={movementImage}
-                      />
-                    ) : null}
-                  </div>
-                  <div className="flex flex-col gap-[4px]">
-                    <p className="text-[18px] font-semibold text-[#1e1e1e] [font-family:var(--font-literata)]">
-                      {movement.name}
-                    </p>
-                    {movementYears ? (
-                      <p className="text-[16px] text-[#757575] [font-family:var(--font-jetbrains-mono)]">
-                        {movementYears}
-                      </p>
-                    ) : null}
+          <MovementSheet
+            movement={{
+              id: movement.id,
+              slug: movement.slug,
+              name: movement.name,
+              startYear: movement.start_year,
+              endYear: movement.end_year,
+              iconUrl: movementImage,
+            }}
+            trigger={
+              <section className="flex w-full flex-col">
+                <div className="flex w-full flex-col gap-[8px]">
+                  <div className="flex w-full items-center justify-between rounded-[24px] border border-[#d9d9d9] bg-white px-[4px] py-0">
+                    <div className="flex items-center gap-[6px]">
+                      <div className="flex h-[96px] w-[96px] items-center justify-center overflow-hidden rounded-[20px]">
+                        {movementImage ? (
+                          <img
+                            alt={movement.name}
+                            className="h-full w-full object-cover"
+                            src={movementImage}
+                          />
+                        ) : null}
+                      </div>
+                      <div className="flex flex-col gap-[4px]">
+                        <p className="text-[18px] font-semibold text-[#1e1e1e] [font-family:var(--font-literata)]">
+                          {movement.name}
+                        </p>
+                        {movementYears ? (
+                          <p className="text-[16px] text-[#757575] [font-family:var(--font-jetbrains-mono)]">
+                            {movementYears}
+                          </p>
+                        ) : null}
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          </section>
+              </section>
+            }
+          />
         ) : null}
 
         {knownForTags.length > 0 || themeTags.length > 0 ? (
