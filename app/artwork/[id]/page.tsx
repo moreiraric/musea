@@ -3,6 +3,7 @@ import { ArtworkImageViewer } from "@/components/artwork-image-viewer";
 import { ArtworkReflectionChat } from "@/components/artwork-reflection-chat";
 import { ArtworkSlides } from "@/components/artwork-slides";
 import { ArtworkTopBar } from "@/components/artwork-top-bar";
+import { ArtworkFull } from "@/components/artwork-full";
 import { createSupabaseServerClient } from "@/lib/supabase";
 
 type ArtworkPageProps = {
@@ -232,63 +233,35 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
   return (
     <div className="flex w-full flex-col overflow-x-hidden bg-white pt-[107px]">
       <ArtworkTopBar artwork={artwork} />
-      <section className="flex w-full min-h-[393px] items-center justify-center bg-[#f5f5f5] px-[20px] py-[20px]">
-        {artwork.image_url ? (
-          <div className="w-full bg-[#d9d9d9]">
-            <ArtworkImageViewer
-              alt={artwork.title}
-              src={artwork.image_url}
-            />
-          </div>
-        ) : (
-          <div className="flex min-h-[232px] w-full items-center justify-center bg-[#d9d9d9] text-sm text-[#757575]">
-            Image unavailable
-          </div>
-        )}
-      </section>
+      <ArtworkFull
+        title={artwork.title}
+        year={artwork.year ?? ""}
+        artist={
+          artist
+            ? {
+                name: artist.name,
+                imageUrl: artist.image_url,
+                href: `/artist/${artist.slug ?? artist.id}`,
+              }
+            : null
+        }
+        image={
+          artwork.image_url ? (
+            <div className="w-full bg-[#d9d9d9]">
+              <ArtworkImageViewer
+                alt={artwork.title}
+                src={artwork.image_url}
+              />
+            </div>
+          ) : (
+            <div className="flex min-h-[232px] w-full items-center justify-center bg-[#d9d9d9] text-sm text-[#757575]">
+              Image unavailable
+            </div>
+          )
+        }
+      />
 
       <div className="flex w-full flex-col px-[20px] pb-[16px]">
-        <div className="flex w-full flex-col gap-[16px] pb-[16px] pt-[8px]">
-          <div className="flex items-center">
-            <h1 className="text-[24px] font-semibold text-black [font-family:var(--font-literata)]">
-              {artwork.title}
-            </h1>
-          </div>
-
-          <div className="flex w-full items-center justify-between">
-            {artist ? (
-              <Link
-                className="flex items-center gap-[12px] rounded-full bg-[#f5f5f5] pl-[8px] pr-[16px] py-[8px]"
-                href={`/artist/${artist.slug ?? artist.id}`}
-              >
-                <div className="h-[32px] w-[24px] overflow-hidden rounded-full bg-[#d9d9d9]">
-                  {artist.image_url ? (
-                    <img
-                      alt={artist.name}
-                      className="h-full w-full object-cover"
-                      src={artist.image_url}
-                    />
-                  ) : (
-                    <div className="h-full w-full bg-[#d9d9d9]" />
-                  )}
-                </div>
-                <p className="text-[16px] text-black tracking-[-0.16px] [font-family:var(--font-jetbrains-mono)]">
-                  {artist.name}
-                </p>
-              </Link>
-            ) : (
-              <div className="flex items-center gap-[12px] rounded-full bg-[#f5f5f5] px-[16px] py-[8px]">
-                <p className="text-[16px] text-[#757575] [font-family:var(--font-jetbrains-mono)]">
-                  Unknown artist
-                </p>
-              </div>
-            )}
-            <p className="text-[16px] text-[#757575] tracking-[-0.16px] [font-family:var(--font-jetbrains-mono)]">
-              {artwork.year ?? ""}
-            </p>
-          </div>
-        </div>
-
         <section className="w-full border-t border-[#d9d9d9] pb-[32px] pt-[16px]">
           {slides.length > 0 ? (
             <ArtworkSlides slides={slides} />
