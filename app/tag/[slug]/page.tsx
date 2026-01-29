@@ -53,6 +53,62 @@ function titleCase(value: string) {
     .join(" ");
 }
 
+function getGridImageUrl(url: string, size = 360) {
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname === "images.unsplash.com") {
+      parsed.searchParams.set("w", String(size));
+      parsed.searchParams.set("q", "80");
+      parsed.searchParams.set("auto", "format");
+      parsed.searchParams.set("fit", "crop");
+      return parsed.toString();
+    }
+    if (parsed.hostname === "upload.wikimedia.org") {
+      const isCommons = parsed.pathname.includes("/wikipedia/commons/");
+      if (isCommons) {
+        const segments = parsed.pathname.split("/").filter(Boolean);
+        const commonsIndex = segments.indexOf("commons");
+        const filename = segments[segments.length - 1];
+        if (commonsIndex !== -1 && filename) {
+          const extension = filename.split(".").pop()?.toLowerCase() ?? "";
+          const needsRaster =
+            extension === "svg" || extension === "tif" || extension === "tiff";
+          const rasterSuffix = needsRaster ? (extension === "svg" ? ".png" : ".jpg") : "";
+          const sizeSegment = `${size}px-${filename}${rasterSuffix}`;
+
+          if (segments.includes("thumb")) {
+            segments[segments.length - 1] = sizeSegment;
+            parsed.pathname = `/${segments.join("/")}`;
+            return parsed.toString();
+          }
+
+          const prefix = segments.slice(0, commonsIndex + 1).join("/");
+          const rest = segments.slice(commonsIndex + 1).join("/");
+          parsed.pathname = `/${prefix}/thumb/${rest}/${sizeSegment}`;
+          return parsed.toString();
+        }
+      }
+    }
+    if (parsed.pathname.includes("/storage/v1/render/image/")) {
+      parsed.searchParams.set("width", String(size));
+      parsed.searchParams.set("quality", "80");
+      return parsed.toString();
+    }
+    if (parsed.pathname.includes("/storage/v1/object/public/")) {
+      parsed.pathname = parsed.pathname.replace(
+        "/storage/v1/object/public/",
+        "/storage/v1/render/image/public/",
+      );
+      parsed.searchParams.set("width", String(size));
+      parsed.searchParams.set("quality", "80");
+      return parsed.toString();
+    }
+  } catch {
+    // ignore invalid URLs
+  }
+  return url;
+}
+
 const uuidRegex =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -438,7 +494,9 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
                     <img
                       alt={artwork.title}
                       className="h-full w-full object-cover"
-                      src={artwork.image_url}
+                      src={getGridImageUrl(artwork.image_url)}
+                      loading="lazy"
+                      decoding="async"
                     />
                   ) : null}
                 </Link>

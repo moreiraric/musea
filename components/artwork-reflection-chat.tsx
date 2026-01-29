@@ -815,7 +815,7 @@ export function ArtworkReflectionChat({
                         </button>
                       </div>
                       <p className="text-[12px] text-[#757575] [font-family:var(--font-instrument-sans)]">
-                        Generated from web results, but may still contain errors.
+                        Generated from web results, occasional errors may occur.
                       </p>
                     </div>
                   </div>
