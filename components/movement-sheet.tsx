@@ -6,7 +6,7 @@ import type {
   ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { ArtworkFull } from "@/components/artwork-full";
 import { ArtworkFrameSmall } from "@/components/artwork-frame-small";
@@ -182,6 +182,8 @@ export function MovementSheet({
 }: MovementSheetProps) {
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const timelineRef = useRef<HTMLDivElement | null>(null);
+  const activeChipRef = useRef<HTMLDivElement | null>(null);
   const movementYears = formatMovementYears(movement.startYear, movement.endYear);
 
   useEffect(() => {
@@ -234,6 +236,29 @@ export function MovementSheet({
       },
     ];
   }, [movement.iconUrl, movement.id, movement.name, timeline]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+    const activeChip = activeChipRef.current;
+    const timeline = timelineRef.current;
+    if (!activeChip || !timeline) {
+      return;
+    }
+    requestAnimationFrame(() => {
+      const timelineRect = timeline.getBoundingClientRect();
+      const activeRect = activeChip.getBoundingClientRect();
+      const offset =
+        activeRect.left -
+        timelineRect.left -
+        (timelineRect.width / 2 - activeRect.width / 2);
+      timeline.scrollTo({
+        left: timeline.scrollLeft + offset,
+        behavior: "smooth",
+      });
+    });
+  }, [isOpen, resolvedTimeline]);
 
   const resolvedEssays = useMemo(() => {
     if (essays && essays.length > 0) {
@@ -355,7 +380,7 @@ export function MovementSheet({
           />
 
           <div
-            className={`absolute bottom-0 left-0 right-0 flex h-[92%] flex-col rounded-t-[36px] bg-white shadow-[0_-16px_40px_rgba(0,0,0,0.18)] transition-transform duration-500 ease-out ${
+            className={`absolute bottom-0 left-0 right-0 flex h-[92%] flex-col overflow-hidden rounded-t-[36px] bg-white shadow-[0_-16px_40px_rgba(0,0,0,0.18)] transition-transform duration-500 ease-out ${
               isOpen ? "translate-y-0" : "translate-y-full"
             }`}
             style={{ willChange: "transform" }}
@@ -391,15 +416,23 @@ export function MovementSheet({
                     </div>
                   </div>
 
-                  <div className="flex w-full items-center gap-[8px] overflow-x-auto px-[20px] pb-[4px] hide-scrollbar">
+                  <div
+                    ref={timelineRef}
+                    className="flex w-full items-center gap-[8px] overflow-x-auto px-[20px] pb-[4px] hide-scrollbar"
+                  >
                     {resolvedTimeline.map((item) => (
-                      <MovementChip
+                      <div
                         key={item.id}
-                        name={item.name}
-                        iconUrl={item.iconUrl}
-                        isActive={item.isActive}
-                        href={item.href}
-                      />
+                        ref={item.isActive ? activeChipRef : undefined}
+                        className="shrink-0"
+                      >
+                        <MovementChip
+                          name={item.name}
+                          iconUrl={item.iconUrl}
+                          isActive={item.isActive}
+                          href={item.href}
+                        />
+                      </div>
                     ))}
                   </div>
                 </div>
