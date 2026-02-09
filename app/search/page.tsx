@@ -32,6 +32,7 @@ type TagRow = {
 };
 
 const categoryIconMap: Record<string, string> = {
+  movement: "/images/ui/other/icon-movement-outline.svg",
   medium: "/images/ui/components_and_tags/icon-medium.png",
   technique: "/images/ui/components_and_tags/icon-technique.png",
   representation: "/images/ui/components_and_tags/icon-representation.png",
@@ -183,8 +184,12 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       href={`/tag/${tag.slug ?? tag.id}`}
       className="flex shrink-0 items-center justify-center rounded-full border border-[#d9d9d9] px-[14px] py-[10px]"
     >
-      <span className="text-[16px] font-medium text-[#1e1e1e] [font-family:var(--font-instrument-sans)]">
-        {uppercase ? formatTagLabel(tag.name).toUpperCase() : formatTagLabel(tag.name)}
+      <span
+        className={`text-[16px] font-medium text-[#1e1e1e] [font-family:var(--font-instrument-sans)] ${
+          uppercase ? "uppercase" : "normal-case"
+        }`}
+      >
+        {formatTagLabel(tag.name)}
       </span>
     </Link>
   );
@@ -246,8 +251,16 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       ) : (
         <div className="flex w-full flex-col gap-[32px] pb-[32px]">
           <section className="flex w-full flex-col gap-[8px] overflow-hidden">
-            <div className="flex w-full items-center px-[20px]">
-              <p className="text-[14px] font-semibold uppercase tracking-[0.28px] text-[#757575] [font-family:'SF_Mono',var(--font-jetbrains-mono)]">
+            <div className="flex w-full items-center gap-[10px] px-[20px]">
+              <div className="relative h-[32px] w-[32px]">
+                <img
+                  alt=""
+                  aria-hidden="true"
+                  className="absolute inset-0 h-full w-full object-contain"
+                  src={categoryIconMap.movement}
+                />
+              </div>
+              <p className="text-[20px] font-medium text-[#757575] [font-family:var(--font-instrument-sans)]">
                 Movements
               </p>
             </div>
@@ -317,7 +330,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             { label: "Emotion", tags: emotionTags, icon: categoryIconMap.emotion },
           ].map((row) => (
             <section key={row.label} className="flex w-full flex-col gap-[8px]">
-              <div className="flex w-full items-center gap-[4px] px-[20px]">
+              <div className="flex w-full items-center gap-[8px] px-[20px]">
                 <div className="relative h-[32px] w-[32px]">
                   <img
                     alt=""
@@ -326,7 +339,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                     src={row.icon}
                   />
                 </div>
-                <p className="text-[14px] font-semibold uppercase tracking-[0.28px] text-[#757575] [font-family:'SF_Mono',var(--font-jetbrains-mono)]">
+                <p className="text-[20px] font-medium text-[#757575] [font-family:var(--font-instrument-sans)]">
                   {row.label}
                 </p>
               </div>
@@ -337,7 +350,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       ))}
 
           <section className="flex w-full flex-col gap-[8px]">
-            <div className="flex w-full items-center gap-[4px] px-[20px]">
+            <div className="flex w-full items-center gap-[8px] px-[20px]">
               <div className="relative h-[32px] w-[32px]">
                 <img
                   alt=""
@@ -346,12 +359,12 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                   src={categoryIconMap.theme}
                 />
               </div>
-              <p className="text-[14px] font-semibold uppercase tracking-[0.28px] text-[#757575] [font-family:'SF_Mono',var(--font-jetbrains-mono)]">
+              <p className="text-[20px] font-medium text-[#757575] [font-family:var(--font-instrument-sans)]">
                 Themes
               </p>
             </div>
             <div className="flex w-full flex-wrap items-start gap-[8px] overflow-x-auto overflow-y-clip px-[20px] pb-[4px] hide-scrollbar">
-              {themeTags.map(renderTag)}
+              {themeTags.map((tag) => renderTag(tag, false))}
             </div>
           </section>
         </div>
