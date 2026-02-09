@@ -498,8 +498,8 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
         </div>
       </section>
 
-      <div className="flex w-full flex-col px-[20px] pt-[53px]">
-        <section className="flex w-full flex-col gap-[8px] py-[16px]">
+      <div className="flex w-full flex-col gap-[16px] px-[20px] pt-[53px]">
+        <section className="flex w-full flex-col gap-[16px] pb-[32px] pt-[16px]">
           <p className="text-[24px] font-semibold text-black [font-family:var(--font-literata)]">
             {artist.name}
           </p>
@@ -566,13 +566,13 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
         ) : null}
 
         {knownForTags.length > 0 || themeTags.length > 0 ? (
-          <section className="flex w-full flex-col gap-[16px] py-[16px]">
+          <section className="flex w-full flex-col gap-[16px] pt-[32px]">
             {knownForTags.length > 0 ? (
               <div className="flex w-full flex-col gap-[8px]">
                 <p className="text-[14px] font-medium uppercase text-[#757575] [font-family:'SF_Mono',var(--font-jetbrains-mono)]">
                   Known For
                 </p>
-                <div className="-mx-[20px] flex w-[calc(100%+40px)] gap-[16px] overflow-x-auto pb-[4px] pl-[20px] pr-[20px] hide-scrollbar">
+                <div className="-mx-[20px] flex w-[calc(100%+40px)] gap-[8px] overflow-x-auto pb-[4px] pl-[20px] pr-[20px] hide-scrollbar">
                   {knownForTags.map((tag) => (
                     <div
                       key={tag.id}
@@ -598,7 +598,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
                 <p className="text-[14px] font-medium uppercase text-[#757575] [font-family:'SF_Mono',var(--font-jetbrains-mono)]">
                   Themes
                 </p>
-                <div className="-mx-[20px] flex w-[calc(100%+40px)] gap-[16px] overflow-x-auto pb-[4px] pl-[20px] pr-[20px] hide-scrollbar">
+                <div className="-mx-[20px] flex w-[calc(100%+40px)] gap-[8px] overflow-x-auto pb-[4px] pl-[20px] pr-[20px] hide-scrollbar">
                   {themeTags.map((tag) => (
                     <Link
                       key={tag.id}
@@ -623,14 +623,17 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
         ) : null}
 
         {artist.bio ? (
-          <section className="flex w-full border-t border-[#d9d9d9] pb-[32px] pt-[16px]">
+          <section className="flex w-full border-t border-[#d9d9d9] pt-[16px]">
             <ArtistEssay text={artist.bio} />
           </section>
         ) : null}
 
         {masterpieces.length > 0 ? (
-          <section className="flex w-full flex-col gap-[16px] pb-[32px]">
-            <p className="text-[24px] font-semibold text-black [font-family:var(--font-inter)]">
+          <section className="flex w-full flex-col gap-[16px]">
+            <p
+              className="text-[20px] font-medium text-black [font-family:var(--font-instrument-sans)]"
+              style={{ fontVariationSettings: "'wdth' 100" }}
+            >
               Masterpieces
             </p>
             <div className="grid w-full grid-cols-2 justify-items-center gap-[16px]">
