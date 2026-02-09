@@ -5,6 +5,7 @@ type ArtistChipProps = {
   imageUrl?: string | null;
   href?: string | null;
   className?: string;
+  disableLink?: boolean;
 };
 
 export function ArtistChip({
@@ -12,6 +13,7 @@ export function ArtistChip({
   imageUrl,
   href,
   className,
+  disableLink = false,
 }: ArtistChipProps) {
   const baseClassName = [
     "flex items-center gap-[12px] rounded-full bg-[#f5f5f5] pl-[8px] pr-[16px] py-[8px]",
@@ -39,7 +41,7 @@ export function ArtistChip({
     </>
   );
 
-  if (href) {
+  if (href && !disableLink) {
     return (
       <Link className={baseClassName} href={href}>
         {content}

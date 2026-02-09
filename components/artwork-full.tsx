@@ -12,6 +12,7 @@ type ArtworkFullProps = {
     imageUrl?: string | null;
     href?: string | null;
   } | null;
+  disableArtistLink?: boolean;
   className?: string;
   image?: ReactNode;
   frameClassName?: string;
@@ -23,6 +24,7 @@ export function ArtworkFull({
   imageUrl,
   imageAlt,
   artist,
+  disableArtistLink = false,
   className,
   image,
   frameClassName,
@@ -47,6 +49,7 @@ export function ArtworkFull({
               name={artist.name}
               imageUrl={artist.imageUrl}
               href={artist.href}
+              disableLink={disableArtistLink}
             />
           ) : (
             <div className="flex items-center rounded-full bg-[#f5f5f5] px-[16px] py-[8px]">

@@ -144,6 +144,7 @@ function MovementEssaySection({
       title={artwork?.title ?? "Artwork Title"}
       year={artwork?.year ?? "0000"}
       imageUrl={artwork?.imageUrl ?? null}
+      disableArtistLink={Boolean(artwork?.href)}
       artist={
         artwork?.artist ?? {
           name: "Artist Name",

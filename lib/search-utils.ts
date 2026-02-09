@@ -1,0 +1,82 @@
+export function normalizeQuery(value: string) {
+  return value.trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+function sanitizeToken(value: string) {
+  return value
+    .replace(/[^a-z0-9\s]/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export function buildSearchTokens(query: string) {
+  const normalized = normalizeQuery(query);
+  if (!normalized) {
+    return [];
+  }
+  const rawTokens = normalized.split(" ").filter(Boolean);
+  const tokens = new Set<string>();
+
+  tokens.add(normalized);
+
+  rawTokens.forEach((token) => {
+    const cleaned = sanitizeToken(token);
+    if (!cleaned) {
+      return;
+    }
+    tokens.add(cleaned);
+    if (cleaned.length >= 4) {
+      tokens.add(cleaned.slice(0, 4));
+    }
+    if (cleaned.length >= 3) {
+      tokens.add(cleaned.slice(0, 3));
+    }
+  });
+
+  return Array.from(tokens).filter(Boolean).slice(0, 12);
+}
+
+export function buildSearchFilter(tokens: string[], fields: string[]) {
+  if (tokens.length === 0 || fields.length === 0) {
+    return "";
+  }
+  const clauses: string[] = [];
+  tokens.forEach((token) => {
+    const cleaned = sanitizeToken(token);
+    if (!cleaned) {
+      return;
+    }
+    fields.forEach((field) => {
+      clauses.push(`${field}.ilike.%${cleaned}%`);
+    });
+  });
+  return clauses.join(",");
+}
+
+export function scoreRelevance(text: string, query: string, tokens?: string[]) {
+  if (!text) {
+    return 0;
+  }
+  const normalizedText = normalizeQuery(text);
+  const normalizedQuery = normalizeQuery(query);
+  if (!normalizedQuery) {
+    return 0;
+  }
+  if (normalizedText === normalizedQuery) {
+    return 120;
+  }
+  let score = 0;
+  if (normalizedText.startsWith(normalizedQuery)) {
+    score += 80;
+  }
+  if (normalizedText.includes(normalizedQuery)) {
+    score += 50;
+  }
+  const tokenList = tokens ?? buildSearchTokens(query);
+  tokenList.forEach((token) => {
+    if (token && normalizedText.includes(token)) {
+      score += 6;
+    }
+  });
+  return score;
+}

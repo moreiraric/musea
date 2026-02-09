@@ -1,18 +1,33 @@
 import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
+import { SearchResults } from "@/app/search/search-results";
 import { createSupabaseServerClient } from "@/lib/supabase";
+import { buildSearchFilter, buildSearchTokens } from "@/lib/search-utils";
 
 export const dynamic = "force-dynamic";
 
 type SearchPageProps = {
-  searchParams: { q?: string };
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-type ArtworkResult = {
+type SearchArtwork = {
   id: string;
+  slug: string | null;
   title: string;
   image_url: string | null;
-  artists?: { name: string } | null;
+  artists?: {
+    id: string;
+    slug: string | null;
+    name: string;
+    image_url: string | null;
+  } | null;
+};
+
+type SearchArtist = {
+  id: string;
+  slug: string | null;
+  name: string;
+  image_url: string | null;
 };
 
 type MovementRow = {
@@ -77,106 +92,187 @@ function chunk<T>(items: T[], size: number) {
   return result;
 }
 
+function resolveQuery(
+  searchParams: Record<string, string | string[] | undefined> | URLSearchParams,
+) {
+  if (!searchParams) {
+    return "";
+  }
+  if (typeof (searchParams as URLSearchParams).get === "function") {
+    return ((searchParams as URLSearchParams).get("q") ?? "").trim();
+  }
+  const value = (searchParams as Record<string, string | string[] | undefined>).q;
+  if (Array.isArray(value)) {
+    return (value[0] ?? "").trim();
+  }
+  return (value ?? "").trim();
+}
+
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   noStore();
-  const query = (searchParams.q ?? "").trim();
+  const resolvedParams = await searchParams;
+  const query = resolveQuery(resolvedParams);
   const supabase = createSupabaseServerClient();
 
-  let results: ArtworkResult[] = [];
-  let errorMessage = "";
+  const artworkPageSize = 8;
+  const artistPageSize = 10;
+
+  let initialArtworks: SearchArtwork[] = [];
+  let initialArtists: SearchArtist[] = [];
+  let initialHasMoreArtworks = false;
+  let initialHasMoreArtists = false;
 
   if (query) {
-    const { data, error } = await supabase
-      .from("artworks")
-      .select("id,slug,title,image_url,artists(name)")
-      .or(`title.ilike.%${query}%,artists.name.ilike.%${query}%`)
-      .order("title", { ascending: true })
-      .limit(30);
+    const tokens = buildSearchTokens(query);
+    const titleFilter = buildSearchFilter(tokens, ["title"]);
+    const artistFilter = buildSearchFilter(tokens, ["name"]);
+    let matchingArtistIds: string[] = [];
 
-    if (error) {
-      errorMessage = error.message;
-    } else {
-      results = (data ?? []) as ArtworkResult[];
+    if (artistFilter) {
+      const { data, error } = await supabase
+        .from("artists")
+        .select("id")
+        .or(artistFilter)
+        .limit(5000);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      const rows = (data ?? []) as { id: string }[];
+      matchingArtistIds = rows.map((row) => row.id);
+    }
+
+    const artworkFilter = [
+      titleFilter,
+      matchingArtistIds.length > 0
+        ? `artist_id.in.(${matchingArtistIds.join(",")})`
+        : "",
+    ]
+      .filter(Boolean)
+      .join(",");
+
+    if (artworkFilter) {
+      const { data, error } = await supabase
+        .from("artworks")
+        .select("id,slug,title,image_url,artists(id,name,slug,image_url)")
+        .or(artworkFilter)
+        .order("title", { ascending: true })
+        .range(0, artworkPageSize);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+      const rows = (data ?? []) as SearchArtwork[];
+      initialHasMoreArtworks = rows.length > artworkPageSize;
+      initialArtworks = initialHasMoreArtworks ? rows.slice(0, artworkPageSize) : rows;
+    }
+
+    if (artistFilter) {
+      const { data, error } = await supabase
+        .from("artists")
+        .select("id,slug,name,image_url")
+        .or(artistFilter)
+        .order("name", { ascending: true })
+        .range(0, artistPageSize);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+      const rows = (data ?? []) as SearchArtist[];
+      initialHasMoreArtists = rows.length > artistPageSize;
+      initialArtists = initialHasMoreArtists ? rows.slice(0, artistPageSize) : rows;
     }
   }
 
-  const [
-    movementsResult,
-    mediumTagsResult,
-    techniqueTagsResult,
-    representationTagsResult,
-    personalityTagsResult,
-    emotionTagsResult,
-    themeTagsResult,
-  ] = await Promise.all([
-    supabase
-      .from("movements")
-      .select("id,slug,name,start_year,end_year,icon_url")
-      .order("start_year", { ascending: true, nullsFirst: false })
-      .order("name", { ascending: true }),
-    supabase
-      .from("tags")
-      .select("id,slug,name,category")
-      .eq("category", "medium")
-      .order("name"),
-    supabase
-      .from("tags")
-      .select("id,slug,name,category")
-      .eq("category", "technique")
-      .order("name"),
-    supabase
-      .from("tags")
-      .select("id,slug,name,category")
-      .eq("category", "representation")
-      .order("name"),
-    supabase
-      .from("tags")
-      .select("id,slug,name,category")
-      .eq("category", "personality")
-      .order("name"),
-    supabase
-      .from("tags")
-      .select("id,slug,name,category")
-      .eq("category", "emotion")
-      .order("name"),
-    supabase
-      .from("tags")
-      .select("id,slug,name,category")
-      .eq("category", "theme")
-      .order("name"),
-  ]);
+  let movements: MovementRow[] = [];
+  let movementColumns: MovementRow[][] = [];
+  let mediumTags: TagRow[] = [];
+  let techniqueTags: TagRow[] = [];
+  let representationTags: TagRow[] = [];
+  let personalityTags: TagRow[] = [];
+  let emotionTags: TagRow[] = [];
+  let themeTags: TagRow[] = [];
 
-  if (movementsResult.error) {
-    throw new Error(movementsResult.error.message);
-  }
-  if (mediumTagsResult.error) {
-    throw new Error(mediumTagsResult.error.message);
-  }
-  if (techniqueTagsResult.error) {
-    throw new Error(techniqueTagsResult.error.message);
-  }
-  if (representationTagsResult.error) {
-    throw new Error(representationTagsResult.error.message);
-  }
-  if (personalityTagsResult.error) {
-    throw new Error(personalityTagsResult.error.message);
-  }
-  if (emotionTagsResult.error) {
-    throw new Error(emotionTagsResult.error.message);
-  }
-  if (themeTagsResult.error) {
-    throw new Error(themeTagsResult.error.message);
-  }
+  if (!query) {
+    const [
+      movementsResult,
+      mediumTagsResult,
+      techniqueTagsResult,
+      representationTagsResult,
+      personalityTagsResult,
+      emotionTagsResult,
+      themeTagsResult,
+    ] = await Promise.all([
+      supabase
+        .from("movements")
+        .select("id,slug,name,start_year,end_year,icon_url")
+        .order("start_year", { ascending: true, nullsFirst: false })
+        .order("name", { ascending: true }),
+      supabase
+        .from("tags")
+        .select("id,slug,name,category")
+        .eq("category", "medium")
+        .order("name"),
+      supabase
+        .from("tags")
+        .select("id,slug,name,category")
+        .eq("category", "technique")
+        .order("name"),
+      supabase
+        .from("tags")
+        .select("id,slug,name,category")
+        .eq("category", "representation")
+        .order("name"),
+      supabase
+        .from("tags")
+        .select("id,slug,name,category")
+        .eq("category", "personality")
+        .order("name"),
+      supabase
+        .from("tags")
+        .select("id,slug,name,category")
+        .eq("category", "emotion")
+        .order("name"),
+      supabase
+        .from("tags")
+        .select("id,slug,name,category")
+        .eq("category", "theme")
+        .order("name"),
+    ]);
 
-  const movements = (movementsResult.data ?? []) as MovementRow[];
-  const movementColumns = chunk(movements, 2);
+    if (movementsResult.error) {
+      throw new Error(movementsResult.error.message);
+    }
+    if (mediumTagsResult.error) {
+      throw new Error(mediumTagsResult.error.message);
+    }
+    if (techniqueTagsResult.error) {
+      throw new Error(techniqueTagsResult.error.message);
+    }
+    if (representationTagsResult.error) {
+      throw new Error(representationTagsResult.error.message);
+    }
+    if (personalityTagsResult.error) {
+      throw new Error(personalityTagsResult.error.message);
+    }
+    if (emotionTagsResult.error) {
+      throw new Error(emotionTagsResult.error.message);
+    }
+    if (themeTagsResult.error) {
+      throw new Error(themeTagsResult.error.message);
+    }
 
-  const mediumTags = (mediumTagsResult.data ?? []) as TagRow[];
-  const techniqueTags = (techniqueTagsResult.data ?? []) as TagRow[];
-  const representationTags = (representationTagsResult.data ?? []) as TagRow[];
-  const personalityTags = (personalityTagsResult.data ?? []) as TagRow[];
-  const emotionTags = (emotionTagsResult.data ?? []) as TagRow[];
-  const themeTags = (themeTagsResult.data ?? []) as TagRow[];
+    movements = (movementsResult.data ?? []) as MovementRow[];
+    movementColumns = chunk(movements, 2);
+
+    mediumTags = (mediumTagsResult.data ?? []) as TagRow[];
+    techniqueTags = (techniqueTagsResult.data ?? []) as TagRow[];
+    representationTags = (representationTagsResult.data ?? []) as TagRow[];
+    personalityTags = (personalityTagsResult.data ?? []) as TagRow[];
+    emotionTags = (emotionTagsResult.data ?? []) as TagRow[];
+    themeTags = (themeTagsResult.data ?? []) as TagRow[];
+  }
 
   const renderTag = (tag: TagRow, uppercase = false) => (
     <Link
@@ -198,58 +294,24 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     <div className="relative flex w-full flex-col overflow-x-hidden bg-white">
       <div className="pointer-events-none absolute left-0 top-0 h-[100px] w-full bg-gradient-to-t from-[rgba(255,255,255,0)] from-50% to-[rgba(255,255,255,0.9)]" />
 
-      <section className="flex w-full flex-col px-[20px] pb-[32px] pt-[100px]">
-        <p className="text-[24px] font-semibold text-black [font-family:var(--font-literata)]">
-          {query ? "Search results" : "Browse"}
-        </p>
-      </section>
-
       {query ? (
-        <section className="flex w-full flex-col gap-[16px] px-[20px] pb-[32px]">
-          {errorMessage ? (
-            <div className="rounded-[16px] border border-[#f0d6d6] bg-[#fff7f7] px-[16px] py-[12px] text-[14px] text-[#a64040]">
-              {errorMessage}
-            </div>
-          ) : null}
-
-          {results.length === 0 && !errorMessage ? (
-            <div className="rounded-[16px] border border-[#e6e6e6] bg-[#fafafa] px-[16px] py-[12px] text-[14px] text-[#757575]">
-              No results for “{query}”.
-            </div>
-          ) : null}
-
-          {results.length > 0 ? (
-            <div className="flex flex-col gap-[12px]">
-              {results.map((artwork) => (
-                <Link
-                  key={artwork.id}
-                  href={`/artwork/${artwork.slug ?? artwork.id}`}
-                  className="flex items-center gap-[16px] rounded-[20px] border border-[#e6e6e6] bg-white px-[16px] py-[12px] transition hover:border-[#d0d0d0]"
-                >
-                  <div className="h-[64px] w-[64px] shrink-0 overflow-hidden rounded-[14px] bg-[#f0f0f0]">
-                    {artwork.image_url ? (
-                      <img
-                        alt={artwork.title}
-                        className="h-full w-full object-cover"
-                        src={artwork.image_url}
-                      />
-                    ) : null}
-                  </div>
-                  <div className="flex flex-col gap-[4px]">
-                    <span className="text-[18px] font-semibold text-[#1e1e1e] [font-family:var(--font-literata)]">
-                      {artwork.title}
-                    </span>
-                    <span className="text-[14px] text-[#757575] [font-family:var(--font-jetbrains-mono)]">
-                      {artwork.artists?.name ?? "Unknown artist"}
-                    </span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          ) : null}
-        </section>
+        <SearchResults
+          key={query}
+          query={query}
+          initialArtworks={initialArtworks}
+          initialArtists={initialArtists}
+          initialHasMoreArtworks={initialHasMoreArtworks}
+          initialHasMoreArtists={initialHasMoreArtists}
+          artworkPageSize={artworkPageSize}
+          artistPageSize={artistPageSize}
+        />
       ) : (
         <div className="flex w-full flex-col gap-[32px] pb-[32px]">
+          <section className="flex w-full flex-col px-[20px] pb-[32px] pt-[100px]">
+            <p className="text-[24px] font-semibold text-black [font-family:var(--font-literata)]">
+              Browse
+            </p>
+          </section>
           <section className="flex w-full flex-col gap-[8px] overflow-hidden">
             <div className="flex w-full items-center gap-[10px] px-[20px]">
               <div className="relative h-[32px] w-[32px]">
@@ -344,10 +406,10 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                 </p>
               </div>
               <div className="flex w-full items-start gap-[8px] overflow-x-auto px-[20px] pb-[4px] hide-scrollbar">
-            {row.tags.map((tag) => renderTag(tag, row.label === "Personality"))}
-          </div>
-        </section>
-      ))}
+                {row.tags.map((tag) => renderTag(tag, row.label === "Personality"))}
+              </div>
+            </section>
+          ))}
 
           <section className="flex w-full flex-col gap-[8px]">
             <div className="flex w-full items-center gap-[8px] px-[20px]">

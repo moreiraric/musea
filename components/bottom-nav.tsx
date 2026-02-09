@@ -98,11 +98,12 @@ function SearchNav({ isActive }: { isActive: boolean }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const [value, setValue] = useState(searchParams.get("q") ?? "");
+  const queryParam = searchParams.get("q") ?? "";
+  const [value, setValue] = useState(queryParam);
 
   useEffect(() => {
-    setValue(searchParams.get("q") ?? "");
-  }, [searchParams]);
+    setValue(queryParam);
+  }, [queryParam]);
 
   useEffect(() => {
     if (!isActive) {
@@ -116,12 +117,17 @@ function SearchNav({ isActive }: { isActive: boolean }) {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    submitSearch();
+  };
+
+  const submitSearch = () => {
     const query = value.trim();
-    if (!query) {
-      router.push("/search");
+    const nextUrl = query ? `/search?q=${encodeURIComponent(query)}` : "/search";
+    if (query === queryParam) {
+      router.refresh();
       return;
     }
-    router.push(`/search?q=${encodeURIComponent(query)}`);
+    router.push(nextUrl);
   };
 
   const handleClose = () => {
@@ -146,9 +152,19 @@ function SearchNav({ isActive }: { isActive: boolean }) {
           ref={inputRef}
           value={value}
           onChange={(event) => setValue(event.target.value)}
-          placeholder="Search artists or artworks..."
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              submitSearch();
+            }
+          }}
+          placeholder="Search artworks or artists..."
           className="flex-1 bg-transparent text-[16px] text-[#1e1e1e] outline-none placeholder:text-[#b3b3b3] [font-family:var(--font-instrument-sans)]"
+          enterKeyHint="search"
         />
+        <button type="submit" className="sr-only" aria-hidden="true" tabIndex={-1}>
+          Search
+        </button>
       </form>
       <button
         type="button"
