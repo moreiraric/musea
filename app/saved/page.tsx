@@ -3,6 +3,7 @@
 import { createPortal } from "react-dom";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { ArtworkFrameSmall } from "@/components/artwork-frame-small";
 
 type SavedArtwork = {
   id?: string;
@@ -122,12 +123,12 @@ export default function SavedPage() {
 
       <section className="flex w-full flex-col px-[20px] pb-[32px]">
         {savedArtworks.length > 0 ? (
-          <div className="grid w-full grid-cols-2 gap-[20px]">
+          <div className="grid w-full grid-cols-2 justify-items-center gap-[16px]">
             {savedArtworks.map((artwork, index) => {
               const key = getKey(artwork, index);
               const isSelected = selectedKeys.has(key);
               return (
-                <div key={key} className="relative h-[179px]">
+                <div key={key} className="relative inline-flex">
                   {isEditing ? (
                     <div className="absolute left-[8px] top-[8px] z-10">
                       <img
@@ -148,30 +149,24 @@ export default function SavedPage() {
                   {isEditing ? (
                     <button
                       type="button"
-                      className="block h-full w-full overflow-hidden bg-[#d9d9d9]"
+                      className="inline-flex"
                       onClick={() => toggleSelection(key)}
                       aria-label={isSelected ? "Deselect artwork" : "Select artwork"}
                     >
-                      {artwork.image_url ? (
-                        <img
-                          alt={artwork.title ?? "Saved artwork"}
-                          className="h-full w-full object-cover"
-                          src={artwork.image_url}
-                        />
-                      ) : null}
+                      <ArtworkFrameSmall
+                        imageUrl={artwork.image_url}
+                        alt={artwork.title ?? "Saved artwork"}
+                      />
                     </button>
                   ) : (
                     <Link
-                      className="block h-full overflow-hidden bg-[#d9d9d9]"
+                      className="inline-flex"
                       href={`/artwork/${artwork.slug ?? artwork.id ?? ""}`}
                     >
-                      {artwork.image_url ? (
-                        <img
-                          alt={artwork.title ?? "Saved artwork"}
-                          className="h-full w-full object-cover"
-                          src={artwork.image_url}
-                        />
-                      ) : null}
+                      <ArtworkFrameSmall
+                        imageUrl={artwork.image_url}
+                        alt={artwork.title ?? "Saved artwork"}
+                      />
                     </Link>
                   )}
                 </div>
