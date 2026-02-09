@@ -14,7 +14,9 @@ type AppShellProps = {
 export function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
   const hideTopNav =
-    pathname?.startsWith("/artwork/") || pathname === "/saved";
+    pathname?.startsWith("/artwork/") ||
+    pathname === "/saved" ||
+    pathname?.startsWith("/search");
 
   return (
     <div className="min-h-dvh bg-[radial-gradient(circle_at_top,_#f2f2f2,_#e6e3dd)] p-4 text-foreground">
