@@ -18,7 +18,7 @@ export function ArtworkFrameSmall({
   className,
 }: ArtworkFrameSmallProps) {
   const frameClassName = [
-    "flex w-[168.5px] min-h-[168.5px] flex-col items-center justify-center bg-[#f5f5f5] p-[20px]",
+    "flex w-[168.5px] aspect-square flex-col items-center justify-center bg-[#f5f5f5] p-[20px]",
     className,
   ]
     .filter(Boolean)
@@ -29,13 +29,15 @@ export function ArtworkFrameSmall({
       {image ? (
         image
       ) : imageUrl ? (
-        <img
-          alt={alt ?? ""}
-          className="block h-auto w-full"
-          src={imageUrl}
-          loading={loading}
-          decoding={decoding}
-        />
+        <div className="flex w-full flex-1 items-center justify-center overflow-hidden">
+          <img
+            alt={alt ?? ""}
+            className="block h-full w-full object-contain"
+            src={imageUrl}
+            loading={loading}
+            decoding={decoding}
+          />
+        </div>
       ) : (
         <div className="min-h-px min-w-px w-full flex-1 bg-[#d9d9d9]" />
       )}

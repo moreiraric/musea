@@ -215,8 +215,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
     .select("id,title,image_url,year,movement_id,slug,created_at")
     .eq("artist_id", artist.id)
     .order("year", { ascending: true, nullsFirst: false })
-    .order("title", { ascending: true })
-    .limit(24);
+    .order("title", { ascending: true });
 
   if (artworksError) {
     throw new Error(artworksError.message);
@@ -459,9 +458,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
 
   const flagEmoji = countryToFlagEmoji(artist.country);
 
-  const masterpieces = artworkList
-    .filter((artwork) => artwork.id !== highlightArtwork?.id)
-    .slice(0, 6);
+  const masterpieces = artworkList;
 
   return (
     <div className="flex w-full flex-col overflow-x-hidden bg-white">

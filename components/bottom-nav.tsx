@@ -81,7 +81,7 @@ function DefaultNav() {
       <Link
         href="/search"
         aria-label="Search"
-        className="flex h-[67px] w-[67px] items-center justify-center rounded-full border border-white bg-white/30 px-[6px] py-[4px] shadow-[0_0_32px_rgba(0,0,0,0.1)] backdrop-blur-[16px]"
+        className="flex h-[56px] w-[56px] items-center justify-center rounded-full border border-white bg-white/30 px-[6px] py-[4px] shadow-[0_0_32px_rgba(0,0,0,0.1)] backdrop-blur-[16px]"
       >
         <img
           alt=""
@@ -173,9 +173,9 @@ export function BottomNav() {
 
   return (
     <nav className="w-full bg-gradient-to-b from-[rgba(255,255,255,0)] to-[rgba(255,255,255,0.9)] pb-[env(safe-area-inset-bottom)]">
-      <div className="relative mx-auto h-[100px] w-full max-w-[393px]">
+      <div className="relative mx-auto h-[88px] w-full max-w-[393px]">
         <div
-          className={`absolute inset-0 px-[20px] pb-[20px] pt-0 transition-all duration-300 ${
+          className={`absolute inset-0 px-[20px] pb-[16px] pt-0 transition-all duration-300 ${
             isSearch
               ? "pointer-events-none translate-y-[6px] opacity-0"
               : "translate-y-0 opacity-100"
@@ -184,7 +184,7 @@ export function BottomNav() {
           <DefaultNav />
         </div>
         <div
-          className={`absolute inset-0 px-[20px] pb-[20px] pt-0 transition-all duration-300 ${
+          className={`absolute inset-0 px-[20px] pb-[16px] pt-0 transition-all duration-300 ${
             isSearch
               ? "translate-y-0 opacity-100"
               : "pointer-events-none -translate-y-[6px] opacity-0"
