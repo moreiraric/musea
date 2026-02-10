@@ -444,7 +444,18 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
 
   return (
     <div className="flex w-full flex-col overflow-x-hidden bg-white pt-[107px]">
-      <ArtworkTopBar artwork={artwork} />
+      <ArtworkTopBar
+        artwork={artwork}
+        artist={
+          artist
+            ? {
+                id: artist.id,
+                slug: artist.slug,
+                name: artist.name,
+              }
+            : null
+        }
+      />
       <div className="mt-[16px]">
         <ArtworkFull
           title={artwork.title}

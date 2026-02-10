@@ -3,13 +3,14 @@
 import { createPortal } from "react-dom";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArtworkFrameSmall } from "@/components/artwork-frame-small";
+import { ArtworkCardSmall } from "@/components/artwork-card-small";
 
 type SavedArtwork = {
   id?: string;
   slug?: string;
   title?: string;
   image_url?: string | null;
+  artist_name?: string | null;
 };
 
 const STORAGE_KEY = "savedArtworks";
@@ -115,20 +116,27 @@ export default function SavedPage() {
           )
         : null}
 
-      <section className="flex w-full flex-col px-[20px] pb-[16px] pt-[107px]">
+      <section className="flex w-full flex-col gap-[16px] px-[20px] pb-[32px] pt-[100px]">
         <h1 className="text-[24px] font-semibold text-black [font-family:var(--font-literata)]">
           Saved Artworks
         </h1>
-      </section>
-
-      <section className="flex w-full flex-col px-[20px] pb-[32px]">
         {savedArtworks.length > 0 ? (
-          <div className="grid w-full grid-cols-2 justify-items-center gap-[16px]">
+          <div className="grid w-full grid-cols-2 justify-items-start gap-[20px]">
             {savedArtworks.map((artwork, index) => {
               const key = getKey(artwork, index);
               const isSelected = selectedKeys.has(key);
+              const artistName = artwork.artist_name ?? "Unknown artist";
+              const content = (
+                <ArtworkCardSmall
+                  title={artwork.title ?? "Artwork Title"}
+                  artistName={artistName}
+                  imageUrl={artwork.image_url}
+                  imageAlt={artwork.title ?? "Saved artwork"}
+                />
+              );
+
               return (
-                <div key={key} className="relative inline-flex">
+                <div key={key} className="relative flex w-[168.5px] flex-col items-start">
                   {isEditing ? (
                     <div className="absolute left-[8px] top-[8px] z-10">
                       <img
@@ -149,24 +157,18 @@ export default function SavedPage() {
                   {isEditing ? (
                     <button
                       type="button"
-                      className="inline-flex"
+                      className="flex w-[168.5px] flex-col items-start"
                       onClick={() => toggleSelection(key)}
                       aria-label={isSelected ? "Deselect artwork" : "Select artwork"}
                     >
-                      <ArtworkFrameSmall
-                        imageUrl={artwork.image_url}
-                        alt={artwork.title ?? "Saved artwork"}
-                      />
+                      {content}
                     </button>
                   ) : (
                     <Link
-                      className="inline-flex"
+                      className="flex w-[168.5px] flex-col items-start"
                       href={`/artwork/${artwork.slug ?? artwork.id ?? ""}`}
                     >
-                      <ArtworkFrameSmall
-                        imageUrl={artwork.image_url}
-                        alt={artwork.title ?? "Saved artwork"}
-                      />
+                      {content}
                     </Link>
                   )}
                 </div>

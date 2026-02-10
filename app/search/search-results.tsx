@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { UIEvent } from "react";
-import { ArtworkFrameSmall } from "@/components/artwork-frame-small";
+import { ArtworkCardSmall } from "@/components/artwork-card-small";
 import { buildSearchTokens, scoreRelevance } from "@/lib/search-utils";
 
 type SearchArtist = {
@@ -425,27 +425,16 @@ export function SearchResults({
               <Link
                 key={artwork.id}
                 href={`/artwork/${artwork.slug ?? artwork.id}`}
-                className="flex w-[168.5px] flex-col items-start gap-[8px]"
+                className="flex w-[168.5px] flex-col items-start"
               >
-                <ArtworkFrameSmall
-                  className="p-[10px]"
+                <ArtworkCardSmall
+                  title={artwork.title}
+                  artistName={artwork.artists?.name ?? null}
                   imageUrl={getThumbnailUrl(artwork.image_url, 360)}
-                  alt={artwork.title}
+                  imageAlt={artwork.title}
                   loading="lazy"
                   decoding="async"
                 />
-                <div className="flex w-full flex-col gap-[4px]">
-                  <p className="text-[18px] font-semibold leading-[26px] text-[#1e1e1e] [font-family:var(--font-literata)]">
-                    {artwork.title}
-                  </p>
-                  {artwork.artists ? (
-                    <div className="flex w-full items-center">
-                      <p className="text-[16px] text-[#757575] tracking-[-0.16px] [font-family:var(--font-jetbrains-mono)]">
-                        {artwork.artists.name}
-                      </p>
-                    </div>
-                  ) : null}
-                </div>
               </Link>
             ))}
           </div>

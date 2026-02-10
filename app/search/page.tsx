@@ -307,7 +307,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         />
       ) : (
         <div className="flex w-full flex-col gap-[32px] pb-[32px]">
-          <section className="flex w-full flex-col px-[20px] pb-[32px] pt-[100px]">
+          <section className="flex w-full flex-col px-[20px] pb-0 pt-[100px]">
             <p className="text-[24px] font-semibold text-black [font-family:var(--font-literata)]">
               Browse
             </p>
@@ -345,7 +345,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                     return (
                       <Link
                         key={movement.id}
-                        className="flex h-[96px] w-[330px] items-center gap-[8px] rounded-[24px] border border-[#d9d9d9] bg-white pl-[8px] pr-[16px] py-[16px]"
+                        className="flex h-[96px] w-[330px] items-center gap-[4px] rounded-[24px] border border-[#d9d9d9] bg-white pl-[8px] pr-[16px] py-[16px]"
                         href={href ?? "/movement"}
                       >
                         <div className="flex h-[64px] w-[64px] items-center justify-center overflow-hidden">

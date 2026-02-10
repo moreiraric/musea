@@ -11,11 +11,16 @@ type ArtworkTopBarProps = {
     title: string;
     image_url: string | null;
   };
+  artist?: {
+    id: string;
+    slug: string | null;
+    name: string;
+  } | null;
 };
 
 const STORAGE_KEY = "savedArtworks";
 
-export function ArtworkTopBar({ artwork }: ArtworkTopBarProps) {
+export function ArtworkTopBar({ artwork, artist }: ArtworkTopBarProps) {
   const router = useRouter();
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
   const [isSaved, setIsSaved] = useState(false);
@@ -71,6 +76,7 @@ export function ArtworkTopBar({ artwork }: ArtworkTopBarProps) {
             slug: artwork.slug,
             title: artwork.title,
             image_url: artwork.image_url ?? null,
+            artist_name: artist?.name ?? null,
           },
           ...list,
         ];
