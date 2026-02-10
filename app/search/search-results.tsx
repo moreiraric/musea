@@ -386,7 +386,7 @@ export function SearchResults({
             Artists
           </p>
           <div
-            className="-mx-[20px] flex w-[calc(100%+40px)] items-center gap-[16px] overflow-x-auto pb-[4px] pl-[20px] pr-[20px] hide-scrollbar"
+            className="flex w-full items-center gap-[16px] overflow-x-auto pb-[4px] hide-scrollbar"
             onScroll={handleArtistScroll}
           >
             {sortedArtists.map((artist) => (
@@ -428,37 +428,21 @@ export function SearchResults({
                 className="flex w-[168.5px] flex-col items-start gap-[8px]"
               >
                 <ArtworkFrameSmall
-                  className="w-full p-[10px]"
+                  className="p-[10px]"
                   imageUrl={getThumbnailUrl(artwork.image_url, 360)}
                   alt={artwork.title}
                   loading="lazy"
                   decoding="async"
                 />
                 <div className="flex w-full flex-col gap-[4px]">
-                  <p className="text-[20px] font-semibold text-[#1e1e1e] [font-family:var(--font-literata)]">
+                  <p className="text-[18px] font-semibold leading-[26px] text-[#1e1e1e] [font-family:var(--font-literata)]">
                     {artwork.title}
                   </p>
                   {artwork.artists ? (
                     <div className="flex w-full items-center">
-                      <div className="flex flex-1 items-center gap-[8px] rounded-full bg-[#f5f5f5] pl-[8px] pr-[16px] py-[8px]">
-                        <div className="h-[32px] w-[24px] overflow-hidden">
-                          {artwork.artists.image_url ? (
-                            <img
-                              alt={artwork.artists.name}
-                              className="h-full w-full object-cover"
-                              src={
-                                getThumbnailUrl(artwork.artists.image_url, 120) ??
-                                artwork.artists.image_url
-                              }
-                              loading="lazy"
-                              decoding="async"
-                            />
-                          ) : null}
-                        </div>
-                        <p className="text-[16px] text-black tracking-[-0.16px] [font-family:var(--font-jetbrains-mono)]">
-                          {artwork.artists.name}
-                        </p>
-                      </div>
+                      <p className="text-[16px] text-[#757575] tracking-[-0.16px] [font-family:var(--font-jetbrains-mono)]">
+                        {artwork.artists.name}
+                      </p>
                     </div>
                   ) : null}
                 </div>

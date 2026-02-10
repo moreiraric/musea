@@ -18,7 +18,7 @@ export function ArtworkFrameSmall({
   className,
 }: ArtworkFrameSmallProps) {
   const frameClassName = [
-    "flex w-[168.5px] aspect-square flex-col items-center justify-center bg-[#f5f5f5] p-[20px]",
+    "flex h-[168.5px] w-[168.5px] shrink-0 flex-col items-center justify-center bg-[#f5f5f5] p-[20px]",
     className,
   ]
     .filter(Boolean)
