@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { UIEvent } from "react";
 import { ArtworkCardSmall } from "@/components/artwork-card-small";
@@ -156,6 +157,7 @@ export function SearchResults({
   const [isLoadingArtists, setIsLoadingArtists] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const router = useRouter();
 
   const tokens = useMemo(() => buildSearchTokens(query), [query]);
 
@@ -358,21 +360,40 @@ export function SearchResults({
 
   if (!isRefreshing && sortedArtists.length === 0 && sortedArtworks.length === 0) {
     return (
-      <div className="flex w-full flex-col">
-        <div className="px-[20px] pt-[100px]">
-          <p className="text-[16px] font-normal leading-[22px] text-black [font-family:var(--font-instrument-sans)]">
-            We couldn’t find any artists or artworks with that name. Try another search.
-          </p>
+      <div className="relative flex w-full flex-col">
+        <div className="absolute left-0 top-0 z-20 w-full bg-gradient-to-t from-[rgba(255,255,255,0)] from-50% to-[rgba(255,255,255,0.9)] px-[20px] pb-[8px] pt-[51px]">
+          <div className="flex w-full items-center">
+            <button
+              type="button"
+              className="flex h-[48px] w-[48px] items-center justify-center rounded-full bg-[rgba(217,217,217,0.33)] shadow-[0_0_32px_rgba(0,0,0,0.2)] backdrop-blur-[16px]"
+              aria-label="Back to browse"
+              onClick={() => router.push("/search")}
+            >
+              <img
+                alt=""
+                aria-hidden="true"
+                className="h-[24px] w-[24px]"
+                src="/images/ui/nav/icon-caret-left.svg"
+              />
+            </button>
+          </div>
         </div>
-        <div className="flex w-full items-center justify-center pb-[32px] pt-[186px]">
-          <img
-            alt=""
-            aria-hidden="true"
-            className="h-[200px] w-[200px] object-contain opacity-50"
-            src="/images/illustrations/no-results.svg"
-            loading="lazy"
-            decoding="async"
-          />
+        <div className="flex w-full flex-col gap-[8px] pt-[280px]">
+          <div className="flex w-full items-center justify-center px-[20px]">
+            <img
+              alt=""
+              aria-hidden="true"
+              className="h-[200px] w-[200px] object-contain opacity-50"
+              src="/images/illustrations/no-results.svg"
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
+          <div className="px-[20px]">
+            <p className="text-[16px] font-normal leading-[22px] text-black [font-family:var(--font-instrument-sans)]">
+              We couldn’t find any artists or artworks with that name. Try another search.
+            </p>
+          </div>
         </div>
       </div>
     );

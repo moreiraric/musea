@@ -306,13 +306,14 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           artistPageSize={artistPageSize}
         />
       ) : (
-        <div className="flex w-full flex-col gap-[32px] pb-[32px]">
+        <div className="flex w-full flex-col gap-[16px] pb-[32px]">
           <section className="flex w-full flex-col px-[20px] pb-0 pt-[100px]">
             <p className="text-[24px] font-semibold text-black [font-family:var(--font-literata)]">
               Browse
             </p>
           </section>
-          <section className="flex w-full flex-col gap-[12px] overflow-hidden">
+          <div className="flex w-full flex-col gap-[32px]">
+            <section className="flex w-full flex-col gap-[12px] overflow-hidden">
             <div className="flex w-full items-center gap-[10px] px-[20px]">
               <div className="relative h-[32px] w-[32px]">
                 <img
@@ -429,6 +430,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
               {themeTags.map((tag) => renderTag(tag, false))}
             </div>
           </section>
+          </div>
         </div>
       )}
     </div>
