@@ -312,7 +312,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
               Browse
             </p>
           </section>
-          <section className="flex w-full flex-col gap-[8px] overflow-hidden">
+          <section className="flex w-full flex-col gap-[12px] overflow-hidden">
             <div className="flex w-full items-center gap-[10px] px-[20px]">
               <div className="relative h-[32px] w-[32px]">
                 <img
@@ -322,15 +322,15 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                   src={categoryIconMap.movement}
                 />
               </div>
-              <p className="text-[20px] font-medium text-[#757575] [font-family:var(--font-instrument-sans)]">
+              <p className="text-[16px] font-medium text-[#757575] [font-family:var(--font-instrument-sans)]">
                 Movements
               </p>
             </div>
-            <div className="flex w-full items-start gap-[10px] overflow-x-auto px-[20px] pb-[4px] hide-scrollbar [scroll-padding-left:20px] [scroll-snap-type:x_mandatory]">
+            <div className="flex w-full items-start gap-[10px] overflow-x-auto px-[20px] hide-scrollbar [scroll-padding-left:20px] [scroll-snap-type:x_mandatory]">
               {movementColumns.map((column, columnIndex) => (
                 <div
                   key={`movement-col-${columnIndex}`}
-                  className="flex w-[340px] max-w-[340px] shrink-0 flex-col gap-[10px] [scroll-snap-align:start]"
+                  className="flex w-[330px] max-w-[330px] shrink-0 flex-col gap-[10px] [scroll-snap-align:start]"
                 >
                   {column.map((movement) => {
                     const years = formatMovementYears(
@@ -345,10 +345,10 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                     return (
                       <Link
                         key={movement.id}
-                        className="flex w-full items-center gap-[8px] rounded-[24px] border border-[#d9d9d9] bg-white pl-[8px] pr-[16px] py-[16px]"
+                        className="flex h-[96px] w-[330px] items-center gap-[8px] rounded-[24px] border border-[#d9d9d9] bg-white pl-[8px] pr-[16px] py-[16px]"
                         href={href ?? "/movement"}
                       >
-                        <div className="flex h-[96px] w-[96px] items-center justify-center overflow-hidden rounded-[20px]">
+                        <div className="flex h-[64px] w-[64px] items-center justify-center overflow-hidden">
                           {resolveMovementImage(movement.slug, movement.icon_url) ? (
                             <img
                               alt={movement.name}
@@ -391,7 +391,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             },
             { label: "Emotion", tags: emotionTags, icon: categoryIconMap.emotion },
           ].map((row) => (
-            <section key={row.label} className="flex w-full flex-col gap-[8px]">
+            <section key={row.label} className="flex w-full flex-col gap-[12px]">
               <div className="flex w-full items-center gap-[8px] px-[20px]">
                 <div className="relative h-[32px] w-[32px]">
                   <img
@@ -401,17 +401,17 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                     src={row.icon}
                   />
                 </div>
-                <p className="text-[20px] font-medium text-[#757575] [font-family:var(--font-instrument-sans)]">
+                <p className="text-[16px] font-medium text-[#757575] [font-family:var(--font-instrument-sans)]">
                   {row.label}
                 </p>
               </div>
-              <div className="flex w-full items-start gap-[8px] overflow-x-auto px-[20px] pb-[4px] hide-scrollbar">
-                {row.tags.map((tag) => renderTag(tag, row.label === "Personality"))}
+              <div className="flex w-full items-start gap-[8px] overflow-x-auto px-[20px] hide-scrollbar">
+                {row.tags.map((tag) => renderTag(tag, false))}
               </div>
             </section>
           ))}
 
-          <section className="flex w-full flex-col gap-[8px]">
+          <section className="flex w-full flex-col gap-[12px]">
             <div className="flex w-full items-center gap-[8px] px-[20px]">
               <div className="relative h-[32px] w-[32px]">
                 <img
@@ -421,11 +421,11 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                   src={categoryIconMap.theme}
                 />
               </div>
-              <p className="text-[20px] font-medium text-[#757575] [font-family:var(--font-instrument-sans)]">
+              <p className="text-[16px] font-medium text-[#757575] [font-family:var(--font-instrument-sans)]">
                 Themes
               </p>
             </div>
-            <div className="flex w-full flex-wrap items-start gap-[8px] overflow-x-auto overflow-y-clip px-[20px] pb-[4px] hide-scrollbar">
+            <div className="flex w-full flex-wrap items-start gap-[8px] overflow-x-auto overflow-y-clip px-[20px] hide-scrollbar">
               {themeTags.map((tag) => renderTag(tag, false))}
             </div>
           </section>
