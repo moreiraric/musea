@@ -2,8 +2,7 @@
 
 import { createPortal } from "react-dom";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useTabScope } from "@/components/tab-state";
+import { useTabScope, useTabState } from "@/components/tab-state";
 
 type ArtworkTopBarProps = {
   artwork: {
@@ -22,10 +21,10 @@ type ArtworkTopBarProps = {
 const STORAGE_KEY = "savedArtworks";
 
 export function ArtworkTopBar({ artwork, artist }: ArtworkTopBarProps) {
-  const router = useRouter();
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
   const [isSaved, setIsSaved] = useState(false);
   const tabId = useTabScope();
+  const { goBackInTab } = useTabState();
 
   useEffect(() => {
     setPortalTarget(document.getElementById("app-viewport"));
@@ -118,7 +117,7 @@ export function ArtworkTopBar({ artwork, artist }: ArtworkTopBarProps) {
           <button
             className="flex h-[48px] w-[48px] items-center justify-center rounded-full bg-[rgba(217,217,217,0.33)] shadow-[0_0_32px_rgba(0,0,0,0.2)] backdrop-blur-[16px]"
             type="button"
-            onClick={() => router.back()}
+            onClick={() => goBackInTab(tabId)}
             aria-label="Go back"
           >
             <img

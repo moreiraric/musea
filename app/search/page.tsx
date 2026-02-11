@@ -2,7 +2,7 @@ import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
 import { SearchResults } from "@/app/search/search-results";
 import { MovementCardSmall } from "@/components/movement-card-small";
-import { SearchForm } from "@/components/search-form";
+import { DiscoverSearchHeader } from "@/components/discover-search-header";
 import { createSupabaseServerClient } from "@/lib/supabase";
 import { buildSearchFilter, buildSearchTokens } from "@/lib/search-utils";
 
@@ -110,10 +110,27 @@ function resolveQuery(
   return (value ?? "").trim();
 }
 
+function resolveSearchOpen(
+  searchParams: Record<string, string | string[] | undefined> | URLSearchParams,
+) {
+  if (!searchParams) {
+    return false;
+  }
+  if (typeof (searchParams as URLSearchParams).get === "function") {
+    return (searchParams as URLSearchParams).get("search") === "1";
+  }
+  const value = (searchParams as Record<string, string | string[] | undefined>).search;
+  if (Array.isArray(value)) {
+    return value[0] === "1";
+  }
+  return value === "1";
+}
+
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   noStore();
   const resolvedParams = await searchParams;
   const query = resolveQuery(resolvedParams);
+  const isSearchOpen = resolveSearchOpen(resolvedParams) || Boolean(query);
   const supabase = createSupabaseServerClient();
 
   const artworkPageSize = 8;
@@ -293,35 +310,35 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   );
 
   return (
-    <div className="relative flex w-full flex-col overflow-x-hidden bg-white">
-      <div className="pointer-events-none absolute left-0 top-0 h-[100px] w-full bg-gradient-to-t from-[rgba(255,255,255,0)] from-50% to-[rgba(255,255,255,0.9)]" />
+    <div className="relative flex w-full flex-col overflow-x-hidden bg-white pt-[100px]">
+      <DiscoverSearchHeader query={query} isSearchOpen={isSearchOpen} />
 
-      <section className="flex w-full flex-col gap-[16px] px-[20px] pt-[100px]">
-        <SearchForm initialQuery={query} />
-        {!query ? (
-          <p className="text-[24px] font-semibold text-black [font-family:var(--font-literata)]">
-            Browse
-          </p>
-        ) : null}
-      </section>
-
-      {query ? (
-        <SearchResults
-          key={query}
-          query={query}
-          initialArtworks={initialArtworks}
-          initialArtists={initialArtists}
-          initialHasMoreArtworks={initialHasMoreArtworks}
-          initialHasMoreArtists={initialHasMoreArtists}
-          artworkPageSize={artworkPageSize}
-          artistPageSize={artistPageSize}
-        />
+      {isSearchOpen ? (
+        query ? (
+          <SearchResults
+            key={query}
+            query={query}
+            initialArtworks={initialArtworks}
+            initialArtists={initialArtists}
+            initialHasMoreArtworks={initialHasMoreArtworks}
+            initialHasMoreArtists={initialHasMoreArtists}
+            artworkPageSize={artworkPageSize}
+            artistPageSize={artistPageSize}
+          />
+        ) : (
+          <div className="flex w-full flex-col px-[20px] pb-[32px]" />
+        )
       ) : (
-        <div className="flex w-full flex-col gap-[16px] pb-[32px]">
+        <div className="flex w-full flex-col pb-[32px]">
+          <section className="px-[20px] py-[16px]">
+            <p className="text-[20px] font-medium text-black [font-family:var(--font-instrument-sans)]">
+              Discover
+            </p>
+          </section>
           <div className="flex w-full flex-col gap-[32px]">
             <section className="flex w-full flex-col gap-[12px] overflow-hidden">
-            <div className="flex w-full items-center gap-[10px] px-[20px]">
-              <div className="relative h-[32px] w-[32px]">
+            <div className="flex w-full items-center gap-[8px] px-[20px]">
+              <div className="relative h-[24px] w-[24px]">
                 <img
                   alt=""
                   aria-hidden="true"
@@ -329,7 +346,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                   src={categoryIconMap.movement}
                 />
               </div>
-              <p className="text-[16px] font-medium text-[#757575] [font-family:var(--font-instrument-sans)]">
+              <p className="text-[14px] font-medium text-[#757575] [font-family:var(--font-instrument-sans)]">
                 Movements
               </p>
             </div>
@@ -384,9 +401,9 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             },
             { label: "Emotion", tags: emotionTags, icon: categoryIconMap.emotion },
           ].map((row) => (
-            <section key={row.label} className="flex w-full flex-col gap-[12px]">
+            <section key={row.label} className="flex w-full flex-col gap-[10px]">
               <div className="flex w-full items-center gap-[8px] px-[20px]">
-                <div className="relative h-[32px] w-[32px]">
+                <div className="relative h-[24px] w-[24px]">
                   <img
                     alt=""
                     aria-hidden="true"
@@ -394,7 +411,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                     src={row.icon}
                   />
                 </div>
-                <p className="text-[16px] font-medium text-[#757575] [font-family:var(--font-instrument-sans)]">
+                <p className="text-[14px] font-medium text-[#757575] [font-family:var(--font-instrument-sans)]">
                   {row.label}
                 </p>
               </div>
@@ -404,9 +421,9 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             </section>
           ))}
 
-          <section className="flex w-full flex-col gap-[12px]">
+          <section className="flex w-full flex-col gap-[10px]">
             <div className="flex w-full items-center gap-[8px] px-[20px]">
-              <div className="relative h-[32px] w-[32px]">
+              <div className="relative h-[24px] w-[24px]">
                 <img
                   alt=""
                   aria-hidden="true"
@@ -414,7 +431,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                   src={categoryIconMap.theme}
                 />
               </div>
-              <p className="text-[16px] font-medium text-[#757575] [font-family:var(--font-instrument-sans)]">
+              <p className="text-[14px] font-medium text-[#757575] [font-family:var(--font-instrument-sans)]">
                 Themes
               </p>
             </div>

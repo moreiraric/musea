@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArtistEssay } from "@/components/artist-essay";
-import { ArtworkFrameSmall } from "@/components/artwork-frame-small";
+import { ArtistTopBar } from "@/components/artist-top-bar";
 import { ArtworkCardSmall } from "@/components/artwork-card-small";
 import { MovementSheet } from "@/components/movement-sheet";
 import { MovementCardSmall } from "@/components/movement-card-small";
@@ -473,10 +473,15 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
   const bannerHasImage = Boolean(highlightArtwork?.image_url);
 
   return (
-    <div className="relative flex w-full flex-col overflow-x-hidden bg-white">
-      <section className="relative w-full pb-[70px]">
+    <div className="relative flex w-full flex-col overflow-x-hidden bg-white pt-[116px]">
+      <ArtistTopBar
+        artistId={artist.id}
+        artistSlug={artist.slug}
+        artistName={artist.name}
+      />
+      <section className="relative w-full pb-[75px]">
         <div
-          className={`flex h-[193px] w-full items-center justify-center overflow-hidden bg-[#f5f5f5] ${
+          className={`flex h-[175px] w-full items-center justify-center overflow-hidden bg-[#f5f5f5] ${
             bannerHasImage ? "" : "px-[32px] py-[10px]"
           }`}
         >
@@ -487,7 +492,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
             >
               <img
                 alt={highlightArtwork.title}
-                className="h-full w-full object-fill object-center"
+                className="h-full w-full object-cover object-center"
                 src={highlightArtwork.image_url}
               />
             </Link>
@@ -497,7 +502,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
             </p>
           )}
         </div>
-        <div className="absolute left-[17px] top-[105px] h-[150px] w-[100px] overflow-hidden rounded-[1000px] border-2 border-white bg-[#d9d9d9]">
+        <div className="absolute left-[18px] top-[100px] h-[150px] w-[100px] overflow-hidden rounded-[1000px] border-2 border-white bg-[#d9d9d9]">
           {artist.image_url ? (
             <img
               alt={artist.name}
@@ -509,31 +514,31 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
       </section>
 
       <div className="flex w-full flex-col gap-[16px] px-[20px]">
-        <section className="flex w-full flex-col gap-[12px] pb-[32px] pt-0">
+        <section className="flex w-full flex-col gap-[8px] pb-[32px] pt-[8px]">
           <p className="text-[24px] font-semibold text-black [font-family:var(--font-literata)]">
             {artist.name}
           </p>
           <div className="flex w-full items-center justify-between text-[#757575]">
             {hasLifePeriodRange ? (
-              <p className="flex items-center gap-[4px] text-[18px] font-normal tracking-[-0.16px] [font-family:var(--font-fira-mono)]">
+              <p className="flex items-center gap-[4px] text-[18px] font-normal tracking-[-0.18px] [font-family:var(--font-fira-mono)]">
                 <span>{lifePeriodParts[0]}</span>
                 <span>-</span>
                 <span>{lifePeriodParts[1]}</span>
               </p>
             ) : (
-              <p className="text-[18px] font-normal tracking-[-0.16px] [font-family:var(--font-fira-mono)]">
+              <p className="text-[18px] font-normal tracking-[-0.18px] [font-family:var(--font-fira-mono)]">
                 {lifePeriod}
               </p>
             )}
             {artist.country ? (
               <div className="flex min-w-[151px] items-center justify-end gap-[8px]">
                 {flagEmoji ? (
-                  <span className="text-[24px] [font-family:var(--font-inter)]">
+                  <span className="text-[24px] font-medium [font-family:var(--font-inter)]">
                     {flagEmoji}
                   </span>
                 ) : null}
                 <span
-                  className="text-[18px] font-normal [font-family:var(--font-fira-mono)]"
+                  className="text-[18px] font-normal tracking-[-0.18px] [font-family:var(--font-fira-mono)]"
                 >
                   {artist.country}
                 </span>
@@ -542,7 +547,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
           </div>
           {artist.quote ? (
             <p
-              className="text-[18px] font-medium text-[#757575] [font-family:var(--font-instrument-sans)]"
+              className="text-[18px] font-normal text-[#757575] [font-family:var(--font-instrument-sans)]"
               style={{ fontVariationSettings: "'wdth' 100" }}
             >
               “{artist.quote}”
@@ -579,7 +584,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
           <section className="flex w-full flex-col gap-[16px] pt-[32px]">
             {knownForTags.length > 0 ? (
               <div className="flex w-full flex-col gap-[8px]">
-                <p className="text-[14px] font-semibold uppercase tracking-[0.28px] text-[#757575] [font-family:var(--font-fira-mono)]">
+                <p className="text-[14px] font-medium uppercase tracking-[0.28px] text-[#757575] [font-family:var(--font-fira-mono)]">
                   Known For
                 </p>
                 <div className="flex w-full gap-[8px] overflow-x-auto pb-[4px] hide-scrollbar">
@@ -608,7 +613,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
 
             {themeTags.length > 0 ? (
               <div className="flex w-full flex-col gap-[8px]">
-                <p className="text-[14px] font-semibold uppercase tracking-[0.28px] text-[#757575] [font-family:var(--font-fira-mono)]">
+                <p className="text-[14px] font-medium uppercase tracking-[0.28px] text-[#757575] [font-family:var(--font-fira-mono)]">
                   Themes
                 </p>
                 <div className="flex w-full gap-[8px] overflow-x-auto pb-[4px] hide-scrollbar">
@@ -647,7 +652,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
         {masterpieces.length > 0 ? (
           <section className="flex w-full flex-col gap-[8px] pt-[16px]">
             <p
-              className="text-[20px] font-semibold text-[#1e1e1e] [font-family:var(--font-instrument-sans)]"
+              className="text-[20px] font-medium text-[#1e1e1e] [font-family:var(--font-instrument-sans)]"
               style={{ fontVariationSettings: "'wdth' 100" }}
             >
               Masterpieces

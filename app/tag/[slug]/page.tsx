@@ -439,7 +439,7 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
 
   return (
     <div className="flex w-full flex-col overflow-x-hidden bg-white pt-[100px]">
-      <TagTopBar backHref="/search" />
+      <TagTopBar backHref="/discover" />
       <section className="flex w-full flex-col">
         <div className="flex h-[200px] w-full items-center justify-center bg-[#f5f5f5]">
           {bannerImageUrl ? (

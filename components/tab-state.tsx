@@ -1,6 +1,15 @@
 "use client";
 
-import { type ReactNode, createContext, useContext, useEffect, useMemo, useState } from "react";
+import {
+  type ReactNode,
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
 
 export type TabId = "home" | "discover" | "saved";
@@ -10,6 +19,8 @@ type TabState = {
   setActiveTab: (tab: TabId) => void;
   tabPaths: Record<TabId, string>;
   setTabPath: (tab: TabId, path: string) => void;
+  recordTabPath: (tab: TabId, path: string) => void;
+  goBackInTab: (tab: TabId, fallbackHref?: string) => void;
 };
 
 const ACTIVE_TAB_KEY = "art-app-active-tab";
@@ -17,8 +28,19 @@ const TAB_PATHS_KEY = "art-app-tab-paths";
 
 const DEFAULT_PATHS: Record<TabId, string> = {
   home: "/",
-  discover: "/search",
+  discover: "/discover",
   saved: "/saved",
+};
+
+type TabHistoryState = {
+  entries: string[];
+  index: number;
+};
+
+const DEFAULT_HISTORY: Record<TabId, TabHistoryState> = {
+  home: { entries: [DEFAULT_PATHS.home], index: 0 },
+  discover: { entries: [DEFAULT_PATHS.discover], index: 0 },
+  saved: { entries: [DEFAULT_PATHS.saved], index: 0 },
 };
 
 const TabContext = createContext<TabState | null>(null);
@@ -29,6 +51,7 @@ function inferTabFromPath(pathname?: string | null) {
     return "saved";
   }
   if (
+    pathname?.startsWith("/discover") ||
     pathname?.startsWith("/search") ||
     pathname?.startsWith("/tag") ||
     pathname?.startsWith("/movement") ||
@@ -40,10 +63,18 @@ function inferTabFromPath(pathname?: string | null) {
 }
 
 export function TabProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
   const pathname = usePathname();
   const inferredTab = useMemo(() => inferTabFromPath(pathname), [pathname]);
   const [activeTab, setActiveTab] = useState<TabId>(inferredTab);
   const [tabPaths, setTabPaths] = useState<Record<TabId, string>>(DEFAULT_PATHS);
+  const [tabHistory, setTabHistory] =
+    useState<Record<TabId, TabHistoryState>>(DEFAULT_HISTORY);
+  const skipNextHistory = useRef<Record<TabId, boolean>>({
+    home: false,
+    discover: false,
+    saved: false,
+  });
 
   useEffect(() => {
     try {
@@ -56,6 +87,7 @@ export function TabProvider({ children }: { children: ReactNode }) {
       if (storedTab === "home" || storedTab === "discover" || storedTab === "saved") {
         const isRootPath =
           pathname === "/" ||
+          pathname?.startsWith("/discover") ||
           pathname?.startsWith("/search") ||
           pathname?.startsWith("/saved");
         setActiveTab(isRootPath ? inferredTab : storedTab);
@@ -103,8 +135,48 @@ export function TabProvider({ children }: { children: ReactNode }) {
       setTabPath: (tab: TabId, path: string) => {
         setTabPaths((prev) => (prev[tab] === path ? prev : { ...prev, [tab]: path }));
       },
+      recordTabPath: (tab: TabId, path: string) => {
+        setTabHistory((prev) => {
+          const state = prev[tab] ?? DEFAULT_HISTORY[tab];
+          if (skipNextHistory.current[tab]) {
+            skipNextHistory.current[tab] = false;
+            return prev;
+          }
+          const current = state.entries[state.index];
+          if (current === path) {
+            return prev;
+          }
+          const existingIndex = state.entries.indexOf(path);
+          if (existingIndex !== -1) {
+            return { ...prev, [tab]: { ...state, index: existingIndex } };
+          }
+          const nextEntries = [...state.entries.slice(0, state.index + 1), path];
+          return { ...prev, [tab]: { entries: nextEntries, index: nextEntries.length - 1 } };
+        });
+      },
+      goBackInTab: (tab: TabId, fallbackHref?: string) => {
+        const state = tabHistory[tab] ?? DEFAULT_HISTORY[tab];
+        const fallback = fallbackHref ?? DEFAULT_PATHS[tab];
+        if (state.index <= 0) {
+          skipNextHistory.current[tab] = true;
+          setTabHistory((prev) => ({
+            ...prev,
+            [tab]: { entries: [fallback], index: 0 },
+          }));
+          router.replace(fallback);
+          return;
+        }
+        const nextIndex = state.index - 1;
+        const target = state.entries[nextIndex] ?? fallback;
+        skipNextHistory.current[tab] = true;
+        setTabHistory((prev) => ({
+          ...prev,
+          [tab]: { ...state, index: nextIndex },
+        }));
+        router.replace(target);
+      },
     }),
-    [activeTab, tabPaths],
+    [activeTab, tabHistory, tabPaths, router],
   );
 
   return <TabContext.Provider value={value}>{children}</TabContext.Provider>;

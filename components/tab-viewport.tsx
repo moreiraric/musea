@@ -15,7 +15,7 @@ const TABS: TabId[] = ["home", "discover", "saved"];
 export function TabViewport({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { activeTab, setTabPath } = useTabState();
+  const { activeTab, recordTabPath, setTabPath } = useTabState();
   const fullPath = useMemo(() => {
     const query = searchParams?.toString();
     return query ? `${pathname}?${query}` : pathname;
@@ -37,6 +37,7 @@ export function TabViewport({ children }: { children: ReactNode }) {
     }
 
     setTabPath(activeTab, fullPath);
+    recordTabPath(activeTab, fullPath);
     setCache((prev) => {
       const current = prev[activeTab];
       if (!current || current.path !== fullPath) {

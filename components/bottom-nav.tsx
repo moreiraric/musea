@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { TabId, useTabState } from "@/components/tab-state";
 
 const navItems: Array<{
@@ -21,7 +21,7 @@ const navItems: Array<{
   {
     id: "discover",
     label: "Discover",
-    href: "/search",
+    href: "/discover",
     icon: "/images/ui/nav/icon-discover-outline.svg",
     iconActive: "/images/ui/nav/icon-discover-filled.svg",
   },
@@ -36,9 +36,14 @@ const navItems: Array<{
 
 function DefaultNav() {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { activeTab, setActiveTab, tabPaths } = useTabState();
   const activeIndex = navItems.findIndex((item) => item.id === activeTab);
   const clampedIndex = activeIndex === -1 ? 0 : activeIndex;
+  const fullPath = searchParams?.toString()
+    ? `${pathname}?${searchParams.toString()}`
+    : pathname;
 
   return (
     <div className="flex h-full items-end gap-[10px]">
@@ -65,18 +70,18 @@ function DefaultNav() {
               href={item.href}
               aria-current={isActive ? "page" : undefined}
               onClick={(event) => {
-                const isDiscover = item.id === "discover";
-                const isHome = item.id === "home";
-                if (item.id === activeTab && !isDiscover && !isHome) {
+                const isActiveTab = item.id === activeTab;
+                if (isActiveTab) {
                   event.preventDefault();
+                  if (fullPath !== item.href) {
+                    router.replace(item.href);
+                  }
                   return;
                 }
                 setActiveTab(item.id);
-                const target = isDiscover || isHome ? item.href : tabPaths[item.id] ?? item.href;
-                if (target !== item.href) {
-                  event.preventDefault();
-                  router.push(target);
-                }
+                const target = tabPaths[item.id] ?? item.href;
+                event.preventDefault();
+                router.replace(target);
               }}
               className={[
                 "relative z-10 flex flex-1 flex-col items-center justify-center gap-[4px] rounded-full px-[16px] py-[8px] text-center text-[12px] font-semibold tracking-[0.36px] transition",

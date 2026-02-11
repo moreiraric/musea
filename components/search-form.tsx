@@ -15,10 +15,10 @@ export function SearchForm({ initialQuery }: SearchFormProps) {
     event.preventDefault();
     const query = value.trim();
     if (!query) {
-      router.push("/search");
+      router.push("/discover");
       return;
     }
-    router.push(`/search?q=${encodeURIComponent(query)}`);
+    router.push(`/discover?q=${encodeURIComponent(query)}`);
   };
 
   return (

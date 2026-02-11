@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { UIEvent } from "react";
 import { ArtworkCardSmall } from "@/components/artwork-card-small";
@@ -106,19 +105,14 @@ function getThumbnailUrl(url?: string | null, size = 360) {
 
 function formatSurname(fullName: string) {
   const parts = fullName.trim().split(/\s+/).filter(Boolean);
-  if (parts.length <= 1) {
+  if (parts.length === 0) {
     return fullName;
   }
-  const remainder = parts.slice(1).join(" ");
-  if (!remainder) {
-    return fullName;
-  }
-  const firstChar = remainder[0];
-  const next =
-    firstChar && firstChar === firstChar.toLowerCase()
-      ? `${firstChar.toUpperCase()}${remainder.slice(1)}`
-      : remainder;
-  return next;
+  const last = parts[parts.length - 1] ?? fullName;
+  const firstChar = last[0];
+  return firstChar && firstChar === firstChar.toLowerCase()
+    ? `${firstChar.toUpperCase()}${last.slice(1)}`
+    : last;
 }
 
 function getArtistKey(artist: SearchArtist) {
@@ -157,7 +151,6 @@ export function SearchResults({
   const [isLoadingArtists, setIsLoadingArtists] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
-  const router = useRouter();
 
   const tokens = useMemo(() => buildSearchTokens(query), [query]);
 
@@ -360,63 +353,40 @@ export function SearchResults({
 
   if (!isRefreshing && sortedArtists.length === 0 && sortedArtworks.length === 0) {
     return (
-      <div className="relative flex w-full flex-col">
-        <div className="absolute left-0 top-0 z-20 w-full bg-gradient-to-t from-[rgba(255,255,255,0)] from-50% to-[rgba(255,255,255,0.9)] px-[20px] pb-[8px] pt-[51px]">
-          <div className="flex w-full items-center">
-            <button
-              type="button"
-              className="flex h-[48px] w-[48px] items-center justify-center rounded-full bg-[rgba(217,217,217,0.33)] shadow-[0_0_32px_rgba(0,0,0,0.2)] backdrop-blur-[16px]"
-              aria-label="Back to browse"
-              onClick={() => router.push("/search")}
-            >
-              <img
-                alt=""
-                aria-hidden="true"
-                className="h-[24px] w-[24px]"
-                src="/images/ui/nav/icon-caret-left.svg"
-              />
-            </button>
-          </div>
-        </div>
-        <div className="flex w-full flex-col gap-[8px] pt-[280px]">
-          <div className="flex w-full items-center justify-center px-[20px]">
-            <img
-              alt=""
-              aria-hidden="true"
-              className="h-[200px] w-[200px] object-contain opacity-50"
-              src="/images/illustrations/no-results.svg"
-              loading="lazy"
-              decoding="async"
-            />
-          </div>
-          <div className="px-[20px]">
-            <p className="text-[16px] font-normal leading-[22px] text-black [font-family:var(--font-instrument-sans)]">
-              We couldn’t find any artists or artworks with that name. Try another search.
-            </p>
-          </div>
-        </div>
+      <div className="flex w-full flex-col items-center justify-center px-[20px] py-[120px] text-center">
+        <img
+          alt=""
+          aria-hidden="true"
+          className="h-[180px] w-[180px] object-contain opacity-60"
+          src="/images/illustrations/no-results.svg"
+          loading="lazy"
+          decoding="async"
+        />
+        <p className="mt-[16px] max-w-[280px] text-[16px] font-normal leading-[22px] text-black [font-family:var(--font-instrument-sans)]">
+          We couldn’t find any artists or artworks with that name. Try another search.
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="flex w-full flex-col gap-[32px] pb-[32px] pt-[24px]">
+    <div className="flex w-full flex-col gap-[32px] pb-[32px] pt-[16px]">
       {sortedArtists.length > 0 ? (
-        <section className="flex w-full flex-col gap-[10px] px-[20px]">
-          <p className="text-[24px] font-semibold text-black [font-family:var(--font-literata)]">
+        <section className="flex w-full flex-col gap-[12px] px-[20px]">
+          <p className="text-[20px] font-medium leading-none text-[#757575] [font-family:var(--font-instrument-sans)]">
             Artists
           </p>
           <div
-            className="flex w-full items-center gap-[16px] overflow-x-auto pb-[4px] hide-scrollbar"
+            className="-mx-[20px] flex w-[calc(100%+40px)] items-center gap-[16px] overflow-x-auto overflow-y-visible px-[20px] pb-[4px] hide-scrollbar"
             onScroll={handleArtistScroll}
           >
             {sortedArtists.map((artist) => (
               <Link
                 key={getArtistKey(artist)}
                 href={`/artist/${artist.slug ?? artist.id}`}
-                className="flex w-[80px] shrink-0 flex-col items-center justify-center gap-[8px]"
+                className="flex w-[92px] shrink-0 flex-col items-center justify-center gap-[8px]"
               >
-                <div className="h-[120px] w-[80px] overflow-hidden rounded-full bg-[#d9d9d9]">
+                <div className="h-[120px] w-[92px] overflow-hidden rounded-[1000px] bg-[#d9d9d9]">
                   {artist.image_url ? (
                     <img
                       alt={artist.name}
@@ -427,7 +397,7 @@ export function SearchResults({
                     />
                   ) : null}
                 </div>
-                <p className="text-center text-[16px] font-semibold leading-[24px] text-black [font-family:var(--font-literata)]">
+                <p className="text-center text-[14px] font-semibold leading-[20px] text-black [font-family:var(--font-literata)]">
                   {formatSurname(artist.name)}
                 </p>
               </Link>
@@ -438,10 +408,10 @@ export function SearchResults({
 
       {sortedArtworks.length > 0 ? (
         <section className="flex w-full flex-col gap-[16px] px-[20px]">
-          <p className="text-[24px] font-semibold text-black [font-family:var(--font-literata)]">
+          <p className="text-[20px] font-medium leading-none text-[#757575] [font-family:var(--font-instrument-sans)]">
             Artworks
           </p>
-          <div className="grid w-full grid-cols-2 justify-items-start gap-x-[20px] gap-y-[30px]">
+          <div className="grid w-full grid-cols-2 justify-items-start gap-x-[20px] gap-y-[24px]">
             {sortedArtworks.map((artwork) => (
               <Link
                 key={artwork.id}
