@@ -63,12 +63,12 @@ export function DiscoverSearchHeader({
               type="button"
               aria-label="Open search"
               onClick={() => router.push("/discover?search=1")}
-              className="pointer-events-auto flex h-[56px] w-[56px] items-center justify-center rounded-full bg-[rgba(217,217,217,0.33)] shadow-[0_0_32px_rgba(0,0,0,0.2)] backdrop-blur-[16px]"
+              className="pointer-events-auto flex h-[42px] w-[42px] items-center justify-center rounded-full bg-[rgba(217,217,217,0.33)] shadow-[0_0_32px_rgba(0,0,0,0.2)] backdrop-blur-[16px]"
             >
               <img
                 alt=""
                 aria-hidden="true"
-                className="h-[24px] w-[24px]"
+                className="h-[20px] w-[20px]"
                 src="/images/ui/nav/icon-search-outline.svg"
               />
             </button>
