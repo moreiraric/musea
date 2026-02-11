@@ -35,7 +35,7 @@ export function ArtistChip({
           <div className="h-full w-full bg-[#d9d9d9]" />
         )}
       </div>
-      <p className="text-[16px] text-black tracking-[-0.16px] [font-family:var(--font-jetbrains-mono)]">
+      <p className="text-[16px] text-black tracking-[-0.16px] [font-family:var(--font-fira-mono)]">
         {name}
       </p>
     </>

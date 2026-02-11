@@ -461,7 +461,7 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
         </section>
 
         <section className="flex w-full flex-col gap-[8px] border-t border-[#d9d9d9] pb-[32px] pt-[16px]">
-          <p className="text-[14px] font-semibold uppercase tracking-[-0.42px] text-[#757575] [font-family:'SF_Mono',var(--font-jetbrains-mono)]">
+          <p className="text-[14px] font-semibold uppercase tracking-[-0.42px] text-[#757575] [font-family:var(--font-fira-mono)]">
             Filters
           </p>
           <TagFilters

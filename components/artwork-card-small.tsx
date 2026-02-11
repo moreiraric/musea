@@ -43,7 +43,7 @@ export function ArtworkCardSmall({
           {title}
         </p>
         {showArtistName && artistName ? (
-          <p className="text-[16px] text-[#757575] tracking-[-0.16px] [font-family:var(--font-jetbrains-mono)]">
+          <p className="text-[16px] text-[#757575] tracking-[-0.16px] [font-family:var(--font-fira-mono)]">
             {artistName}
           </p>
         ) : null}

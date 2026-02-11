@@ -53,12 +53,12 @@ export function ArtworkFull({
             />
           ) : (
             <div className="flex items-center rounded-full bg-[#f5f5f5] px-[16px] py-[8px]">
-              <p className="text-[16px] text-[#757575] [font-family:var(--font-jetbrains-mono)]">
+              <p className="text-[16px] text-[#757575] [font-family:var(--font-fira-mono)]">
                 Unknown artist
               </p>
             </div>
           )}
-          <p className="text-[16px] text-[#757575] tracking-[-0.16px] [font-family:var(--font-jetbrains-mono)]">
+          <p className="text-[16px] text-[#757575] tracking-[-0.16px] [font-family:var(--font-fira-mono)]">
             {year ?? ""}
           </p>
         </div>

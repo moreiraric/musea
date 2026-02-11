@@ -499,7 +499,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
 
         {displayTags.length > 0 ? (
           <section className="flex w-full flex-col gap-[8px] pb-[32px]">
-            <p className="text-[14px] font-medium uppercase text-[#757575] [font-family:'SF_Mono',var(--font-jetbrains-mono)]">
+            <p className="text-[14px] font-medium uppercase text-[#757575] [font-family:var(--font-fira-mono)]">
               Tags
             </p>
             <div className="-mx-[20px] flex w-[calc(100%+40px)] gap-[8px] overflow-x-auto pb-[4px] pl-[20px] pr-[20px] hide-scrollbar">
@@ -552,7 +552,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
             trigger={
               <section className="flex w-full flex-col pb-[32px] pt-[32px]">
                 <div className="flex w-full flex-col gap-[8px]">
-                  <p className="text-[14px] font-medium uppercase text-[#757575] [font-family:'SF_Mono',var(--font-jetbrains-mono)]">
+                  <p className="text-[14px] font-medium uppercase text-[#757575] [font-family:var(--font-fira-mono)]">
                     Movement
                   </p>
                   <div className="flex w-full flex-col items-center justify-between rounded-[32px] border border-[#d9d9d9] bg-white px-[20px] py-[16px]">
@@ -623,7 +623,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
 
         {craftCards.length > 0 ? (
           <section className="flex w-full flex-col gap-[8px] pb-[32px] pt-[32px]">
-            <p className="text-[14px] font-medium uppercase text-[#757575] [font-family:'SF_Mono',var(--font-jetbrains-mono)]">
+            <p className="text-[14px] font-medium uppercase text-[#757575] [font-family:var(--font-fira-mono)]">
               Craft
             </p>
             <div className="-mx-[20px] flex w-[calc(100%+40px)] gap-[16px] overflow-x-auto py-[2px] pl-[20px] pr-[20px] hide-scrollbar">

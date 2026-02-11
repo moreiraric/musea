@@ -9,7 +9,7 @@ import { createPortal } from "react-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { ArtworkFull } from "@/components/artwork-full";
-import { ArtworkFrameSmall } from "@/components/artwork-frame-small";
+import { ArtworkCardSmall } from "@/components/artwork-card-small";
 
 type MovementSummary = {
   id?: string | null;
@@ -101,7 +101,7 @@ function MovementChip({
         />
       ) : null}
       <span
-        className={`text-[14px] font-medium tracking-[-0.14px] text-center whitespace-nowrap [font-family:var(--font-instrument-sans)] ${
+        className={`text-[16px] font-medium tracking-[-0.14px] text-center whitespace-nowrap [font-family:var(--font-instrument-sans)] ${
           isActive ? "text-[#757575]" : "text-black"
         }`}
         style={{ fontVariationSettings: "'wdth' 100" }}
@@ -503,7 +503,7 @@ export function MovementSheet({
                         {movement.name}
                       </p>
                       {movementYears ? (
-                        <div className="flex items-center gap-[4px] text-[16px] font-normal text-[#757575] tracking-[-0.16px] [font-family:var(--font-jetbrains-mono)]">
+                        <div className="flex items-center gap-[4px] text-[18px] font-normal text-[#757575] tracking-[-0.16px] [font-family:var(--font-fira-mono)]">
                           {movement.startYear ? <span>{movement.startYear}</span> : null}
                           {movement.startYear && movement.endYear ? <span>-</span> : null}
                           {movement.endYear ? <span>{movement.endYear}</span> : null}
@@ -533,13 +533,13 @@ export function MovementSheet({
                   </div>
                 </div>
 
-                <section className="flex w-full flex-col gap-[8px] overflow-hidden py-[32px]">
+                <section className="flex w-full flex-col gap-[8px] overflow-hidden pt-0 pb-[32px]">
                   <div className="flex w-full items-center px-[20px]">
-                    <p className="text-[14px] font-semibold uppercase tracking-[0.02em] text-[#757575] [font-family:'SF_Mono',var(--font-jetbrains-mono)]">
+                    <p className="text-[14px] font-semibold uppercase tracking-[0.02em] text-[#757575] [font-family:var(--font-fira-mono)]">
                       About
                     </p>
                   </div>
-                  <div className="flex w-full flex-col gap-[64px]">
+                  <div className="flex w-full flex-col gap-0">
                     {resolvedEssays.map((essay) => (
                       <MovementEssaySection
                         key={essay.id}
@@ -552,7 +552,7 @@ export function MovementSheet({
 
                 <section className="flex w-full flex-col gap-[8px] px-[20px] py-[32px]">
                   <div className="flex items-end py-[8px]">
-                    <p className="text-[14px] font-semibold uppercase tracking-[0.02em] text-[#757575] [font-family:'SF_Mono',var(--font-jetbrains-mono)]">
+                    <p className="text-[14px] font-semibold uppercase tracking-[0.02em] text-[#757575] [font-family:var(--font-fira-mono)]">
                       Artists
                     </p>
                   </div>
@@ -565,11 +565,11 @@ export function MovementSheet({
 
                 <section className="flex w-full flex-col gap-[8px] px-[20px] py-[32px]">
                   <div className="flex items-end py-[8px]">
-                    <p className="text-[14px] font-semibold uppercase tracking-[0.02em] text-[#757575] [font-family:'SF_Mono',var(--font-jetbrains-mono)]">
+                    <p className="text-[14px] font-semibold uppercase tracking-[0.02em] text-[#757575] [font-family:var(--font-fira-mono)]">
                       Artworks
                     </p>
                   </div>
-                  <div className="grid grid-cols-2 gap-[16px]">
+                  <div className="grid grid-cols-2 gap-x-[20px] gap-y-[30px]">
                     {resolvedArtworks.map((artwork) => (
                       <Link
                         key={artwork.id}
@@ -577,10 +577,11 @@ export function MovementSheet({
                         onClick={() => setIsOpen(false)}
                         className={artwork.href ? "block" : "pointer-events-none"}
                       >
-                        <ArtworkFrameSmall
+                        <ArtworkCardSmall
+                          title={artwork.title}
                           imageUrl={getThumbnailUrl(artwork.imageUrl ?? null)}
-                          alt={artwork.title}
-                          className="w-full min-h-[168px]"
+                          imageAlt={artwork.title}
+                          showArtistName={false}
                         />
                       </Link>
                     ))}

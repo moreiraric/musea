@@ -459,6 +459,14 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
   );
 
   const flagEmoji = countryToFlagEmoji(artist.country);
+  const lifePeriod = artist.life_period
+    ? artist.life_period.replace(/\s*-\s*/g, "-")
+    : "";
+  const lifePeriodParts = lifePeriod
+    ? lifePeriod.split("-").map((part) => part.trim())
+    : [];
+  const hasLifePeriodRange =
+    lifePeriodParts.length === 2 && lifePeriodParts[0] && lifePeriodParts[1];
 
   const masterpieces = artworkList;
 
@@ -506,9 +514,17 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
             {artist.name}
           </p>
           <div className="flex w-full items-center justify-between text-[#757575]">
-            <p className="text-[18px] tracking-[-0.16px] [font-family:var(--font-jetbrains-mono)]">
-              {artist.life_period ?? ""}
-            </p>
+            {hasLifePeriodRange ? (
+              <p className="flex items-center gap-[4px] text-[18px] font-normal tracking-[-0.16px] [font-family:var(--font-fira-mono)]">
+                <span>{lifePeriodParts[0]}</span>
+                <span>-</span>
+                <span>{lifePeriodParts[1]}</span>
+              </p>
+            ) : (
+              <p className="text-[18px] font-normal tracking-[-0.16px] [font-family:var(--font-fira-mono)]">
+                {lifePeriod}
+              </p>
+            )}
             {artist.country ? (
               <div className="flex min-w-[151px] items-center justify-end gap-[8px]">
                 {flagEmoji ? (
@@ -517,7 +533,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
                   </span>
                 ) : null}
                 <span
-                  className="text-[18px] font-medium [font-family:var(--font-jetbrains-mono)]"
+                  className="text-[18px] font-normal [font-family:var(--font-fira-mono)]"
                 >
                   {artist.country}
                 </span>
@@ -563,7 +579,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
           <section className="flex w-full flex-col gap-[16px] pt-[32px]">
             {knownForTags.length > 0 ? (
               <div className="flex w-full flex-col gap-[8px]">
-                <p className="text-[14px] font-semibold uppercase tracking-[0.28px] text-[#757575] [font-family:'SF_Mono',var(--font-jetbrains-mono)]">
+                <p className="text-[14px] font-semibold uppercase tracking-[0.28px] text-[#757575] [font-family:var(--font-fira-mono)]">
                   Known For
                 </p>
                 <div className="flex w-full gap-[8px] overflow-x-auto pb-[4px] hide-scrollbar">
@@ -592,7 +608,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
 
             {themeTags.length > 0 ? (
               <div className="flex w-full flex-col gap-[8px]">
-                <p className="text-[14px] font-semibold uppercase tracking-[0.28px] text-[#757575] [font-family:'SF_Mono',var(--font-jetbrains-mono)]">
+                <p className="text-[14px] font-semibold uppercase tracking-[0.28px] text-[#757575] [font-family:var(--font-fira-mono)]">
                   Themes
                 </p>
                 <div className="flex w-full gap-[8px] overflow-x-auto pb-[4px] hide-scrollbar">

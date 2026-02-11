@@ -4,8 +4,8 @@ import {
   Geist_Mono,
   Instrument_Sans,
   Inter,
-  JetBrains_Mono,
   Literata,
+  Fira_Mono,
 } from "next/font/google";
 import "./globals.css";
 import { AppShell } from "@/components/app-shell";
@@ -38,10 +38,10 @@ const inter = Inter({
   weight: ["500", "600"],
 });
 
-const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
+const firaMono = Fira_Mono({
+  variable: "--font-fira-mono",
   subsets: ["latin"],
-  weight: ["400"],
+  weight: ["400", "500", "700"],
 });
 
 export const metadata: Metadata = {
@@ -57,7 +57,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${literata.variable} ${instrumentSans.variable} ${inter.variable} ${jetbrainsMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${literata.variable} ${instrumentSans.variable} ${inter.variable} ${firaMono.variable} antialiased`}
         suppressHydrationWarning
       >
         <AppShell>{children}</AppShell>

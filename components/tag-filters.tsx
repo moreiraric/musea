@@ -120,7 +120,7 @@ function BottomSheet({
         onTouchEnd={handleTouchEnd}
       >
         <div className="mx-auto mb-[12px] h-[4px] w-[48px] rounded-full bg-[#d9d9d9]" />
-        <p className="mb-[12px] text-[14px] font-medium uppercase text-[#757575] [font-family:'SF_Mono',var(--font-jetbrains-mono)]">
+        <p className="mb-[12px] text-[14px] font-medium uppercase text-[#757575] [font-family:var(--font-fira-mono)]">
           {label}
         </p>
         <div className="flex h-[calc(100%-52px)] flex-col gap-[8px] overflow-y-auto pb-[8px]">
