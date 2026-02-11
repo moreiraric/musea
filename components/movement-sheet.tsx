@@ -8,6 +8,7 @@ import type {
 import { createPortal } from "react-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ArtworkFull } from "@/components/artwork-full";
 import { ArtworkCardSmall } from "@/components/artwork-card-small";
 import { useTabScope } from "@/components/tab-state";
@@ -259,29 +260,35 @@ export function MovementSheet({
   artists,
   artworks,
 }: MovementSheetProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const timelineRef = useRef<HTMLDivElement | null>(null);
   const activeChipRef = useRef<HTMLDivElement | null>(null);
   const movementYears = formatMovementYears(movement.startYear, movement.endYear);
   const tabId = useTabScope();
+  const isSheetOpen = searchParams?.get("movementSheet") === "1";
+  const sheetPath = useMemo(() => {
+    const params = new URLSearchParams(searchParams?.toString());
+    params.set("movementSheet", "1");
+    const query = params.toString();
+    return query ? `${pathname}?${query}` : pathname;
+  }, [pathname, searchParams]);
 
   useEffect(() => {
     setPortalTarget(document.getElementById("app-viewport"));
   }, []);
 
   useEffect(() => {
-    if (!isOpen) {
-      return;
+    if (isSheetOpen && !isOpen) {
+      setIsOpen(true);
     }
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setIsOpen(false);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen]);
+    if (!isSheetOpen && isOpen) {
+      setIsOpen(false);
+    }
+  }, [isSheetOpen, isOpen]);
 
   const resolvedTimeline = useMemo(() => {
     if (timeline && timeline.length > 0) {
@@ -316,6 +323,16 @@ export function MovementSheet({
       },
     ];
   }, [movement.iconUrl, movement.id, movement.name, timeline]);
+
+  const timelineWithReturn = useMemo(() => {
+    return resolvedTimeline.map((item) => {
+      if (!item.href) {
+        return item;
+      }
+      const separator = item.href.includes("?") ? "&" : "?";
+      return { ...item, href: `${item.href}${separator}from=${encodeURIComponent(sheetPath)}` };
+    });
+  }, [resolvedTimeline, sheetPath]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -390,19 +407,52 @@ export function MovementSheet({
     ];
   }, [artworks]);
 
+  const openSheet = () => {
+    setIsOpen(true);
+    if (!isSheetOpen) {
+      const params = new URLSearchParams(searchParams?.toString());
+      params.set("movementSheet", "1");
+      const query = params.toString();
+      router.push(query ? `${pathname}?${query}` : pathname);
+    }
+  };
+
+  const closeSheet = () => {
+    setIsOpen(false);
+    if (isSheetOpen) {
+      const params = new URLSearchParams(searchParams?.toString());
+      params.delete("movementSheet");
+      const query = params.toString();
+      router.replace(query ? `${pathname}?${query}` : pathname);
+    }
+  };
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        closeSheet();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [closeSheet, isOpen]);
+
   const handleTriggerClick = (event: ReactMouseEvent<HTMLDivElement>) => {
     if (event.target instanceof HTMLElement) {
       if (event.target.closest("[data-movement-sheet-ignore]")) {
         return;
       }
     }
-    setIsOpen(true);
+    openSheet();
   };
 
   const handleTriggerKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      setIsOpen(true);
+      openSheet();
     }
   };
 
@@ -460,7 +510,7 @@ export function MovementSheet({
               isOpen ? "opacity-100" : "opacity-0"
             }`}
             aria-label="Close movement details"
-            onClick={() => setIsOpen(false)}
+            onClick={closeSheet}
           />
 
           <div
@@ -479,7 +529,7 @@ export function MovementSheet({
                   type="button"
                   className="flex h-[48px] w-[48px] items-center justify-center rounded-full bg-[rgba(217,217,217,0.33)] p-[8px] shadow-[0px_0px_32px_rgba(0,0,0,0.2)] backdrop-blur-[16px]"
                   aria-label="Close movement details"
-                  onClick={() => setIsOpen(false)}
+                  onClick={closeSheet}
                 >
                   <img
                     alt=""
@@ -519,7 +569,7 @@ export function MovementSheet({
                     ref={timelineRef}
                     className="flex w-full items-center gap-[8px] overflow-x-auto px-[20px] pb-[4px] hide-scrollbar"
                   >
-                    {resolvedTimeline.map((item) => (
+                    {timelineWithReturn.map((item) => (
                       <div
                         key={item.id}
                         ref={item.isActive ? activeChipRef : undefined}
@@ -544,11 +594,7 @@ export function MovementSheet({
                   </div>
                   <div className="flex w-full flex-col gap-0">
                     {resolvedEssays.map((essay) => (
-                      <MovementEssaySection
-                        key={essay.id}
-                        {...essay}
-                        onArtworkClick={() => setIsOpen(false)}
-                      />
+                      <MovementEssaySection key={essay.id} {...essay} />
                     ))}
                   </div>
                 </section>
@@ -577,7 +623,6 @@ export function MovementSheet({
                       <Link
                         key={artwork.id}
                         href={artwork.href ?? "#"}
-                        onClick={() => setIsOpen(false)}
                         className={artwork.href ? "block" : "pointer-events-none"}
                       >
                         <ArtworkCardSmall

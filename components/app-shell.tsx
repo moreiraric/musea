@@ -17,6 +17,7 @@ export function AppShell({ children }: AppShellProps) {
   const hideTopNav =
     pathname?.startsWith("/artwork/") ||
     pathname?.startsWith("/artist") ||
+    pathname?.startsWith("/movement") ||
     pathname === "/saved" ||
     pathname?.startsWith("/search") ||
     pathname?.startsWith("/discover") ||
