@@ -76,10 +76,10 @@ function DefaultNav() {
       <div className="relative flex flex-1 items-center rounded-full border border-white bg-white/30 px-[6px] py-[4px] shadow-[0_0_32px_rgba(0,0,0,0.1)] backdrop-blur-[16px]">
         <div
           aria-hidden="true"
-          className="absolute inset-y-[4px] left-[6px] z-0 w-1/3 transition-[transform] duration-400 ease-[cubic-bezier(0.22,1.25,0.36,1)] will-change-transform"
+          className="absolute inset-y-[4px] left-[6px] z-0 transition-[transform] duration-400 ease-[cubic-bezier(0.22,1.25,0.36,1)] will-change-transform"
           style={{
-            width: "calc((100% - 16px) / 3)",
-            transform: `translateX(calc(${clampedIndex} * (100% + 4px)))`,
+            width: "calc((100% - 12px) / 3)",
+            transform: `translateX(calc(${clampedIndex} * 100%))`,
           }}
         >
           <div
@@ -126,8 +126,8 @@ function DefaultNav() {
 export function BottomNav() {
   return (
     <nav className="w-full bg-gradient-to-b from-[rgba(255,255,255,0)] to-[rgba(255,255,255,0.9)] pb-[env(safe-area-inset-bottom)]">
-      <div className="relative mx-auto h-[100px] w-full max-w-[393px]">
-        <div className="absolute inset-0 px-[20px] pb-[20px] pt-[8px]">
+      <div className="relative mx-auto h-[100px] w-[275px]">
+        <div className="absolute inset-0 pb-[20px] pt-[8px]">
           <DefaultNav />
         </div>
       </div>
