@@ -21,6 +21,8 @@ type TabState = {
   setTabPath: (tab: TabId, path: string) => void;
   recordTabPath: (tab: TabId, path: string) => void;
   goBackInTab: (tab: TabId, fallbackHref?: string) => void;
+  pendingSwitch: { tab: TabId; path: string } | null;
+  setPendingSwitch: (next: { tab: TabId; path: string } | null) => void;
 };
 
 const ACTIVE_TAB_KEY = "art-app-active-tab";
@@ -70,13 +72,21 @@ export function TabProvider({ children }: { children: ReactNode }) {
   const [tabPaths, setTabPaths] = useState<Record<TabId, string>>(DEFAULT_PATHS);
   const [tabHistory, setTabHistory] =
     useState<Record<TabId, TabHistoryState>>(DEFAULT_HISTORY);
+  const [pendingSwitch, setPendingSwitch] = useState<{ tab: TabId; path: string } | null>(
+    null,
+  );
   const skipNextHistory = useRef<Record<TabId, boolean>>({
     home: false,
     discover: false,
     saved: false,
   });
+  const didInitRef = useRef(false);
 
   useEffect(() => {
+    if (didInitRef.current) {
+      return;
+    }
+    didInitRef.current = true;
     try {
       const storedTab = window.localStorage.getItem(ACTIVE_TAB_KEY) as TabId | null;
       const storedPaths = window.localStorage.getItem(TAB_PATHS_KEY);
@@ -175,8 +185,10 @@ export function TabProvider({ children }: { children: ReactNode }) {
         }));
         router.replace(target);
       },
+      pendingSwitch,
+      setPendingSwitch,
     }),
-    [activeTab, tabHistory, tabPaths, router],
+    [activeTab, pendingSwitch, tabHistory, tabPaths, router],
   );
 
   return <TabContext.Provider value={value}>{children}</TabContext.Provider>;

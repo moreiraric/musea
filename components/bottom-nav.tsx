@@ -38,7 +38,7 @@ function DefaultNav() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { activeTab, setActiveTab, tabPaths } = useTabState();
+  const { activeTab, setActiveTab, tabPaths, setPendingSwitch } = useTabState();
   const activeIndex = navItems.findIndex((item) => item.id === activeTab);
   const clampedIndex = activeIndex === -1 ? 0 : activeIndex;
   const fullPath = searchParams?.toString()
@@ -80,6 +80,7 @@ function DefaultNav() {
                 }
                 setActiveTab(item.id);
                 const target = tabPaths[item.id] ?? item.href;
+                setPendingSwitch({ tab: item.id, path: target });
                 event.preventDefault();
                 router.replace(target);
               }}

@@ -346,7 +346,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                   src={categoryIconMap.movement}
                 />
               </div>
-              <p className="text-[14px] font-medium text-[#757575] [font-family:var(--font-instrument-sans)]">
+              <p className="text-[16px] font-medium text-[#757575] [font-family:var(--font-instrument-sans)]">
                 Movements
               </p>
             </div>
@@ -411,7 +411,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                     src={row.icon}
                   />
                 </div>
-                <p className="text-[14px] font-medium text-[#757575] [font-family:var(--font-instrument-sans)]">
+                <p className="text-[16px] font-medium text-[#757575] [font-family:var(--font-instrument-sans)]">
                   {row.label}
                 </p>
               </div>
@@ -431,7 +431,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                   src={categoryIconMap.theme}
                 />
               </div>
-              <p className="text-[14px] font-medium text-[#757575] [font-family:var(--font-instrument-sans)]">
+              <p className="text-[16px] font-medium text-[#757575] [font-family:var(--font-instrument-sans)]">
                 Themes
               </p>
             </div>

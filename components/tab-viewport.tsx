@@ -15,7 +15,8 @@ const TABS: TabId[] = ["home", "discover", "saved"];
 export function TabViewport({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { activeTab, recordTabPath, setTabPath } = useTabState();
+  const { activeTab, pendingSwitch, recordTabPath, setPendingSwitch, setTabPath } =
+    useTabState();
   const fullPath = useMemo(() => {
     const query = searchParams?.toString();
     return query ? `${pathname}?${query}` : pathname;
@@ -29,8 +30,21 @@ export function TabViewport({ children }: { children: ReactNode }) {
   const lastPathRef = useRef<string>(fullPath);
   const isTabSwitchWithoutNav =
     lastTabRef.current !== activeTab && lastPathRef.current === fullPath;
+  const pendingMismatch =
+    pendingSwitch &&
+    (pendingSwitch.tab !== activeTab || pendingSwitch.path !== fullPath);
 
   useEffect(() => {
+    if (pendingMismatch) {
+      return;
+    }
+    if (
+      pendingSwitch &&
+      pendingSwitch.tab === activeTab &&
+      pendingSwitch.path === fullPath
+    ) {
+      setPendingSwitch(null);
+    }
     if (isTabSwitchWithoutNav) {
       lastTabRef.current = activeTab;
       return;
@@ -47,7 +61,17 @@ export function TabViewport({ children }: { children: ReactNode }) {
     });
     lastTabRef.current = activeTab;
     lastPathRef.current = fullPath;
-  }, [activeTab, children, fullPath, isTabSwitchWithoutNav, setTabPath]);
+  }, [
+    activeTab,
+    children,
+    fullPath,
+    isTabSwitchWithoutNav,
+    pendingMismatch,
+    pendingSwitch,
+    recordTabPath,
+    setPendingSwitch,
+    setTabPath,
+  ]);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
