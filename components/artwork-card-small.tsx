@@ -8,6 +8,7 @@ type ArtworkCardSmallProps = {
   className?: string;
   loading?: "lazy" | "eager";
   decoding?: "async" | "auto" | "sync";
+  showArtistName?: boolean;
 };
 
 export function ArtworkCardSmall({
@@ -18,6 +19,7 @@ export function ArtworkCardSmall({
   className,
   loading = "lazy",
   decoding = "async",
+  showArtistName = true,
 }: ArtworkCardSmallProps) {
   return (
     <div className={className ?? "flex w-[168.5px] flex-col items-start gap-[4px]"}>
@@ -30,7 +32,7 @@ export function ArtworkCardSmall({
       />
       <div className="flex w-full flex-col gap-[4px]">
         <p
-          className="text-[16px] font-semibold leading-[26px] text-[#1e1e1e] [font-family:var(--font-literata)]"
+          className="text-[16px] font-semibold leading-[24px] text-[#1e1e1e] [font-family:var(--font-literata)]"
           style={{
             display: "-webkit-box",
             WebkitBoxOrient: "vertical",
@@ -40,7 +42,7 @@ export function ArtworkCardSmall({
         >
           {title}
         </p>
-        {artistName ? (
+        {showArtistName && artistName ? (
           <p className="text-[16px] text-[#757575] tracking-[-0.16px] [font-family:var(--font-jetbrains-mono)]">
             {artistName}
           </p>

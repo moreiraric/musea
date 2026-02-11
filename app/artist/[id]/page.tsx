@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArtistEssay } from "@/components/artist-essay";
 import { ArtworkFrameSmall } from "@/components/artwork-frame-small";
+import { ArtworkCardSmall } from "@/components/artwork-card-small";
 import { MovementSheet } from "@/components/movement-sheet";
 import { createSupabaseServerAdminClient, createSupabaseServerClient } from "@/lib/supabase";
 
@@ -481,10 +482,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
             </p>
           )}
         </div>
-        <div
-          className="absolute left-[16px] top-[111px] h-[140px] w-[100px] overflow-hidden border-2 border-white bg-[#d9d9d9] shadow-[0_4px_16px_rgba(0,0,0,0.12)]"
-          style={{ borderRadius: "50% / 50%" }}
-        >
+        <div className="absolute left-[16px] top-[111px] h-[140px] w-[100px] overflow-hidden rounded-[1000px] border-2 border-white bg-[#d9d9d9] shadow-[0_4px_16px_rgba(0,0,0,0.12)]">
           {artist.image_url ? (
             <img
               alt={artist.name}
@@ -633,16 +631,19 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
             >
               Masterpieces
             </p>
-            <div className="grid w-full grid-cols-2 justify-items-center gap-[16px]">
+            <div className="grid w-full grid-cols-2 justify-items-start gap-[20px]">
               {masterpieces.map((artwork) => (
                 <Link
                   key={artwork.id}
-                  className="flex w-full justify-center"
+                  className="flex w-[168.5px] flex-col items-start"
                   href={`/artwork/${artwork.slug ?? artwork.id}`}
                 >
-                  <ArtworkFrameSmall
+                  <ArtworkCardSmall
+                    title={artwork.title}
+                    artistName={artist.name}
+                    showArtistName={false}
                     imageUrl={artwork.image_url}
-                    alt={artwork.title}
+                    imageAlt={artwork.title}
                   />
                 </Link>
               ))}

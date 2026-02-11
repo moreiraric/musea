@@ -414,9 +414,9 @@ export function SearchResults({
               <Link
                 key={getArtistKey(artist)}
                 href={`/artist/${artist.slug ?? artist.id}`}
-                className="flex w-[100px] shrink-0 flex-col items-center justify-center gap-[8px]"
+                className="flex w-[80px] shrink-0 flex-col items-center justify-center gap-[8px]"
               >
-                <div className="h-[150px] w-[100px] overflow-hidden rounded-full bg-[#d9d9d9]">
+                <div className="h-[120px] w-[80px] overflow-hidden rounded-full bg-[#d9d9d9]">
                   {artist.image_url ? (
                     <img
                       alt={artist.name}
@@ -427,7 +427,7 @@ export function SearchResults({
                     />
                   ) : null}
                 </div>
-                <p className="text-center text-[16px] text-black [font-family:var(--font-inter)]">
+                <p className="text-center text-[16px] font-semibold leading-[24px] text-black [font-family:var(--font-literata)]">
                   {formatSurname(artist.name)}
                 </p>
               </Link>
