@@ -589,9 +589,10 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
                 </p>
                 <div className="flex w-full gap-[8px] overflow-x-auto pb-[4px] hide-scrollbar">
                   {knownForTags.map((tag) => (
-                    <div
+                    <Link
                       key={tag.id}
                       className="flex shrink-0 items-center gap-[8px] rounded-full border border-[#d9d9d9] bg-white pl-[12px] pr-[16px] py-[8px]"
+                      href={`/tag/${tag.slug ?? tag.id}`}
                     >
                       <img
                         alt=""
@@ -605,7 +606,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
                       >
                         {formatTagLabel(tag.name)}
                       </span>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               </div>
