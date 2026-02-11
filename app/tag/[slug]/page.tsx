@@ -483,7 +483,7 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
         </section>
 
         <section className="flex w-full flex-col items-start justify-center pb-[32px]">
-          <div className="grid w-full grid-cols-2 justify-items-center gap-[16px]">
+          <div className="grid w-full grid-cols-2 justify-items-center gap-x-[20px] gap-y-[30px]">
             {artworks.length > 0 ? (
               artworks.map((artwork) => (
                 <Link

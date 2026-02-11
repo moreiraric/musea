@@ -121,7 +121,7 @@ export default function SavedPage() {
           Saved Artworks
         </h1>
         {savedArtworks.length > 0 ? (
-          <div className="grid w-full grid-cols-2 justify-items-start gap-[20px]">
+          <div className="grid w-full grid-cols-2 justify-items-start gap-x-[20px] gap-y-[30px]">
             {savedArtworks.map((artwork, index) => {
               const key = getKey(artwork, index);
               const isSelected = selectedKeys.has(key);

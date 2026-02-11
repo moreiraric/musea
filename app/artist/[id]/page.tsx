@@ -3,6 +3,7 @@ import { ArtistEssay } from "@/components/artist-essay";
 import { ArtworkFrameSmall } from "@/components/artwork-frame-small";
 import { ArtworkCardSmall } from "@/components/artwork-card-small";
 import { MovementSheet } from "@/components/movement-sheet";
+import { MovementCardSmall } from "@/components/movement-card-small";
 import { createSupabaseServerAdminClient, createSupabaseServerClient } from "@/lib/supabase";
 
 type ArtistPageProps = {
@@ -548,29 +549,12 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
             artists={movementArtistCards}
             artworks={movementArtworkCards}
             trigger={
-              <section className="flex w-full flex-col">
-                <div className="flex w-full items-center gap-[4px] rounded-[24px] border border-[#d9d9d9] bg-white pl-[8px] pr-[16px] py-[16px]">
-                <div className="flex h-[48px] w-[48px] items-center justify-center">
-                  {movementImage ? (
-                    <img
-                      alt={movement.name}
-                      className="h-full w-full object-contain"
-                      src={movementImage}
-                    />
-                  ) : null}
-                </div>
-                  <div className="flex h-[59px] flex-1 flex-col justify-between">
-                    <p className="text-[20px] font-semibold leading-[25px] text-[#1e1e1e] [font-family:var(--font-literata)]">
-                      {movement.name}
-                    </p>
-                    {movementYears ? (
-                      <p className="text-[16px] tracking-[-0.16px] text-[#757575] [font-family:var(--font-jetbrains-mono)]">
-                        {movementYears}
-                      </p>
-                    ) : null}
-                  </div>
-                </div>
-              </section>
+              <MovementCardSmall
+                name={movement.name}
+                years={movementYears}
+                imageUrl={movementImage}
+                className="w-full"
+              />
             }
           />
         ) : null}
@@ -652,7 +636,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
             >
               Masterpieces
             </p>
-            <div className="grid w-full grid-cols-2 justify-items-start gap-[20px]">
+            <div className="grid w-full grid-cols-2 justify-items-start gap-x-[20px] gap-y-[30px]">
               {masterpieces.map((artwork) => (
                 <Link
                   key={artwork.id}

@@ -441,7 +441,7 @@ export function SearchResults({
           <p className="text-[24px] font-semibold text-black [font-family:var(--font-literata)]">
             Artworks
           </p>
-          <div className="grid w-full grid-cols-2 justify-items-start gap-[20px]">
+          <div className="grid w-full grid-cols-2 justify-items-start gap-x-[20px] gap-y-[30px]">
             {sortedArtworks.map((artwork) => (
               <Link
                 key={artwork.id}

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
 import { SearchResults } from "@/app/search/search-results";
+import { MovementCardSmall } from "@/components/movement-card-small";
 import { createSupabaseServerClient } from "@/lib/supabase";
 import { buildSearchFilter, buildSearchTokens } from "@/lib/search-utils";
 
@@ -343,33 +344,19 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                       : movement.id && uuidRegex.test(movement.id)
                         ? `/movement/${movement.id}`
                         : undefined;
+                    const imageUrl = resolveMovementImage(
+                      movement.slug,
+                      movement.icon_url,
+                    );
                     return (
-                      <Link
+                      <MovementCardSmall
                         key={movement.id}
-                        className="flex h-[96px] w-[330px] items-center gap-[4px] rounded-[24px] border border-[#d9d9d9] bg-white pl-[8px] pr-[16px] py-[16px]"
+                        name={movement.name}
+                        years={years}
+                        imageUrl={imageUrl}
                         href={href ?? "/movement"}
-                      >
-                        <div className="flex h-[64px] w-[64px] items-center justify-center overflow-hidden">
-                          {resolveMovementImage(movement.slug, movement.icon_url) ? (
-                            <img
-                              alt={movement.name}
-                              className="h-full w-full object-cover"
-                              src={resolveMovementImage(
-                                movement.slug,
-                                movement.icon_url,
-                              )}
-                            />
-                          ) : null}
-                        </div>
-                        <div className="flex flex-1 flex-col items-start justify-between text-center">
-                          <p className="text-[20px] font-semibold text-[#1e1e1e] [font-family:var(--font-literata)]">
-                            {movement.name}
-                          </p>
-                          <div className="flex items-center gap-[4px] text-[16px] text-[#757575] tracking-[-0.16px] [font-family:var(--font-jetbrains-mono)]">
-                            {years || "YYYY - YYYY"}
-                          </div>
-                        </div>
-                      </Link>
+                        fallbackYears="YYYY - YYYY"
+                      />
                     );
                   })}
                 </div>
