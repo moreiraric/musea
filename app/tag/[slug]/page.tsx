@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
 import { TagFilters } from "@/components/tag-filters";
-import { ArtworkFrameSmall } from "@/components/artwork-frame-small";
+import { ArtworkCardSmall } from "@/components/artwork-card-small";
+import { TagTopBar } from "@/components/tag-top-bar";
 import { createSupabaseServerClient } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
@@ -32,6 +33,12 @@ type ArtworkRow = {
   image_url: string | null;
   movement_id: string | null;
   year: number | null;
+  artists?: {
+    id: string;
+    slug: string | null;
+    name: string;
+    image_url: string | null;
+  } | null;
 };
 
 type MovementRow = {
@@ -269,7 +276,7 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
 
   const baseArtworksQuery = supabase
     .from("artwork_tags")
-    .select("artworks!inner(id,slug,title,image_url,movement_id,year)")
+    .select("artworks!inner(id,slug,title,image_url,movement_id,year,artists(id,name,slug,image_url))")
     .eq("tag_id", tag.id);
 
   if (movementFilter) {
@@ -431,9 +438,10 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
   }
 
   return (
-    <div className="flex w-full flex-col overflow-x-hidden bg-white">
+    <div className="flex w-full flex-col overflow-x-hidden bg-white pt-[100px]">
+      <TagTopBar backHref="/search" />
       <section className="flex w-full flex-col">
-        <div className="flex h-[193px] w-full items-center justify-center bg-[#f5f5f5]">
+        <div className="flex h-[200px] w-full items-center justify-center bg-[#f5f5f5]">
           {bannerImageUrl ? (
             <img
               alt={bannerAlt}
@@ -449,19 +457,19 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
       </section>
 
       <div className="flex w-full flex-col items-start px-[20px]">
-        <section className="flex w-full flex-col gap-[10px] pb-[16px] pt-[16px]">
+        <section className="flex w-full flex-col gap-[10px] pb-[20px] pt-[20px]">
           <p className="text-[24px] font-semibold text-black [font-family:var(--font-literata)]">
             {titleCase(tag.name)}
           </p>
           <div className="flex w-full items-center">
-            <p className="text-[16px] leading-[24px] text-black [font-family:var(--font-instrument-sans)]">
+            <p className="text-[16px] leading-[24px] text-[#5a5a5a] [font-family:var(--font-instrument-sans)]">
               {tag.description ?? ""}
             </p>
           </div>
         </section>
 
-        <section className="flex w-full flex-col gap-[8px] border-t border-[#d9d9d9] pb-[32px] pt-[16px]">
-          <p className="text-[14px] font-semibold uppercase tracking-[-0.42px] text-[#757575] [font-family:var(--font-fira-mono)]">
+        <section className="flex w-full flex-col gap-[12px] border-t border-[#d9d9d9] pb-[16px] pt-[16px]">
+          <p className="text-[12px] font-semibold uppercase tracking-[1.2px] text-[#8c8c8c] [font-family:var(--font-fira-mono)]">
             Filters
           </p>
           <TagFilters
@@ -483,19 +491,19 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
         </section>
 
         <section className="flex w-full flex-col items-start justify-center pb-[32px]">
-          <div className="grid w-full grid-cols-2 justify-items-center gap-x-[20px] gap-y-[30px]">
+          <div className="grid w-full grid-cols-2 justify-items-start gap-x-[20px] gap-y-[28px]">
             {artworks.length > 0 ? (
               artworks.map((artwork) => (
                 <Link
                   key={artwork.id}
-                  className="flex w-full justify-center"
+                  className="flex w-full justify-start"
                   href={`/artwork/${artwork.slug ?? artwork.id}`}
                 >
-                  <ArtworkFrameSmall
-                    imageUrl={
-                      artwork.image_url ? getGridImageUrl(artwork.image_url) : null
-                    }
-                    alt={artwork.title}
+                  <ArtworkCardSmall
+                    title={artwork.title}
+                    artistName={artwork.artists?.name ?? "Unknown artist"}
+                    imageUrl={artwork.image_url ? getGridImageUrl(artwork.image_url) : null}
+                    imageAlt={artwork.title}
                   />
                 </Link>
               ))

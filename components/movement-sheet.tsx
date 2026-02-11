@@ -10,6 +10,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { ArtworkFull } from "@/components/artwork-full";
 import { ArtworkCardSmall } from "@/components/artwork-card-small";
+import { useTabScope } from "@/components/tab-state";
 
 type MovementSummary = {
   id?: string | null;
@@ -263,6 +264,7 @@ export function MovementSheet({
   const timelineRef = useRef<HTMLDivElement | null>(null);
   const activeChipRef = useRef<HTMLDivElement | null>(null);
   const movementYears = formatMovementYears(movement.startYear, movement.endYear);
+  const tabId = useTabScope();
 
   useEffect(() => {
     setPortalTarget(document.getElementById("app-viewport"));
@@ -434,7 +436,8 @@ export function MovementSheet({
 
       {createPortal(
         <div
-          className={`absolute inset-0 z-40 transition-opacity duration-300 ${
+          data-tab={tabId}
+          className={`tab-portal absolute inset-0 z-40 transition-opacity duration-300 ${
             isOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
           }`}
           onWheel={(event) => {

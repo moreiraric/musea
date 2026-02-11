@@ -1,12 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
-
-type TabId = "home" | "discover" | "saved";
-
-const STORAGE_KEY = "art-app-active-tab";
+import { useRouter } from "next/navigation";
+import { TabId, useTabState } from "@/components/tab-state";
 
 const navItems: Array<{
   id: TabId;
@@ -39,35 +35,8 @@ const navItems: Array<{
 ];
 
 function DefaultNav() {
-  const pathname = usePathname();
-  const inferredTab = useMemo<TabId>(() => {
-    if (pathname?.startsWith("/saved")) {
-      return "saved";
-    }
-    if (pathname?.startsWith("/search")) {
-      return "discover";
-    }
-    if (pathname === "/" || pathname?.startsWith("/artwork")) {
-      return "home";
-    }
-    return "home";
-  }, [pathname]);
-  const [activeTab, setActiveTab] = useState<TabId>(inferredTab);
-
-  useEffect(() => {
-    try {
-      const stored = window.localStorage.getItem(STORAGE_KEY);
-      if (stored === "home" || stored === "discover" || stored === "saved") {
-        setActiveTab(stored);
-        return;
-      }
-      window.localStorage.setItem(STORAGE_KEY, inferredTab);
-    } catch {
-      // ignore storage errors
-    }
-    setActiveTab(inferredTab);
-  }, [inferredTab]);
-
+  const router = useRouter();
+  const { activeTab, setActiveTab, tabPaths } = useTabState();
   const activeIndex = navItems.findIndex((item) => item.id === activeTab);
   const clampedIndex = activeIndex === -1 ? 0 : activeIndex;
 
@@ -95,12 +64,18 @@ function DefaultNav() {
               key={item.label}
               href={item.href}
               aria-current={isActive ? "page" : undefined}
-              onClick={() => {
+              onClick={(event) => {
+                const isDiscover = item.id === "discover";
+                const isHome = item.id === "home";
+                if (item.id === activeTab && !isDiscover && !isHome) {
+                  event.preventDefault();
+                  return;
+                }
                 setActiveTab(item.id);
-                try {
-                  window.localStorage.setItem(STORAGE_KEY, item.id);
-                } catch {
-                  // ignore storage errors
+                const target = isDiscover || isHome ? item.href : tabPaths[item.id] ?? item.href;
+                if (target !== item.href) {
+                  event.preventDefault();
+                  router.push(target);
                 }
               }}
               className={[

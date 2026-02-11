@@ -4,7 +4,8 @@ import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { BottomNav } from "@/components/bottom-nav";
 import { TopNav } from "@/components/top-nav";
-import { ElasticScroll } from "@/components/elastic-scroll";
+import { TabProvider } from "@/components/tab-state";
+import { TabViewport } from "@/components/tab-viewport";
 import { TapCursor } from "@/components/tap-cursor";
 
 type AppShellProps = {
@@ -16,7 +17,8 @@ export function AppShell({ children }: AppShellProps) {
   const hideTopNav =
     pathname?.startsWith("/artwork/") ||
     pathname === "/saved" ||
-    pathname?.startsWith("/search");
+    pathname?.startsWith("/search") ||
+    pathname?.startsWith("/tag");
 
   return (
     <div className="min-h-dvh bg-[radial-gradient(circle_at_top,_#f2f2f2,_#e6e3dd)] p-4 text-foreground">
@@ -29,12 +31,14 @@ export function AppShell({ children }: AppShellProps) {
           id="app-viewport"
           className="relative flex h-full cursor-none flex-col overflow-hidden rounded-[60px] bg-background"
         >
-          {hideTopNav ? null : <TopNav />}
-          <ElasticScroll>{children}</ElasticScroll>
-          <div className="absolute bottom-0 left-0 right-0">
-            <BottomNav />
-          </div>
-          <TapCursor />
+          <TabProvider>
+            {hideTopNav ? null : <TopNav />}
+            <TabViewport>{children}</TabViewport>
+            <div className="absolute bottom-0 left-0 right-0">
+              <BottomNav />
+            </div>
+            <TapCursor />
+          </TabProvider>
         </div>
       </div>
     </div>

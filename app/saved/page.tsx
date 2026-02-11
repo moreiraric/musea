@@ -4,6 +4,7 @@ import { createPortal } from "react-dom";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArtworkCardSmall } from "@/components/artwork-card-small";
+import { useTabScope } from "@/components/tab-state";
 
 type SavedArtwork = {
   id?: string;
@@ -20,6 +21,7 @@ export default function SavedPage() {
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
+  const tabId = useTabScope();
 
   const getKey = (artwork: SavedArtwork, index: number) =>
     artwork.id ?? artwork.slug ?? `idx-${index}`;
@@ -81,7 +83,10 @@ export default function SavedPage() {
     <div className="flex w-full flex-col bg-white">
       {portalTarget
         ? createPortal(
-            <div className="absolute left-0 top-0 z-30 w-full bg-gradient-to-t from-[rgba(255,255,255,0)] from-50% to-[rgba(255,255,255,0.9)] px-[20px] pb-[8px] pt-[51px]">
+            <div
+              data-tab={tabId}
+              className="tab-portal absolute left-0 top-0 z-30 w-full bg-gradient-to-t from-[rgba(255,255,255,0)] from-50% to-[rgba(255,255,255,0.9)] px-[20px] pb-[8px] pt-[51px]"
+            >
               <div className="flex w-full items-center justify-end">
                 {isEditing ? (
                   <div className="flex items-center gap-[10px]">

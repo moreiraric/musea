@@ -141,6 +141,18 @@
   transform-origin: center;
 }
 
+#app-viewport[data-active-tab="home"] .tab-portal:not([data-tab="home"]) {
+  display: none;
+}
+
+#app-viewport[data-active-tab="discover"] .tab-portal:not([data-tab="discover"]) {
+  display: none;
+}
+
+#app-viewport[data-active-tab="saved"] .tab-portal:not([data-tab="saved"]) {
+  display: none;
+}
+
 @keyframes sheet-in {
   0% {
     transform: translateY(100%);

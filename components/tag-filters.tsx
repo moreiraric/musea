@@ -3,6 +3,7 @@
 import { createPortal } from "react-dom";
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useTabScope } from "@/components/tab-state";
 
 type FilterOption = {
   id: string;
@@ -26,7 +27,7 @@ function CaretIcon() {
   return (
     <svg
       aria-hidden="true"
-      className="h-[20px] w-[20px] text-black"
+      className="h-[16px] w-[16px] text-black"
       viewBox="0 0 20 20"
       fill="none"
     >
@@ -101,7 +102,7 @@ function BottomSheet({
       .join(" ");
 
   return createPortal(
-    <div className="absolute inset-0 z-30">
+    <div data-tab={tabId} className="tab-portal absolute inset-0 z-30">
       <button
         type="button"
         className="absolute inset-0 bg-black/40"
@@ -162,6 +163,7 @@ export function TagFilters({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [openSheet, setOpenSheet] = useState<"movement" | "medium" | "technique" | null>(null);
+  const tabId = useTabScope();
 
   const updateParam = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -176,13 +178,13 @@ export function TagFilters({
   };
 
   return (
-    <div className="-mx-[20px] flex w-[calc(100%+40px)] gap-[8px] overflow-x-auto overflow-y-visible px-[20px] pb-[4px] hide-scrollbar">
+    <div className="-mx-[20px] flex w-[calc(100%+40px)] gap-[10px] overflow-x-auto overflow-y-visible px-[20px] pb-[4px] hide-scrollbar">
       <button
         type="button"
-        className="inline-flex items-center gap-[8px] rounded-full border border-[#d9d9d9] bg-transparent px-[12px] py-[8px]"
+        className="inline-flex items-center gap-[8px] rounded-full border border-[#d9d9d9] bg-transparent px-[12px] py-[6px]"
         onClick={() => setOpenSheet("movement")}
       >
-        <span className="max-w-[140px] truncate text-[16px] font-medium text-black [font-family:var(--font-inter)]">
+        <span className="max-w-[140px] truncate text-[14px] font-medium text-black [font-family:var(--font-inter)]">
           {formatChipLabel(
             movementOptions.find((option) => option.slug === selectedMovement)?.name ?? "Movement",
           )}
@@ -192,10 +194,10 @@ export function TagFilters({
 
       <button
         type="button"
-        className="inline-flex items-center gap-[8px] rounded-full border border-[#d9d9d9] bg-transparent px-[12px] py-[8px]"
+        className="inline-flex items-center gap-[8px] rounded-full border border-[#d9d9d9] bg-transparent px-[12px] py-[6px]"
         onClick={() => setOpenSheet("medium")}
       >
-        <span className="max-w-[140px] truncate text-[16px] font-medium text-black [font-family:var(--font-inter)]">
+        <span className="max-w-[140px] truncate text-[14px] font-medium text-black [font-family:var(--font-inter)]">
           {formatChipLabel(
             mediumOptions.find((option) => option.slug === selectedMedium)?.name ?? "Medium",
           )}
@@ -205,10 +207,10 @@ export function TagFilters({
 
       <button
         type="button"
-        className="inline-flex items-center gap-[8px] rounded-full border border-[#d9d9d9] bg-transparent px-[12px] py-[8px]"
+        className="inline-flex items-center gap-[8px] rounded-full border border-[#d9d9d9] bg-transparent px-[12px] py-[6px]"
         onClick={() => setOpenSheet("technique")}
       >
-        <span className="max-w-[140px] truncate text-[16px] font-medium text-black [font-family:var(--font-inter)]">
+        <span className="max-w-[140px] truncate text-[14px] font-medium text-black [font-family:var(--font-inter)]">
           {formatChipLabel(
             techniqueOptions.find((option) => option.slug === selectedTechnique)?.name ?? "Technique",
           )}

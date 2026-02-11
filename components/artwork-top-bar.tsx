@@ -3,6 +3,7 @@
 import { createPortal } from "react-dom";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTabScope } from "@/components/tab-state";
 
 type ArtworkTopBarProps = {
   artwork: {
@@ -24,6 +25,7 @@ export function ArtworkTopBar({ artwork, artist }: ArtworkTopBarProps) {
   const router = useRouter();
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
   const [isSaved, setIsSaved] = useState(false);
+  const tabId = useTabScope();
 
   useEffect(() => {
     setPortalTarget(document.getElementById("app-viewport"));
@@ -107,7 +109,10 @@ export function ArtworkTopBar({ artwork, artist }: ArtworkTopBarProps) {
   };
 
   return createPortal(
-    <div className="absolute left-0 top-0 z-30 w-full bg-gradient-to-t from-[rgba(255,255,255,0)] from-50% to-[rgba(255,255,255,0.9)] px-[20px] pb-[8px] pt-[51px]">
+    <div
+      data-tab={tabId}
+      className="tab-portal absolute left-0 top-0 z-30 w-full bg-gradient-to-t from-[rgba(255,255,255,0)] from-50% to-[rgba(255,255,255,0.9)] px-[20px] pb-[8px] pt-[51px]"
+    >
       <div className="flex w-full items-center justify-between">
         <div className="flex items-center">
           <button

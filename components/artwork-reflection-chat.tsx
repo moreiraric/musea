@@ -10,6 +10,7 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from "react";
+import { useTabScope, useTabState } from "@/components/tab-state";
 
 type ChatMessage = {
   id: string;
@@ -118,6 +119,9 @@ export function ArtworkReflectionChat({
   const [inputValue, setInputValue] = useState("");
   const [isThinking, setIsThinking] = useState(false);
   const [focusLatest, setFocusLatest] = useState(false);
+  const tabId = useTabScope();
+  const { activeTab } = useTabState();
+  const isActiveTab = activeTab === tabId;
   const latestMessagesRef = useRef<ChatMessage[]>([]);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const scrollContentRef = useRef<HTMLDivElement | null>(null);
@@ -137,17 +141,20 @@ export function ArtworkReflectionChat({
     if (!viewport) {
       return;
     }
-    if (isOpen) {
+    if (isOpen && isActiveTab) {
       viewport.setAttribute("data-overlay-open", "true");
     } else {
       viewport.removeAttribute("data-overlay-open");
     }
-  }, [isOpen]);
+    return () => {
+      viewport.removeAttribute("data-overlay-open");
+    };
+  }, [isOpen, isActiveTab]);
 
   useEffect(() => {
     const body = document.body;
     const main = document.querySelector("#app-viewport main") as HTMLElement | null;
-    if (!isOpen) {
+    if (!isOpen || !isActiveTab) {
       return;
     }
     const previousBodyOverflow = body.style.overflow;
@@ -604,7 +611,8 @@ export function ArtworkReflectionChat({
       {portalTarget
         ? createPortal(
             <div
-              className={`absolute inset-0 z-40 transition-opacity duration-300 ${
+              data-tab={tabId}
+              className={`tab-portal absolute inset-0 z-40 transition-opacity duration-300 ${
                 isOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
               }`}
               onWheel={(event) => {

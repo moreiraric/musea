@@ -2,6 +2,7 @@
 
 import { createPortal } from "react-dom";
 import { useEffect, useRef, useState, type TouchEvent } from "react";
+import { useTabScope } from "@/components/tab-state";
 
 type ArtworkImageViewerProps = {
   src: string;
@@ -13,6 +14,7 @@ export function ArtworkImageViewer({ src, alt }: ArtworkImageViewerProps) {
   const [scale, setScale] = useState(1);
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
   const touchStartY = useRef<number | null>(null);
+  const tabId = useTabScope();
 
   useEffect(() => {
     if (!isOpen) {
@@ -69,7 +71,8 @@ export function ArtworkImageViewer({ src, alt }: ArtworkImageViewerProps) {
       {isOpen
         ? createPortal(
             <div
-              className="absolute inset-0 z-[9999] bg-black/90"
+              data-tab={tabId}
+              className="tab-portal absolute inset-0 z-[9999] bg-black/90"
               role="dialog"
               aria-modal="true"
               onClick={() => setIsOpen(false)}
