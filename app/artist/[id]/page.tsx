@@ -461,28 +461,34 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
 
   const masterpieces = artworkList;
 
+  const bannerHasImage = Boolean(highlightArtwork?.image_url);
+
   return (
-    <div className="flex w-full flex-col overflow-x-hidden bg-white">
-      <section className="relative w-full">
-        <div className="flex h-[193px] w-full items-center justify-center overflow-hidden bg-[#f5f5f5]">
+    <div className="relative flex w-full flex-col overflow-x-hidden bg-white">
+      <section className="relative w-full pb-[70px]">
+        <div
+          className={`flex h-[193px] w-full items-center justify-center overflow-hidden bg-[#f5f5f5] ${
+            bannerHasImage ? "" : "px-[32px] py-[10px]"
+          }`}
+        >
           {highlightArtwork?.image_url ? (
             <Link
-              className="h-full w-full"
+              className="block h-full w-full"
               href={`/artwork/${highlightArtwork.slug ?? highlightArtwork.id}`}
             >
               <img
                 alt={highlightArtwork.title}
-                className="h-full w-full object-cover"
+                className="h-full w-full object-fill object-center"
                 src={highlightArtwork.image_url}
               />
             </Link>
           ) : (
-            <p className="text-[16px] text-black [font-family:var(--font-inter)]">
-              Highlight piece
+            <p className="text-[16px] font-normal text-black [font-family:var(--font-inter)]">
+              highlight piece
             </p>
           )}
         </div>
-        <div className="absolute left-[16px] top-[111px] h-[140px] w-[100px] overflow-hidden rounded-[1000px] border-2 border-white bg-[#d9d9d9] shadow-[0_4px_16px_rgba(0,0,0,0.12)]">
+        <div className="absolute left-[17px] top-[105px] h-[150px] w-[100px] overflow-hidden rounded-[1000px] border-2 border-white bg-[#d9d9d9]">
           {artist.image_url ? (
             <img
               alt={artist.name}
@@ -493,22 +499,35 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
         </div>
       </section>
 
-      <div className="flex w-full flex-col gap-[16px] px-[20px] pt-[53px]">
-        <section className="flex w-full flex-col gap-[16px] pb-[32px] pt-[16px]">
+      <div className="flex w-full flex-col gap-[16px] px-[20px]">
+        <section className="flex w-full flex-col gap-[12px] pb-[32px] pt-0">
           <p className="text-[24px] font-semibold text-black [font-family:var(--font-literata)]">
             {artist.name}
           </p>
-          <div className="flex w-full items-center justify-between text-[18px] font-medium text-[#757575] [font-family:'SF_Mono',var(--font-jetbrains-mono)]">
-            <p>{artist.life_period ?? ""}</p>
+          <div className="flex w-full items-center justify-between text-[#757575]">
+            <p className="text-[18px] tracking-[-0.16px] [font-family:var(--font-jetbrains-mono)]">
+              {artist.life_period ?? ""}
+            </p>
             {artist.country ? (
-              <div className="flex items-center gap-[8px]">
-                {flagEmoji ? <span className="text-[24px]">{flagEmoji}</span> : null}
-                <span>{artist.country}</span>
+              <div className="flex min-w-[151px] items-center justify-end gap-[8px]">
+                {flagEmoji ? (
+                  <span className="text-[24px] [font-family:var(--font-inter)]">
+                    {flagEmoji}
+                  </span>
+                ) : null}
+                <span
+                  className="text-[18px] font-medium [font-family:var(--font-jetbrains-mono)]"
+                >
+                  {artist.country}
+                </span>
               </div>
             ) : null}
           </div>
           {artist.quote ? (
-            <p className="text-[16px] font-medium text-[#757575] [font-family:var(--font-inter)]">
+            <p
+              className="text-[18px] font-medium text-[#757575] [font-family:var(--font-instrument-sans)]"
+              style={{ fontVariationSettings: "'wdth' 100" }}
+            >
               “{artist.quote}”
             </p>
           ) : null}
@@ -530,29 +549,25 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
             artworks={movementArtworkCards}
             trigger={
               <section className="flex w-full flex-col">
-                <div className="flex w-full flex-col gap-[8px]">
-                  <div className="flex w-full items-center justify-between rounded-[24px] border border-[#d9d9d9] bg-white px-[4px] py-0">
-                    <div className="flex items-center gap-[6px]">
-                      <div className="flex h-[96px] w-[96px] items-center justify-center overflow-hidden rounded-[20px]">
-                        {movementImage ? (
-                          <img
-                            alt={movement.name}
-                            className="h-full w-full object-cover"
-                            src={movementImage}
-                          />
-                        ) : null}
-                      </div>
-                      <div className="flex flex-col gap-[4px]">
-                        <p className="text-[18px] font-semibold text-[#1e1e1e] [font-family:var(--font-literata)]">
-                          {movement.name}
-                        </p>
-                        {movementYears ? (
-                          <p className="text-[16px] text-[#757575] [font-family:var(--font-jetbrains-mono)]">
-                            {movementYears}
-                          </p>
-                        ) : null}
-                      </div>
-                    </div>
+                <div className="flex w-full items-center gap-[4px] rounded-[24px] border border-[#d9d9d9] bg-white pl-[8px] pr-[16px] py-[16px]">
+                <div className="flex h-[48px] w-[48px] items-center justify-center">
+                  {movementImage ? (
+                    <img
+                      alt={movement.name}
+                      className="h-full w-full object-contain"
+                      src={movementImage}
+                    />
+                  ) : null}
+                </div>
+                  <div className="flex h-[59px] flex-1 flex-col justify-between">
+                    <p className="text-[20px] font-semibold leading-[25px] text-[#1e1e1e] [font-family:var(--font-literata)]">
+                      {movement.name}
+                    </p>
+                    {movementYears ? (
+                      <p className="text-[16px] tracking-[-0.16px] text-[#757575] [font-family:var(--font-jetbrains-mono)]">
+                        {movementYears}
+                      </p>
+                    ) : null}
                   </div>
                 </div>
               </section>
@@ -564,14 +579,14 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
           <section className="flex w-full flex-col gap-[16px] pt-[32px]">
             {knownForTags.length > 0 ? (
               <div className="flex w-full flex-col gap-[8px]">
-                <p className="text-[14px] font-medium uppercase text-[#757575] [font-family:'SF_Mono',var(--font-jetbrains-mono)]">
+                <p className="text-[14px] font-semibold uppercase tracking-[0.28px] text-[#757575] [font-family:'SF_Mono',var(--font-jetbrains-mono)]">
                   Known For
                 </p>
-                <div className="-mx-[20px] flex w-[calc(100%+40px)] gap-[8px] overflow-x-auto pb-[4px] pl-[20px] pr-[20px] hide-scrollbar">
+                <div className="flex w-full gap-[8px] overflow-x-auto pb-[4px] hide-scrollbar">
                   {knownForTags.map((tag) => (
                     <div
                       key={tag.id}
-                      className="flex shrink-0 items-center gap-[8px] rounded-full border border-[#d9d9d9] bg-transparent px-[12px] py-[8px]"
+                      className="flex shrink-0 items-center gap-[8px] rounded-full border border-[#d9d9d9] bg-white pl-[12px] pr-[16px] py-[8px]"
                     >
                       <img
                         alt=""
@@ -579,7 +594,10 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
                         className="h-[24px] w-[24px]"
                         src={resolveTagIcon(tag)}
                       />
-                      <span className="text-[16px] font-medium text-black [font-family:var(--font-inter)]">
+                      <span
+                        className="text-[16px] font-medium text-black [font-family:var(--font-instrument-sans)]"
+                        style={{ fontVariationSettings: "'wdth' 100" }}
+                      >
                         {formatTagLabel(tag.name)}
                       </span>
                     </div>
@@ -590,14 +608,14 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
 
             {themeTags.length > 0 ? (
               <div className="flex w-full flex-col gap-[8px]">
-                <p className="text-[14px] font-medium uppercase text-[#757575] [font-family:'SF_Mono',var(--font-jetbrains-mono)]">
+                <p className="text-[14px] font-semibold uppercase tracking-[0.28px] text-[#757575] [font-family:'SF_Mono',var(--font-jetbrains-mono)]">
                   Themes
                 </p>
-                <div className="-mx-[20px] flex w-[calc(100%+40px)] gap-[8px] overflow-x-auto pb-[4px] pl-[20px] pr-[20px] hide-scrollbar">
+                <div className="flex w-full gap-[8px] overflow-x-auto pb-[4px] hide-scrollbar">
                   {themeTags.map((tag) => (
                     <Link
                       key={tag.id}
-                      className="flex shrink-0 items-center gap-[8px] rounded-full border border-[#d9d9d9] bg-transparent px-[12px] py-[8px]"
+                      className="flex shrink-0 items-center gap-[8px] rounded-full border border-[#d9d9d9] bg-white pl-[12px] pr-[16px] py-[8px]"
                       href={`/tag/${tag.slug ?? tag.id}`}
                     >
                       <img
@@ -606,7 +624,10 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
                         className="h-[24px] w-[24px]"
                         src={resolveTagIcon(tag)}
                       />
-                      <span className="text-[16px] font-medium text-black [font-family:var(--font-inter)]">
+                      <span
+                        className="text-[16px] font-medium text-black [font-family:var(--font-instrument-sans)]"
+                        style={{ fontVariationSettings: "'wdth' 100" }}
+                      >
                         {formatTagLabel(tag.name)}
                       </span>
                     </Link>
@@ -624,9 +645,9 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
         ) : null}
 
         {masterpieces.length > 0 ? (
-          <section className="flex w-full flex-col gap-[16px]">
+          <section className="flex w-full flex-col gap-[8px] pt-[16px]">
             <p
-              className="text-[20px] font-medium text-black [font-family:var(--font-instrument-sans)]"
+              className="text-[20px] font-semibold text-[#1e1e1e] [font-family:var(--font-instrument-sans)]"
               style={{ fontVariationSettings: "'wdth' 100" }}
             >
               Masterpieces

@@ -23,11 +23,12 @@ export function ArtistEssay({ text }: ArtistEssayProps) {
     <div className="relative w-full">
       <p
         ref={paragraphRef}
-        className="text-[17px] text-black [font-family:var(--font-inter)]"
+        className="text-[18px] leading-[24px] text-black [font-family:var(--font-instrument-sans)]"
         style={
           isExpanded
-            ? undefined
+            ? { fontVariationSettings: "'wdth' 100" }
             : {
+                fontVariationSettings: "'wdth' 100",
                 display: "-webkit-box",
                 WebkitLineClamp: 12,
                 WebkitBoxOrient: "vertical",
@@ -40,10 +41,11 @@ export function ArtistEssay({ text }: ArtistEssayProps) {
       {!isExpanded && isOverflowing ? (
         <button
           type="button"
-          className="absolute bottom-0 right-0 bg-white pl-[6px] text-[17px] font-bold text-black [font-family:var(--font-inter)]"
+          className="absolute bottom-0 right-0 bg-white pl-[6px] text-[18px] font-bold leading-[24px] text-black [font-family:var(--font-instrument-sans)]"
           onClick={() => setIsExpanded(true)}
+          style={{ fontVariationSettings: "'wdth' 100" }}
         >
-          ...read more
+          ...See More
         </button>
       ) : null}
     </div>
