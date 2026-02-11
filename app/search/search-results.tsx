@@ -400,7 +400,7 @@ export function SearchResults({
   }
 
   return (
-    <div className="flex w-full flex-col gap-[32px] pb-[32px] pt-[100px]">
+    <div className="flex w-full flex-col gap-[32px] pb-[32px] pt-[24px]">
       {sortedArtists.length > 0 ? (
         <section className="flex w-full flex-col gap-[10px] px-[20px]">
           <p className="text-[24px] font-semibold text-black [font-family:var(--font-literata)]">

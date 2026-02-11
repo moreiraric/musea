@@ -2,6 +2,7 @@ import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
 import { SearchResults } from "@/app/search/search-results";
 import { MovementCardSmall } from "@/components/movement-card-small";
+import { SearchForm } from "@/components/search-form";
 import { createSupabaseServerClient } from "@/lib/supabase";
 import { buildSearchFilter, buildSearchTokens } from "@/lib/search-utils";
 
@@ -295,6 +296,15 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     <div className="relative flex w-full flex-col overflow-x-hidden bg-white">
       <div className="pointer-events-none absolute left-0 top-0 h-[100px] w-full bg-gradient-to-t from-[rgba(255,255,255,0)] from-50% to-[rgba(255,255,255,0.9)]" />
 
+      <section className="flex w-full flex-col gap-[16px] px-[20px] pt-[100px]">
+        <SearchForm initialQuery={query} />
+        {!query ? (
+          <p className="text-[24px] font-semibold text-black [font-family:var(--font-literata)]">
+            Browse
+          </p>
+        ) : null}
+      </section>
+
       {query ? (
         <SearchResults
           key={query}
@@ -308,11 +318,6 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         />
       ) : (
         <div className="flex w-full flex-col gap-[16px] pb-[32px]">
-          <section className="flex w-full flex-col px-[20px] pb-0 pt-[100px]">
-            <p className="text-[24px] font-semibold text-black [font-family:var(--font-literata)]">
-              Browse
-            </p>
-          </section>
           <div className="flex w-full flex-col gap-[32px]">
             <section className="flex w-full flex-col gap-[12px] overflow-hidden">
             <div className="flex w-full items-center gap-[10px] px-[20px]">
