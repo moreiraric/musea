@@ -120,6 +120,9 @@ function getGridImageUrl(url: string, size = 360) {
 const uuidRegex =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
+const IN_CHUNK_SIZE = 100;
+const MAX_TAG_ARTWORK_IDS = 300;
+
 function intersectIds(base: string[] | null | undefined, next?: string[] | null) {
   const safeBase = base ?? [];
   if (!next) {
@@ -127,6 +130,17 @@ function intersectIds(base: string[] | null | undefined, next?: string[] | null)
   }
   const nextSet = new Set(next);
   return safeBase.filter((id) => nextSet.has(id));
+}
+
+function chunkArray<T>(items: T[], size = IN_CHUNK_SIZE) {
+  if (items.length <= size) {
+    return [items];
+  }
+  const chunks: T[][] = [];
+  for (let i = 0; i < items.length; i += size) {
+    chunks.push(items.slice(i, i + size));
+  }
+  return chunks;
 }
 
 export default async function TagPage({ params, searchParams }: TagPageProps) {
@@ -261,10 +275,15 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
     invalidFilters.push("technique");
   }
 
-  const { data: baseTagRows, error: baseTagError } = await supabase
+  const {
+    data: baseTagRows,
+    error: baseTagError,
+    count: baseTagCount,
+  } = await supabase
     .from("artwork_tags")
-    .select("artwork_id")
-    .eq("tag_id", tag.id);
+    .select("artwork_id", { count: "exact" })
+    .eq("tag_id", tag.id)
+    .range(0, MAX_TAG_ARTWORK_IDS - 1);
 
   if (baseTagError) {
     throw new Error(baseTagError.message);
@@ -273,21 +292,55 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
   const baseTagArtworkIds = (baseTagRows ?? []).map(
     (row) => row.artwork_id as string,
   );
-
-  const baseArtworksQuery = supabase
-    .from("artwork_tags")
-    .select("artworks!inner(id,slug,title,image_url,movement_id,year,artists(id,name,slug,image_url))")
-    .eq("tag_id", tag.id);
-
-  if (movementFilter) {
-    baseArtworksQuery.eq("artworks.movement_id", movementFilter.id);
+  const isLargeTag = (baseTagCount ?? baseTagArtworkIds.length) > MAX_TAG_ARTWORK_IDS;
+  if ((baseTagCount ?? 0) > MAX_TAG_ARTWORK_IDS && process.env.NODE_ENV !== "production") {
+    console.warn("Tag artwork ids truncated for performance", {
+      tagId: tag.id,
+      total: baseTagCount,
+      max: MAX_TAG_ARTWORK_IDS,
+    });
   }
 
-  const { data: baseArtworks, error: baseArtworksError } =
-    await baseArtworksQuery;
-
-  if (baseArtworksError) {
-    throw new Error(baseArtworksError.message);
+  let baseArtworks: ArtworkRow[] = [];
+  if (baseTagArtworkIds.length > 0) {
+    if (isLargeTag) {
+      try {
+        const baseQuery = supabase
+          .from("artwork_tags")
+          .select(
+            "artworks!inner(id,slug,title,image_url,movement_id,year,artists(id,name,slug,image_url))",
+          )
+          .eq("tag_id", tag.id)
+          .range(0, MAX_TAG_ARTWORK_IDS - 1);
+        const { data, error } = movementFilter
+          ? await baseQuery.eq("artworks.movement_id", movementFilter.id)
+          : await baseQuery;
+        if (error) {
+          throw new Error(error.message);
+        }
+        baseArtworks = (data ?? [])
+          .map((row) => (row as { artworks: ArtworkRow | null }).artworks)
+          .filter(Boolean) as ArtworkRow[];
+      } catch (error) {
+        if (process.env.NODE_ENV !== "production") {
+          console.warn("Tag page base artworks query failed", error);
+        }
+      }
+    } else {
+      for (const chunk of chunkArray(baseTagArtworkIds)) {
+        const query = supabase
+          .from("artworks")
+          .select("id,slug,title,image_url,movement_id,year,artists(id,name,slug,image_url))")
+          .in("id", chunk);
+        const { data, error } = movementFilter
+          ? await query.eq("movement_id", movementFilter.id)
+          : await query;
+        if (error) {
+          throw new Error(error.message);
+        }
+        baseArtworks.push(...((data ?? []) as ArtworkRow[]));
+      }
+    }
   }
 
   if (process.env.NODE_ENV !== "production") {
@@ -303,9 +356,7 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
     });
   }
 
-  let artworks: ArtworkRow[] = (baseArtworks ?? [])
-    .map((row) => (row as { artworks: ArtworkRow | null }).artworks)
-    .filter(Boolean) as ArtworkRow[];
+  let artworks: ArtworkRow[] = baseArtworks;
 
   let mediumArtworkIds: string[] | null = null;
   if (mediumFilter) {
@@ -359,15 +410,25 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
 
   let movementArtworkIds: string[] | null = null;
   if (movementFilter && baseTagArtworkIds.length > 0) {
-    const { data: movementRows, error: movementError } = await supabase
-      .from("artworks")
-      .select("id")
-      .in("id", baseTagArtworkIds)
-      .eq("movement_id", movementFilter.id);
-    if (movementError) {
-      throw new Error(movementError.message);
+    try {
+      const movementIds: string[] = [];
+      for (const chunk of chunkArray(baseTagArtworkIds)) {
+        const { data: movementRows, error: movementError } = await supabase
+          .from("artworks")
+          .select("id")
+          .in("id", chunk)
+          .eq("movement_id", movementFilter.id);
+        if (movementError) {
+          throw new Error(movementError.message);
+        }
+        movementIds.push(...(movementRows ?? []).map((row) => row.id as string));
+      }
+      movementArtworkIds = movementIds;
+    } catch (error) {
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("Tag page movement filter query failed", error);
+      }
     }
-    movementArtworkIds = (movementRows ?? []).map((row) => row.id as string);
   }
 
   const baseForMovement = intersectIds(
@@ -375,20 +436,28 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
     techniqueArtworkIds ?? null,
   );
 
-  if (baseForMovement.length > 0) {
-    const { data: movementRows, error: movementError } = await supabase
-      .from("artworks")
-      .select("id,movement_id")
-      .in("id", baseForMovement);
-    if (movementError) {
-      throw new Error(movementError.message);
-    }
-    (movementRows ?? []).forEach((row) => {
-      if (!row.movement_id) {
-        return;
+  if (baseForMovement.length > 0 && !isLargeTag) {
+    try {
+      for (const chunk of chunkArray(baseForMovement)) {
+        const { data: movementRows, error: movementError } = await supabase
+          .from("artworks")
+          .select("id,movement_id")
+          .in("id", chunk);
+        if (movementError) {
+          throw new Error(movementError.message);
+        }
+        (movementRows ?? []).forEach((row) => {
+          if (!row.movement_id) {
+            return;
+          }
+          movementCounts[row.movement_id] = (movementCounts[row.movement_id] ?? 0) + 1;
+        });
       }
-      movementCounts[row.movement_id] = (movementCounts[row.movement_id] ?? 0) + 1;
-    });
+    } catch (error) {
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("Tag page movement counts failed", error);
+      }
+    }
   }
 
   const baseForMedium = intersectIds(
@@ -396,22 +465,28 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
     techniqueArtworkIds ?? null,
   );
 
-  if (baseForMedium.length > 0 && mediumOptions.length > 0) {
-    const { data: mediumRows, error: mediumError } = await supabase
-      .from("artwork_tags")
-      .select("tag_id")
-      .in("artwork_id", baseForMedium)
-      .in(
-        "tag_id",
-        mediumOptions.map((option) => option.id),
-      );
-    if (mediumError) {
-      throw new Error(mediumError.message);
+  if (baseForMedium.length > 0 && mediumOptions.length > 0 && !isLargeTag) {
+    try {
+      const mediumTagIds = mediumOptions.map((option) => option.id);
+      for (const chunk of chunkArray(baseForMedium)) {
+        const { data: mediumRows, error: mediumError } = await supabase
+          .from("artwork_tags")
+          .select("tag_id")
+          .in("artwork_id", chunk)
+          .in("tag_id", mediumTagIds);
+        if (mediumError) {
+          throw new Error(mediumError.message);
+        }
+        (mediumRows ?? []).forEach((row) => {
+          const tagId = row.tag_id as string;
+          mediumCounts[tagId] = (mediumCounts[tagId] ?? 0) + 1;
+        });
+      }
+    } catch (error) {
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("Tag page medium counts failed", error);
+      }
     }
-    (mediumRows ?? []).forEach((row) => {
-      const tagId = row.tag_id as string;
-      mediumCounts[tagId] = (mediumCounts[tagId] ?? 0) + 1;
-    });
   }
 
   const baseForTechnique = intersectIds(
@@ -419,22 +494,28 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
     mediumArtworkIds ?? null,
   );
 
-  if (baseForTechnique.length > 0 && techniqueOptions.length > 0) {
-    const { data: techniqueRows, error: techniqueError } = await supabase
-      .from("artwork_tags")
-      .select("tag_id")
-      .in("artwork_id", baseForTechnique)
-      .in(
-        "tag_id",
-        techniqueOptions.map((option) => option.id),
-      );
-    if (techniqueError) {
-      throw new Error(techniqueError.message);
+  if (baseForTechnique.length > 0 && techniqueOptions.length > 0 && !isLargeTag) {
+    try {
+      const techniqueTagIds = techniqueOptions.map((option) => option.id);
+      for (const chunk of chunkArray(baseForTechnique)) {
+        const { data: techniqueRows, error: techniqueError } = await supabase
+          .from("artwork_tags")
+          .select("tag_id")
+          .in("artwork_id", chunk)
+          .in("tag_id", techniqueTagIds);
+        if (techniqueError) {
+          throw new Error(techniqueError.message);
+        }
+        (techniqueRows ?? []).forEach((row) => {
+          const tagId = row.tag_id as string;
+          techniqueCounts[tagId] = (techniqueCounts[tagId] ?? 0) + 1;
+        });
+      }
+    } catch (error) {
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("Tag page technique counts failed", error);
+      }
     }
-    (techniqueRows ?? []).forEach((row) => {
-      const tagId = row.tag_id as string;
-      techniqueCounts[tagId] = (techniqueCounts[tagId] ?? 0) + 1;
-    });
   }
 
   return (

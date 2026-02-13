@@ -9,8 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { useRouter } from "next/navigation";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 export type TabId = "home" | "discover" | "saved";
 
@@ -64,10 +63,28 @@ function inferTabFromPath(pathname?: string | null) {
   return "home";
 }
 
+function inferTabFromRootPath(pathname?: string | null) {
+  if (!pathname) {
+    return null;
+  }
+  if (pathname === "/") {
+    return "home";
+  }
+  if (pathname.startsWith("/discover") || pathname.startsWith("/search")) {
+    return "discover";
+  }
+  if (pathname.startsWith("/saved")) {
+    return "saved";
+  }
+  return null;
+}
+
 export function TabProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const inferredTab = useMemo(() => inferTabFromPath(pathname), [pathname]);
+  const tabParam = searchParams?.get("tab");
   const [activeTab, setActiveTab] = useState<TabId>(inferredTab);
   const [tabPaths, setTabPaths] = useState<Record<TabId, string>>(DEFAULT_PATHS);
   const [tabHistory, setTabHistory] =
@@ -88,6 +105,10 @@ export function TabProvider({ children }: { children: ReactNode }) {
     }
     didInitRef.current = true;
     try {
+      if (tabParam === "home" || tabParam === "discover" || tabParam === "saved") {
+        setActiveTab(tabParam);
+        return;
+      }
       const storedTab = window.localStorage.getItem(ACTIVE_TAB_KEY) as TabId | null;
       const storedPaths = window.localStorage.getItem(TAB_PATHS_KEY);
       if (storedPaths) {
@@ -107,7 +128,80 @@ export function TabProvider({ children }: { children: ReactNode }) {
       // ignore storage errors
     }
     setActiveTab(inferredTab);
-  }, [inferredTab, pathname]);
+  }, [inferredTab, pathname, tabParam]);
+
+  useEffect(() => {
+    if (tabParam !== "home" && tabParam !== "discover" && tabParam !== "saved") {
+      return;
+    }
+    if (!didInitRef.current) {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam]);
+
+  useEffect(() => {
+    const rootTab = inferTabFromRootPath(pathname);
+    if (rootTab && rootTab !== activeTab) {
+      setActiveTab(rootTab);
+    }
+  }, [activeTab, pathname]);
+
+  useEffect(() => {
+    if (!pathname) {
+      return;
+    }
+    if (pendingSwitch) {
+      return;
+    }
+    const isShared =
+      pathname.startsWith("/artist") ||
+      pathname.startsWith("/artwork") ||
+      pathname.startsWith("/tag") ||
+      pathname.startsWith("/movement");
+    if (!isShared) {
+      return;
+    }
+    if (tabParam === activeTab) {
+      return;
+    }
+    const params = new URLSearchParams(searchParams?.toString());
+    params.set("tab", activeTab);
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname);
+  }, [activeTab, pathname, pendingSwitch, router, searchParams, tabParam]);
+
+  useEffect(() => {
+    const handleClick = (event: MouseEvent) => {
+      if (!(event.target instanceof HTMLElement)) {
+        return;
+      }
+      const link = event.target.closest("a[href]") as HTMLAnchorElement | null;
+      if (!link || link.target && link.target !== "_self") {
+        return;
+      }
+      try {
+        const url = new URL(link.href, window.location.origin);
+        if (url.origin !== window.location.origin) {
+          return;
+        }
+        const isShared =
+          url.pathname.startsWith("/artist") ||
+          url.pathname.startsWith("/artwork") ||
+          url.pathname.startsWith("/tag") ||
+          url.pathname.startsWith("/movement");
+        if (!isShared || url.searchParams.has("tab")) {
+          return;
+        }
+        url.searchParams.set("tab", activeTab);
+        event.preventDefault();
+        router.push(`${url.pathname}${url.search}${url.hash}`);
+      } catch {
+        // ignore invalid URL
+      }
+    };
+    document.addEventListener("click", handleClick);
+    return () => document.removeEventListener("click", handleClick);
+  }, [activeTab, router]);
 
   useEffect(() => {
     try {

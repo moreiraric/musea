@@ -118,7 +118,7 @@ export function ElasticScroll({ children }: ElasticScrollProps) {
 
   return (
     <main ref={containerRef} className="flex-1 overflow-y-auto pb-[100px]">
-      <div ref={contentRef} className="will-change-transform">
+      <div ref={contentRef} className="min-h-full will-change-transform">
         {children}
       </div>
     </main>

@@ -86,7 +86,7 @@ function DefaultNav() {
               }}
               className={[
                 "relative z-10 flex flex-1 flex-col items-center justify-center gap-[4px] rounded-full px-[16px] py-[8px] text-center text-[12px] font-semibold tracking-[0.36px] transition",
-                isActive ? "text-[#303030]" : "text-[#5a5a5a] hover:bg-white/40",
+                isActive ? "text-[#303030]" : "text-[#5a5a5a]",
               ].join(" ")}
             >
               <img

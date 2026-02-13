@@ -4,6 +4,7 @@ import { ArtworkReflectionChat } from "@/components/artwork-reflection-chat";
 import { ArtworkSlides } from "@/components/artwork-slides";
 import { ArtworkTopBar } from "@/components/artwork-top-bar";
 import { ArtworkFull } from "@/components/artwork-full";
+import { CraftCardSheet } from "@/components/craft-card-sheet";
 import { MovementSheet } from "@/components/movement-sheet";
 import { createSupabaseServerAdminClient, createSupabaseServerClient } from "@/lib/supabase";
 
@@ -279,6 +280,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
         title: tag.name,
         description: tag.short_description || tag.description || "",
         icon: category.icon,
+        slug: tag.slug ?? tag.id,
       };
     })
     .filter(Boolean);
@@ -626,44 +628,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
             <p className="text-[14px] font-medium uppercase text-[#757575] [font-family:var(--font-fira-mono)]">
               Craft
             </p>
-            <div className="-mx-[20px] flex w-[calc(100%+40px)] gap-[16px] overflow-x-auto py-[2px] pl-[20px] pr-[20px] hide-scrollbar">
-              {craftCards.map((card) => (
-                <article
-                  key={card.label}
-                  className="flex h-[300px] w-[250px] shrink-0 flex-col justify-between rounded-[16px] border border-[#d9d9d9] bg-white p-[16px]"
-                >
-                  <div className="flex flex-1 flex-col gap-[12px]">
-                    <div className="flex flex-col gap-[12px]">
-                      <p className="text-[16px] font-semibold text-[#757575] [font-family:var(--font-inter)]">
-                        {card.label}
-                      </p>
-                      <div className="flex items-center gap-[10px]">
-                        <img
-                          alt=""
-                          aria-hidden="true"
-                          className="h-[42px] w-[42px] opacity-80"
-                          src={card.icon}
-                        />
-                        <p className="text-[20px] font-semibold leading-[25px] text-[#1e1e1e] [font-family:var(--font-literata)]">
-                          {card.title}
-                        </p>
-                      </div>
-                    </div>
-                    <p className="text-[16px] text-[#1e1e1e] [font-family:var(--font-literata)]">
-                      {card.description}
-                    </p>
-                  </div>
-                  <div className="flex w-full items-center justify-end p-[2px]">
-                    <img
-                      alt=""
-                      aria-hidden="true"
-                      className="h-[24px] w-[24px]"
-                      src="/images/ui/nav/icon-plus.svg"
-                    />
-                  </div>
-                </article>
-              ))}
-            </div>
+            <CraftCardSheet cards={craftCards} />
           </section>
         ) : null}
       </div>
