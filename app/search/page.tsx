@@ -398,6 +398,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
               label: "Personality",
               tags: personalityTags,
               icon: categoryIconMap.personality,
+              uppercase: true,
             },
             { label: "Emotion", tags: emotionTags, icon: categoryIconMap.emotion },
           ].map((row) => (
@@ -416,7 +417,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                 </p>
               </div>
               <div className="flex w-full items-start gap-[8px] overflow-x-auto px-[20px] hide-scrollbar">
-                {row.tags.map((tag) => renderTag(tag, false))}
+                {row.tags.map((tag) => renderTag(tag, Boolean(row.uppercase)))}
               </div>
             </section>
           ))}
