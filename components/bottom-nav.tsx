@@ -38,7 +38,8 @@ function DefaultNav() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { activeTab, setActiveTab, tabPaths, setPendingSwitch } = useTabState();
+  const { activeTab, setActiveTab, setTabPath, tabPaths, setPendingSwitch } =
+    useTabState();
   const activeIndex = navItems.findIndex((item) => item.id === activeTab);
   const clampedIndex = activeIndex === -1 ? 0 : activeIndex;
   const fullPath = searchParams?.toString()

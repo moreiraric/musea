@@ -49,7 +49,7 @@ export function ArtistTopBar({ artistId, artistSlug, artistName }: ArtistTopBarP
         <div className="flex w-full items-center justify-between">
           <button
             type="button"
-            onClick={() => goBackInTab(tabId, "/discover")}
+            onClick={() => goBackInTab(tabId)}
             aria-label="Back"
             className="pointer-events-auto flex h-[40px] items-center rounded-full bg-[rgba(255,255,255,0.33)] px-[8px] py-[6px] shadow-[0_0_32px_rgba(0,0,0,0.1)] backdrop-blur-[16px]"
           >

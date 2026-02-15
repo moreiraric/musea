@@ -4,7 +4,7 @@ import { createPortal } from "react-dom";
 import { useEffect, useState } from "react";
 import { useTabScope, useTabState } from "@/components/tab-state";
 
-export function TagTopBar({ backHref = "/discover" }: { backHref?: string }) {
+export function TagTopBar({ backHref }: { backHref?: string }) {
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
   const tabId = useTabScope();
   const { goBackInTab } = useTabState();

@@ -45,11 +45,6 @@ export function TabViewport({ children }: { children: ReactNode }) {
     ) {
       setPendingSwitch(null);
     }
-    if (isTabSwitchWithoutNav) {
-      lastTabRef.current = activeTab;
-      return;
-    }
-
     setTabPath(activeTab, fullPath);
     recordTabPath(activeTab, fullPath);
     setCache((prev) => {

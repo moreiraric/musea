@@ -6,10 +6,12 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useCallback,
   useRef,
   useState,
 } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { createPortal } from "react-dom";
+import { usePathname, useRouter } from "next/navigation";
 
 export type TabId = "home" | "discover" | "saved";
 
@@ -43,6 +45,8 @@ const DEFAULT_HISTORY: Record<TabId, TabHistoryState> = {
   discover: { entries: [DEFAULT_PATHS.discover], index: 0 },
   saved: { entries: [DEFAULT_PATHS.saved], index: 0 },
 };
+
+const DEBUG_TAB_OVERLAY_DEFAULT = false;
 
 const TabContext = createContext<TabState | null>(null);
 const TabScopeContext = createContext<TabId | null>(null);
@@ -79,12 +83,84 @@ function inferTabFromRootPath(pathname?: string | null) {
   return null;
 }
 
+function extractPathname(entry: string) {
+  try {
+    const base =
+      typeof window !== "undefined" ? window.location.origin : "http://localhost";
+    return new URL(entry, base).pathname;
+  } catch {
+    return entry.split("?")[0] ?? entry;
+  }
+}
+
+function stripTabParam(entry: string) {
+  try {
+    const base =
+      typeof window !== "undefined" ? window.location.origin : "http://localhost";
+    const url = new URL(entry, base);
+    if (!url.searchParams.has("tab")) {
+      return `${url.pathname}${url.search}${url.hash}`;
+    }
+    url.searchParams.delete("tab");
+    const query = url.searchParams.toString();
+    return `${url.pathname}${query ? `?${query}` : ""}${url.hash}`;
+  } catch {
+    return entry.replace(/([?&])tab=[^&]*(&?)/, (match, leading, trailing) => {
+      if (leading === "?" && trailing) {
+        return "?";
+      }
+      return leading === "?" ? "" : leading;
+    });
+  }
+}
+
+function sanitizeTabPaths(paths: Partial<Record<TabId, string>>) {
+  return (Object.keys(DEFAULT_PATHS) as TabId[]).reduce<Record<TabId, string>>(
+    (acc, tab) => {
+      const value = paths[tab];
+      if (!value) {
+        acc[tab] = DEFAULT_PATHS[tab];
+        return acc;
+      }
+      const cleaned = stripTabParam(value);
+      const entryTab = inferTabFromRootPath(extractPathname(cleaned));
+      acc[tab] = entryTab && entryTab !== tab ? DEFAULT_PATHS[tab] : cleaned;
+      return acc;
+    },
+    { ...DEFAULT_PATHS },
+  );
+}
+
+function sanitizeHistoryState(state: TabHistoryState, tab: TabId): TabHistoryState {
+  const kept: string[] = [];
+  let nextIndex = 0;
+  state.entries.forEach((entry, idx) => {
+    const entryTab = inferTabFromRootPath(extractPathname(entry));
+    if (entryTab && entryTab !== tab) {
+      return;
+    }
+    kept.push(entry);
+    if (idx <= state.index) {
+      nextIndex = kept.length - 1;
+    }
+  });
+
+  if (kept.length === 0) {
+    return { entries: [DEFAULT_PATHS[tab]], index: 0 };
+  }
+  if (nextIndex < 0) {
+    nextIndex = 0;
+  }
+  if (nextIndex >= kept.length) {
+    nextIndex = kept.length - 1;
+  }
+  return { entries: kept, index: nextIndex };
+}
+
 export function TabProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const inferredTab = useMemo(() => inferTabFromPath(pathname), [pathname]);
-  const tabParam = searchParams?.get("tab");
   const [activeTab, setActiveTab] = useState<TabId>(inferredTab);
   const [tabPaths, setTabPaths] = useState<Record<TabId, string>>(DEFAULT_PATHS);
   const [tabHistory, setTabHistory] =
@@ -92,28 +168,47 @@ export function TabProvider({ children }: { children: ReactNode }) {
   const [pendingSwitch, setPendingSwitch] = useState<{ tab: TabId; path: string } | null>(
     null,
   );
-  const skipNextHistory = useRef<Record<TabId, boolean>>({
-    home: false,
-    discover: false,
-    saved: false,
+  const skipNextHistoryPath = useRef<Record<TabId, string | null>>({
+    home: null,
+    discover: null,
+    saved: null,
   });
+  const lastRecordedPath = useRef<Record<TabId, string | null>>({
+    home: null,
+    discover: null,
+    saved: null,
+  });
+  const [debugEnabled, setDebugEnabled] = useState(DEBUG_TAB_OVERLAY_DEFAULT);
+  const [debugEvents, setDebugEvents] = useState<string[]>([]);
   const didInitRef = useRef(false);
+  const [debugPortalTarget, setDebugPortalTarget] = useState<HTMLElement | null>(null);
+
+  const pushDebugEvent = useCallback((message: string) => {
+    if (!debugEnabled) {
+      return;
+    }
+    setDebugEvents((prev) => {
+      const next = [message, ...prev];
+      return next.length > 25 ? next.slice(0, 25) : next;
+    });
+  }, [debugEnabled]);
 
   useEffect(() => {
+    if (debugEnabled) {
+      setDebugPortalTarget(document.body);
+    } else {
+      setDebugPortalTarget(null);
+    }
     if (didInitRef.current) {
       return;
     }
     didInitRef.current = true;
     try {
-      if (tabParam === "home" || tabParam === "discover" || tabParam === "saved") {
-        setActiveTab(tabParam);
-        return;
-      }
       const storedTab = window.localStorage.getItem(ACTIVE_TAB_KEY) as TabId | null;
       const storedPaths = window.localStorage.getItem(TAB_PATHS_KEY);
       if (storedPaths) {
         const parsed = JSON.parse(storedPaths) as Partial<Record<TabId, string>>;
-        setTabPaths((prev) => ({ ...prev, ...parsed }));
+        setTabPaths(sanitizeTabPaths(parsed));
       }
       if (storedTab === "home" || storedTab === "discover" || storedTab === "saved") {
         const isRootPath =
@@ -128,80 +223,54 @@ export function TabProvider({ children }: { children: ReactNode }) {
       // ignore storage errors
     }
     setActiveTab(inferredTab);
-  }, [inferredTab, pathname, tabParam]);
+  }, [inferredTab, pathname]);
 
   useEffect(() => {
-    if (tabParam !== "home" && tabParam !== "discover" && tabParam !== "saved") {
-      return;
+    if (debugEnabled) {
+      const homeState = tabHistory.home ?? DEFAULT_HISTORY.home;
+      const discoverState = tabHistory.discover ?? DEFAULT_HISTORY.discover;
+      const savedState = tabHistory.saved ?? DEFAULT_HISTORY.saved;
+      pushDebugEvent(
+        `[switch] active=${activeTab} home=${homeState.index}/${homeState.entries.length - 1} discover=${discoverState.index}/${discoverState.entries.length - 1} saved=${savedState.index}/${savedState.entries.length - 1}`,
+      );
     }
-    if (!didInitRef.current) {
-      setActiveTab(tabParam);
-    }
-  }, [tabParam]);
-
-  useEffect(() => {
-    const rootTab = inferTabFromRootPath(pathname);
-    if (rootTab && rootTab !== activeTab) {
-      setActiveTab(rootTab);
-    }
-  }, [activeTab, pathname]);
-
-  useEffect(() => {
-    if (!pathname) {
-      return;
-    }
-    if (pendingSwitch) {
-      return;
-    }
-    const isShared =
-      pathname.startsWith("/artist") ||
-      pathname.startsWith("/artwork") ||
-      pathname.startsWith("/tag") ||
-      pathname.startsWith("/movement");
-    if (!isShared) {
-      return;
-    }
-    if (tabParam === activeTab) {
-      return;
-    }
-    const params = new URLSearchParams(searchParams?.toString());
-    params.set("tab", activeTab);
-    const query = params.toString();
-    router.replace(query ? `${pathname}?${query}` : pathname);
-  }, [activeTab, pathname, pendingSwitch, router, searchParams, tabParam]);
-
-  useEffect(() => {
-    const handleClick = (event: MouseEvent) => {
-      if (!(event.target instanceof HTMLElement)) {
-        return;
-      }
-      const link = event.target.closest("a[href]") as HTMLAnchorElement | null;
-      if (!link || link.target && link.target !== "_self") {
-        return;
-      }
-      try {
-        const url = new URL(link.href, window.location.origin);
-        if (url.origin !== window.location.origin) {
-          return;
+    setTabHistory((prev) => {
+      let changed = false;
+      const next: Record<TabId, TabHistoryState> = { ...prev };
+      (Object.keys(DEFAULT_PATHS) as TabId[]).forEach((tab) => {
+        const state = prev[tab] ?? DEFAULT_HISTORY[tab];
+        const sanitized = sanitizeHistoryState(state, tab);
+        if (
+          sanitized.index !== state.index ||
+          sanitized.entries.length !== state.entries.length ||
+          sanitized.entries.some((entry, idx) => entry !== state.entries[idx])
+        ) {
+          next[tab] = sanitized;
+          changed = true;
         }
-        const isShared =
-          url.pathname.startsWith("/artist") ||
-          url.pathname.startsWith("/artwork") ||
-          url.pathname.startsWith("/tag") ||
-          url.pathname.startsWith("/movement");
-        if (!isShared || url.searchParams.has("tab")) {
-          return;
-        }
-        url.searchParams.set("tab", activeTab);
-        event.preventDefault();
-        router.push(`${url.pathname}${url.search}${url.hash}`);
-      } catch {
-        // ignore invalid URL
+      });
+      return changed ? next : prev;
+    });
+  }, [activeTab, debugEnabled, pushDebugEvent]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    const api = {
+      enable: () => setDebugEnabled(true),
+      disable: () => setDebugEnabled(false),
+      toggle: () => setDebugEnabled((prev) => !prev),
+      reset: () => setDebugEvents([]),
+    };
+    (window as unknown as { __tabDebug?: typeof api }).__tabDebug = api;
+    return () => {
+      const w = window as unknown as { __tabDebug?: typeof api };
+      if (w.__tabDebug === api) {
+        delete w.__tabDebug;
       }
     };
-    document.addEventListener("click", handleClick);
-    return () => document.removeEventListener("click", handleClick);
-  }, [activeTab, router]);
+  }, []);
 
   useEffect(() => {
     try {
@@ -237,32 +306,51 @@ export function TabProvider({ children }: { children: ReactNode }) {
       setActiveTab,
       tabPaths,
       setTabPath: (tab: TabId, path: string) => {
-        setTabPaths((prev) => (prev[tab] === path ? prev : { ...prev, [tab]: path }));
+        const cleaned = stripTabParam(path);
+        const entryTab = inferTabFromRootPath(extractPathname(cleaned));
+        if (entryTab && entryTab !== tab) {
+          return;
+        }
+        setTabPaths((prev) =>
+          prev[tab] === cleaned ? prev : { ...prev, [tab]: cleaned },
+        );
       },
       recordTabPath: (tab: TabId, path: string) => {
+        const cleaned = stripTabParam(path);
+        const entryTab = inferTabFromRootPath(extractPathname(cleaned));
+        if (entryTab && entryTab !== tab) {
+          return;
+        }
+        if (skipNextHistoryPath.current[tab]) {
+          if (skipNextHistoryPath.current[tab] === cleaned) {
+            pushDebugEvent(`[skip] ${tab} -> ${cleaned}`);
+            return;
+          }
+          skipNextHistoryPath.current[tab] = null;
+        }
+        if (lastRecordedPath.current[tab] === cleaned) {
+          return;
+        }
         setTabHistory((prev) => {
           const state = prev[tab] ?? DEFAULT_HISTORY[tab];
-          if (skipNextHistory.current[tab]) {
-            skipNextHistory.current[tab] = false;
-            return prev;
-          }
           const current = state.entries[state.index];
-          if (current === path) {
+          if (current === cleaned) {
             return prev;
           }
-          const existingIndex = state.entries.indexOf(path);
-          if (existingIndex !== -1) {
-            return { ...prev, [tab]: { ...state, index: existingIndex } };
-          }
-          const nextEntries = [...state.entries.slice(0, state.index + 1), path];
-          return { ...prev, [tab]: { entries: nextEntries, index: nextEntries.length - 1 } };
-        });
+        const nextEntries = [...state.entries.slice(0, state.index + 1), cleaned];
+        pushDebugEvent(`[record] ${tab} -> ${cleaned}`);
+        if (debugEnabled) {
+          console.log("[tab-history] record", { tab, path: cleaned, nextEntries });
+        }
+        lastRecordedPath.current[tab] = cleaned;
+        return { ...prev, [tab]: { entries: nextEntries, index: nextEntries.length - 1 } };
+      });
       },
-      goBackInTab: (tab: TabId, fallbackHref?: string) => {
+    goBackInTab: (tab: TabId, fallbackHref?: string) => {
         const state = tabHistory[tab] ?? DEFAULT_HISTORY[tab];
         const fallback = fallbackHref ?? DEFAULT_PATHS[tab];
         if (state.index <= 0) {
-          skipNextHistory.current[tab] = true;
+          skipNextHistoryPath.current[tab] = fallback;
           setTabHistory((prev) => ({
             ...prev,
             [tab]: { entries: [fallback], index: 0 },
@@ -270,9 +358,26 @@ export function TabProvider({ children }: { children: ReactNode }) {
           router.replace(fallback);
           return;
         }
-        const nextIndex = state.index - 1;
-        const target = state.entries[nextIndex] ?? fallback;
-        skipNextHistory.current[tab] = true;
+        let nextIndex = state.index - 1;
+        let target = state.entries[nextIndex] ?? fallback;
+        while (nextIndex >= 0) {
+          const entry = state.entries[nextIndex] ?? "";
+          const entryTab = inferTabFromRootPath(extractPathname(entry));
+          if (!entryTab || entryTab === tab) {
+            target = entry || fallback;
+            break;
+          }
+          nextIndex -= 1;
+        }
+        if (nextIndex < 0) {
+          nextIndex = 0;
+          target = fallback;
+        }
+        pushDebugEvent(`[back] ${tab} -> ${target}`);
+        if (debugEnabled) {
+          console.log("[tab-history] back", { tab, target, nextIndex });
+        }
+        skipNextHistoryPath.current[tab] = target;
         setTabHistory((prev) => ({
           ...prev,
           [tab]: { ...state, index: nextIndex },
@@ -282,10 +387,100 @@ export function TabProvider({ children }: { children: ReactNode }) {
       pendingSwitch,
       setPendingSwitch,
     }),
-    [activeTab, pendingSwitch, tabHistory, tabPaths, router],
+    [activeTab, debugEnabled, pendingSwitch, pushDebugEvent, tabHistory, tabPaths, router],
   );
 
-  return <TabContext.Provider value={value}>{children}</TabContext.Provider>;
+  const debugCurrentPath =
+    typeof window !== "undefined"
+      ? `${window.location.pathname}${window.location.search}${window.location.hash}`
+      : pathname;
+  const debugHistoryLines = (tab: TabId) => {
+    const state = tabHistory[tab] ?? DEFAULT_HISTORY[tab];
+    return state.entries
+      .map((entry, index) => `${index === state.index ? ">" : " "} ${index}: ${entry}`)
+      .join("\n");
+  };
+
+  return (
+    <TabContext.Provider value={value}>
+      {children}
+      {debugEnabled && debugPortalTarget
+        ? createPortal(
+            <div className="fixed right-[16px] top-[16px] z-[9999] w-[360px] max-h-[90vh] overflow-auto rounded-[16px] border border-black/10 bg-white/95 p-[12px] text-[11px] leading-[14px] text-black shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
+              <div className="flex items-center justify-between">
+                <div className="font-semibold">Tab Debug</div>
+                <div className="flex items-center gap-[6px]">
+                  <button
+                    type="button"
+                    className="rounded-[10px] border border-black/10 px-[8px] py-[4px] text-[11px] font-medium"
+                    onClick={() => {
+                      setDebugEvents([]);
+                    }}
+                  >
+                    Reset
+                  </button>
+                  <button
+                    type="button"
+                    className="rounded-[10px] border border-black/10 px-[8px] py-[4px] text-[11px] font-medium"
+                    onClick={() => {
+                      const payload = [
+                        `activeTab: ${activeTab}`,
+                        `path: ${debugCurrentPath}`,
+                        `pendingSwitch: ${pendingSwitch ? JSON.stringify(pendingSwitch) : "null"}`,
+                        "",
+                        "home",
+                        debugHistoryLines("home"),
+                        "",
+                        "discover",
+                        debugHistoryLines("discover"),
+                        "",
+                        "saved",
+                        debugHistoryLines("saved"),
+                        "",
+                        "events",
+                        debugEvents.join("\n"),
+                      ].join("\n");
+                      if (navigator.clipboard?.writeText) {
+                        navigator.clipboard.writeText(payload).catch(() => {
+                          window.prompt("Copy debug info:", payload);
+                        });
+                      } else {
+                        window.prompt("Copy debug info:", payload);
+                      }
+                    }}
+                  >
+                    Copy
+                  </button>
+                </div>
+              </div>
+              <div className="mt-[6px]">
+                <div>activeTab: {activeTab}</div>
+                <div>path: {debugCurrentPath}</div>
+                <div>pendingSwitch: {pendingSwitch ? JSON.stringify(pendingSwitch) : "null"}</div>
+              </div>
+              <div className="mt-[6px] whitespace-pre-wrap font-mono">
+                home
+                {"\n"}
+                {debugHistoryLines("home")}
+                {"\n\n"}
+                discover
+                {"\n"}
+                {debugHistoryLines("discover")}
+                {"\n\n"}
+                saved
+                {"\n"}
+                {debugHistoryLines("saved")}
+                {"\n\n"}
+                events
+                {"\n"}
+                {debugEvents.join("\n")}
+              </div>
+            </div>,
+            debugPortalTarget,
+          )
+        : null}
+    </TabContext.Provider>
+  );
 }
 
 export function useTabState() {
