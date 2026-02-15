@@ -109,7 +109,7 @@ export function DiscoverSearchHeader({
               value={value}
               onChange={(event) => setValue(event.target.value)}
               placeholder="Search artists or artworks..."
-              className="flex-1 bg-transparent text-[16px] text-black outline-none placeholder:text-[#b3b3b3] [font-family:var(--font-instrument-sans)]"
+              className="text-body-default-sans flex-1 bg-transparent text-black outline-none placeholder:text-[#b3b3b3]"
               enterKeyHint="search"
             />
             <button type="submit" className="sr-only" aria-hidden="true" tabIndex={-1}>

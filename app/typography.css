@@ -1,0 +1,109 @@
+.text-header-content-h1 {
+  font-family: var(--font-literata, "Literata", serif);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 36px;
+}
+
+.text-header-content-h2 {
+  font-family: var(--font-literata, "Literata", serif);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 24px;
+}
+
+.text-header-content-h3 {
+  font-family: var(--font-literata, "Literata", serif);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+}
+
+.text-header-ui-page {
+  font-family: var(--font-instrument-sans, "Instrument Sans", sans-serif);
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 24px;
+}
+
+.text-header-ui-overline {
+  font-family: var(--font-fira-mono, "Fira Mono", monospace);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.text-body-default-serif {
+  font-family: var(--font-literata, "Literata", serif);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+}
+
+.text-body-default-sans {
+  font-family: var(--font-instrument-sans, "Instrument Sans", sans-serif);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+}
+
+.text-body-default-mono {
+  font-family: var(--font-fira-mono, "Fira Mono", monospace);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 20px;
+  letter-spacing: -0.16px;
+}
+
+.text-body-longform-serif {
+  font-family: var(--font-literata, "Literata", serif);
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 28px;
+}
+
+.text-body-longform-sans {
+  font-family: var(--font-instrument-sans, "Instrument Sans", sans-serif);
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 28px;
+}
+
+.text-label-primary {
+  font-family: var(--font-instrument-sans, "Instrument Sans", sans-serif);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.text-label-chip {
+  font-family: var(--font-instrument-sans, "Instrument Sans", sans-serif);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.14px;
+}
+
+.text-label-nav {
+  font-family: var(--font-instrument-sans, "Instrument Sans", sans-serif);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.03em;
+}
+
+.text-meta-large {
+  font-family: var(--font-fira-mono, "Fira Mono", monospace);
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 20px;
+  letter-spacing: -0.16px;
+}
+
+.text-meta-small {
+  font-family: var(--font-instrument-sans, "Instrument Sans", sans-serif);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+}

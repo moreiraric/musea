@@ -41,11 +41,11 @@ export function MovementCardSmall({
         ) : null}
       </div>
       <div className="flex flex-1 flex-col items-start justify-between text-center">
-        <p className="text-[20px] font-semibold text-[#1e1e1e] [font-family:var(--font-literata)]">
+        <p className="text-header-content-h2 text-[#1e1e1e]">
           {name}
         </p>
         {normalizedYears ? (
-          <div className="flex items-center gap-[4px] text-[16px] text-[#757575] tracking-[-0.16px] [font-family:var(--font-fira-mono)]">
+          <div className="text-body-default-mono flex items-center gap-[4px] text-[#757575]">
             {hasYearRange ? (
               <>
                 <span>{normalizedYearParts[0]}</span>

@@ -103,10 +103,9 @@ function MovementChip({
         />
       ) : null}
       <span
-        className={`text-[16px] font-medium tracking-[-0.14px] text-center whitespace-nowrap [font-family:var(--font-instrument-sans)] ${
+        className={`text-label-chip text-center whitespace-nowrap ${
           isActive ? "text-[#757575]" : "text-black"
         }`}
-        style={{ fontVariationSettings: "'wdth' 100" }}
       >
         {name}
       </span>
@@ -160,10 +159,10 @@ function MovementEssaySection({
   return (
     <div className="flex w-full flex-col gap-[16px]">
       <div className="flex w-full flex-col gap-[4px] px-[20px]">
-        <p className="text-[20px] font-semibold leading-[28px] text-black [font-family:var(--font-literata)]">
+        <p className="text-header-content-h2 text-black">
           {title}
         </p>
-        <p className="text-[18px] leading-[26px] text-black [font-family:var(--font-literata)]">
+        <p className="text-body-longform-serif text-black">
           {body}
         </p>
       </div>
@@ -203,7 +202,7 @@ function ArtistPortrait({ name, imageUrl, href }: MovementArtist) {
           <img alt={name} className="h-full w-full object-cover" src={imageUrl} />
         ) : null}
       </div>
-      <p className="text-[16px] text-black [font-family:var(--font-inter)]">
+      <p className="text-header-content-h3 text-black">
         {formatSurname(name)}
       </p>
     </>
@@ -540,7 +539,7 @@ export function MovementSheet({
                 </button>
               </div>
               <div className="flex-1 overflow-y-auto pb-[16px] pt-[76px]">
-                <div className="flex flex-col items-center gap-[16px] pb-[32px]">
+                <div className="flex flex-col items-center gap-[32px] pb-[32px]">
                   <div className="flex flex-col items-center gap-0">
                     <div className="flex h-[200px] w-[200px] items-center justify-center overflow-hidden">
                       {movement.iconUrl ? (
@@ -551,12 +550,12 @@ export function MovementSheet({
                         />
                       ) : null}
                     </div>
-                    <div className="flex flex-col items-center gap-[4px]">
-                      <p className="text-[20px] font-semibold text-[#1e1e1e] [font-family:var(--font-literata)]">
+                    <div className="flex flex-col items-center gap-[12px]">
+                      <p className="text-header-content-h2 text-[#1e1e1e]">
                         {movement.name}
                       </p>
                       {movementYears ? (
-                        <div className="flex items-center gap-[4px] text-[18px] font-normal text-[#757575] tracking-[-0.16px] [font-family:var(--font-fira-mono)]">
+                        <div className="text-meta-large flex items-center gap-[4px] text-[#757575]">
                           {movement.startYear ? <span>{movement.startYear}</span> : null}
                           {movement.startYear && movement.endYear ? <span>-</span> : null}
                           {movement.endYear ? <span>{movement.endYear}</span> : null}
@@ -588,7 +587,7 @@ export function MovementSheet({
 
                 <section className="flex w-full flex-col gap-[8px] overflow-hidden pt-0 pb-[32px]">
                   <div className="flex w-full items-center px-[20px]">
-                    <p className="text-[14px] font-semibold uppercase tracking-[0.02em] text-[#757575] [font-family:var(--font-fira-mono)]">
+                    <p className="text-header-ui-overline text-[#757575]">
                       About
                     </p>
                   </div>
@@ -601,7 +600,7 @@ export function MovementSheet({
 
                 <section className="flex w-full flex-col gap-[8px] px-[20px] py-[32px]">
                   <div className="flex items-end py-[8px]">
-                    <p className="text-[14px] font-semibold uppercase tracking-[0.02em] text-[#757575] [font-family:var(--font-fira-mono)]">
+                    <p className="text-header-ui-overline text-[#757575]">
                       Artists
                     </p>
                   </div>
@@ -614,7 +613,7 @@ export function MovementSheet({
 
                 <section className="flex w-full flex-col gap-[8px] px-[20px] py-[32px]">
                   <div className="flex items-end py-[8px]">
-                    <p className="text-[14px] font-semibold uppercase tracking-[0.02em] text-[#757575] [font-family:var(--font-fira-mono)]">
+                    <p className="text-header-ui-overline text-[#757575]">
                       Artworks
                     </p>
                   </div>

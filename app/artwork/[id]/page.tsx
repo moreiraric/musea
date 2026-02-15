@@ -501,7 +501,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
 
         {displayTags.length > 0 ? (
           <section className="flex w-full flex-col gap-[8px] pb-[32px]">
-            <p className="text-[14px] font-medium uppercase text-[#757575] [font-family:var(--font-fira-mono)]">
+            <p className="text-header-ui-overline text-[#757575]">
               Tags
             </p>
             <div className="-mx-[20px] flex w-[calc(100%+40px)] gap-[8px] overflow-x-auto pb-[4px] pl-[20px] pr-[20px] hide-scrollbar">
@@ -517,7 +517,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
                     className="h-[24px] w-[24px]"
                     src={resolveTagIcon(tag)}
                   />
-                  <span className="text-[16px] font-medium text-black [font-family:var(--font-inter)]">
+                  <span className="text-label-primary text-black">
                     {formatTagLabel(tag.name)}
                   </span>
                 </Link>
@@ -554,7 +554,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
             trigger={
               <section className="flex w-full flex-col pb-[32px] pt-[32px]">
                 <div className="flex w-full flex-col gap-[8px]">
-                  <p className="text-[14px] font-medium uppercase text-[#757575] [font-family:var(--font-fira-mono)]">
+                  <p className="text-header-ui-overline text-[#757575]">
                     Movement
                   </p>
                   <div className="flex w-full flex-col items-center justify-between rounded-[32px] border border-[#d9d9d9] bg-white px-[20px] py-[16px]">
@@ -569,15 +569,15 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
                         ) : null}
                       </div>
                       <div className="mt-0 flex w-full flex-col items-center gap-[4px] text-center">
-                        <p className="text-[20px] font-semibold leading-[28px] text-black [font-family:var(--font-literata)]">
+                        <p className="text-header-content-h2 text-black">
                           {movement.name}
                         </p>
                         {movementYears ? (
-                          <p className="text-[14px] font-medium tracking-[-0.14px] text-[#757575] [font-family:var(--font-instrument-sans)]">
+                          <p className="text-body-default-mono text-[#757575]">
                             {movementYears}
                           </p>
                         ) : null}
-                        <p className="text-[16px] leading-[26px] text-[#1e1e1e] [font-family:var(--font-literata)]">
+                        <p className="text-body-default-serif text-[#1e1e1e]">
                           {movement.summary ?? ""}
                         </p>
                       </div>
@@ -625,7 +625,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
 
         {craftCards.length > 0 ? (
           <section className="flex w-full flex-col gap-[8px] pb-[32px] pt-[32px]">
-            <p className="text-[14px] font-medium uppercase text-[#757575] [font-family:var(--font-fira-mono)]">
+            <p className="text-header-ui-overline text-[#757575]">
               Craft
             </p>
             <CraftCardSheet cards={craftCards} />

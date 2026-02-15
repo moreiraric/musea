@@ -8,6 +8,7 @@ import {
   Fira_Mono,
 } from "next/font/google";
 import "./globals.css";
+import "./typography.css";
 import { AppShell } from "@/components/app-shell";
 
 const geistSans = Geist({

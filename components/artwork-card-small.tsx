@@ -32,7 +32,7 @@ export function ArtworkCardSmall({
       />
       <div className="flex w-full flex-col gap-[4px]">
         <p
-          className="text-[16px] font-semibold leading-[24px] text-[#1e1e1e] [font-family:var(--font-literata)]"
+          className="text-header-content-h3 text-[#1e1e1e]"
           style={{
             display: "-webkit-box",
             WebkitBoxOrient: "vertical",
@@ -43,7 +43,7 @@ export function ArtworkCardSmall({
           {title}
         </p>
         {showArtistName && artistName ? (
-          <p className="text-[16px] text-[#757575] tracking-[-0.16px] [font-family:var(--font-fira-mono)]">
+          <p className="text-body-default-mono text-[#757575]">
             {artistName}
           </p>
         ) : null}

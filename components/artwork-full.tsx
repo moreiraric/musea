@@ -39,9 +39,7 @@ export function ArtworkFull({
       />
       <div className="flex w-full flex-col gap-[16px] px-[20px] pb-[16px] pt-[8px]">
         <div className="flex items-center">
-          <p className="text-[24px] font-semibold text-black [font-family:var(--font-literata)]">
-            {title}
-          </p>
+          <p className="text-header-content-h1 text-black">{title}</p>
         </div>
         <div className="flex w-full items-center justify-between">
           {artist ? (
@@ -53,12 +51,12 @@ export function ArtworkFull({
             />
           ) : (
             <div className="flex items-center rounded-full bg-[#f5f5f5] px-[16px] py-[8px]">
-              <p className="text-[16px] text-[#757575] [font-family:var(--font-fira-mono)]">
+              <p className="text-body-default-mono text-[#757575]">
                 Unknown artist
               </p>
             </div>
           )}
-          <p className="text-[16px] text-[#757575] tracking-[-0.16px] [font-family:var(--font-fira-mono)]">
+          <p className="text-body-default-mono text-[#757575]">
             {year ?? ""}
           </p>
         </div>

@@ -92,7 +92,7 @@ export default function SavedPage() {
                   <div className="flex items-center gap-[10px]">
                     <button
                       type="button"
-                      className="flex h-[48px] items-center rounded-full bg-[rgba(220,38,38,0.2)] px-[16px] py-[8px] text-[16px] font-medium text-[#dc2626] shadow-[0_0_32px_rgba(220,38,38,0.2)] backdrop-blur-[16px] [font-family:var(--font-instrument-sans)]"
+                      className="text-label-primary flex h-[48px] items-center rounded-full bg-[rgba(220,38,38,0.2)] px-[16px] py-[8px] text-[#dc2626] shadow-[0_0_32px_rgba(220,38,38,0.2)] backdrop-blur-[16px]"
                       onClick={handleDelete}
                       aria-label="Delete selected artworks"
                     >
@@ -100,7 +100,7 @@ export default function SavedPage() {
                     </button>
                     <button
                       type="button"
-                      className="flex h-[48px] items-center rounded-full bg-[rgba(217,217,217,0.33)] px-[16px] py-[8px] text-[16px] font-medium text-black shadow-[0_0_32px_rgba(0,0,0,0.2)] backdrop-blur-[16px] [font-family:var(--font-instrument-sans)]"
+                      className="text-label-primary flex h-[48px] items-center rounded-full bg-[rgba(217,217,217,0.33)] px-[16px] py-[8px] text-black shadow-[0_0_32px_rgba(0,0,0,0.2)] backdrop-blur-[16px]"
                       onClick={() => setIsEditing(false)}
                     >
                       Done
@@ -109,7 +109,7 @@ export default function SavedPage() {
                 ) : (
                   <button
                     type="button"
-                    className="flex h-[48px] items-center rounded-full bg-[rgba(217,217,217,0.33)] px-[16px] py-[8px] text-[16px] font-medium text-black shadow-[0_0_32px_rgba(0,0,0,0.2)] backdrop-blur-[16px] [font-family:var(--font-instrument-sans)]"
+                    className="text-label-primary flex h-[48px] items-center rounded-full bg-[rgba(217,217,217,0.33)] px-[16px] py-[8px] text-black shadow-[0_0_32px_rgba(0,0,0,0.2)] backdrop-blur-[16px]"
                     onClick={() => setIsEditing(true)}
                   >
                     Edit
@@ -122,7 +122,7 @@ export default function SavedPage() {
         : null}
 
       <section className="flex w-full flex-col gap-[16px] px-[20px] pb-[32px] pt-[100px]">
-        <h1 className="text-[24px] font-semibold text-black [font-family:var(--font-literata)]">
+        <h1 className="text-header-ui-page text-[#1e1e1e]">
           Saved Artworks
         </h1>
         {savedArtworks.length > 0 ? (
@@ -181,16 +181,18 @@ export default function SavedPage() {
             })}
           </div>
         ) : (
-          <div className="flex w-full flex-col items-center justify-center py-[125px] text-center">
-            <img
-              alt=""
-              aria-hidden="true"
-              className="h-[300px] w-[200px] object-contain"
-              src="/images/illustrations/painting.svg"
-            />
-            <p className="mt-[8px] text-[18px] font-medium text-[#757575] [font-family:var(--font-instrument-sans)]">
-              No saved artworks yet.
-            </p>
+          <div className="flex w-full flex-col items-center text-center">
+            <div className="mt-[170px] flex w-[165px] flex-col items-center gap-[16px]">
+              <img
+                alt=""
+                aria-hidden="true"
+                className="h-[226px] w-[160px] object-contain"
+                src="/images/illustrations/painting.svg"
+              />
+              <p className="text-label-primary text-[#757575]">
+                No saved artworks yet.
+              </p>
+            </div>
           </div>
         )}
       </section>

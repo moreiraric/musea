@@ -37,10 +37,10 @@ export function ArtworkSlides({ slides }: { slides: Slide[] }) {
             key={`${slide.title}-${index}`}
             className="flex w-[275px] shrink-0 flex-col gap-[4px] [scroll-snap-align:start]"
           >
-            <h2 className="text-[20px] font-semibold leading-[28px] text-[#303030] [font-family:var(--font-literata)]">
+            <h2 className="text-header-content-h2 text-[#303030]">
               {slide.title}
             </h2>
-            <p className="text-[18px] font-normal leading-[26px] text-[#303030] [font-family:var(--font-literata)]">
+            <p className="text-body-longform-serif text-[#303030]">
               {slide.body}
             </p>
           </article>

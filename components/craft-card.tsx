@@ -10,7 +10,7 @@ export function CraftCard({ label, title, description, icon }: CraftCardProps) {
     <article className="flex h-[300px] w-[250px] shrink-0 flex-col justify-between rounded-[16px] border border-[#d9d9d9] bg-white p-[16px]">
       <div className="flex flex-1 flex-col gap-[12px]">
         <div className="flex flex-col gap-[12px]">
-          <p className="text-[16px] font-semibold text-[#757575] [font-family:var(--font-inter)]">
+          <p className="text-label-primary text-[#757575]">
             {label}
           </p>
           <div className="flex items-center gap-[10px]">
@@ -20,12 +20,12 @@ export function CraftCard({ label, title, description, icon }: CraftCardProps) {
               className="h-[42px] w-[42px] opacity-80"
               src={icon}
             />
-            <p className="text-[20px] font-semibold leading-[25px] text-[#1e1e1e] [font-family:var(--font-literata)]">
+            <p className="text-header-content-h2 text-[#1e1e1e]">
               {title}
             </p>
           </div>
         </div>
-        <p className="text-[16px] text-[#1e1e1e] [font-family:var(--font-literata)]">
+        <p className="text-body-default-serif text-[#1e1e1e]">
           {description}
         </p>
       </div>

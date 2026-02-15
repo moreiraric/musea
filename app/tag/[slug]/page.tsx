@@ -530,7 +530,7 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
               src={bannerImageUrl}
             />
           ) : (
-            <p className="text-[16px] text-black [font-family:var(--font-inter)]">
+            <p className="text-body-default-sans text-[#1e1e1e]">
               {tag.banner ?? "Banner"}
             </p>
           )}
@@ -539,18 +539,18 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
 
       <div className="flex w-full flex-col items-start px-[20px]">
         <section className="flex w-full flex-col gap-[10px] pb-[20px] pt-[20px]">
-          <p className="text-[24px] font-semibold text-black [font-family:var(--font-literata)]">
+          <p className="text-header-content-h1 text-[#1e1e1e]">
             {titleCase(tag.name)}
           </p>
           <div className="flex w-full items-center">
-            <p className="text-[16px] leading-[24px] text-[#5a5a5a] [font-family:var(--font-instrument-sans)]">
+            <p className="text-body-default-sans text-[#1e1e1e]">
               {tag.description ?? ""}
             </p>
           </div>
         </section>
 
         <section className="flex w-full flex-col gap-[12px] border-t border-[#d9d9d9] pb-[16px] pt-[16px]">
-          <p className="text-[12px] font-semibold uppercase tracking-[1.2px] text-[#8c8c8c] [font-family:var(--font-fira-mono)]">
+          <p className="text-header-ui-overline text-[#757575]">
             Filters
           </p>
           <TagFilters

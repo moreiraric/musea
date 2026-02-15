@@ -602,7 +602,7 @@ export function ArtworkReflectionChat({
             className="h-[24px] w-[24px]"
             src="/images/ui/other/icoon-sparkle-outline.svg"
           />
-          <span className="text-[16px] leading-[22px] text-[#707070] [font-family:var(--font-instrument-sans)]">
+          <span className="text-body-default-sans text-[#707070]">
             {question}
           </span>
         </button>
@@ -671,7 +671,7 @@ export function ArtworkReflectionChat({
                           />
                         </button>
                       </div>
-                      <p className="flex-1 truncate text-[16px] font-medium text-[#1e1e1e] [font-family:var(--font-instrument-sans)]">
+                      <p className="text-label-primary flex-1 truncate text-[#1e1e1e]">
                         {title}
                       </p>
                     </div>
@@ -696,7 +696,7 @@ export function ArtworkReflectionChat({
                             {latestUser ? (
                               <div className="flex w-full justify-end pb-[12px]">
                                 <div className="max-w-[327px] rounded-[24px] bg-[#f5f5f5] px-[16px] py-[12px]">
-                                  <p className="text-[16px] leading-[22px] text-[#1e1e1e] [font-family:var(--font-instrument-sans)] whitespace-pre-wrap">
+                                  <p className="text-body-default-sans text-[#1e1e1e] whitespace-pre-wrap">
                                     {latestUser.text}
                                   </p>
                                 </div>
@@ -709,7 +709,7 @@ export function ArtworkReflectionChat({
                               <div className="mt-[16px] space-y-[8px]">
                                 {renderMarkdown(
                                   latestAssistant.text,
-                                  "text-[16px] leading-[22px] text-[#1e1e1e] [font-family:var(--font-instrument-sans)]",
+                                  "text-body-default-sans text-[#1e1e1e]",
                                 )}
                               </div>
                             ) : null}
@@ -730,7 +730,7 @@ export function ArtworkReflectionChat({
                                     <div className="space-y-[8px]">
                                       {renderMarkdown(
                                         message.text,
-                                        "text-[16px] leading-[22px] text-[#1e1e1e] [font-family:var(--font-instrument-sans)]",
+                                        "text-body-default-sans text-[#1e1e1e]",
                                       )}
                                     </div>
                                   ) : (
@@ -738,7 +738,7 @@ export function ArtworkReflectionChat({
                                   )
                                 ) : (
                                   <div className="max-w-[327px] rounded-[24px] bg-[#f5f5f5] px-[16px] py-[12px]">
-                                    <p className="text-[16px] leading-[22px] text-[#1e1e1e] [font-family:var(--font-instrument-sans)] whitespace-pre-wrap">
+                                    <p className="text-body-default-sans text-[#1e1e1e] whitespace-pre-wrap">
                                       {message.text}
                                     </p>
                                   </div>
@@ -762,7 +762,7 @@ export function ArtworkReflectionChat({
                             className="h-[64px] w-[64px] opacity-80"
                             src="/images/ui/other/icoon-sparkle-outline.svg"
                           />
-                          <p className="text-[16px] font-medium text-[#757575] [font-family:var(--font-instrument-sans)]">
+                          <p className="text-label-primary text-[#757575]">
                             Curious? I can explain what you're seeing.
                           </p>
                         </div>
@@ -777,7 +777,7 @@ export function ArtworkReflectionChat({
                             aria-label="Send suggested prompt"
                             disabled={isThinking}
                           >
-                            <span className="text-[16px] text-[#1e1e1e] [font-family:var(--font-instrument-sans)]">
+                            <span className="text-body-default-sans text-[#1e1e1e]">
                               {question}
                             </span>
                           </button>
@@ -795,7 +795,7 @@ export function ArtworkReflectionChat({
                       <div className="flex h-[45px] w-full items-center justify-between rounded-[100px] bg-[#f5f5f5] pl-[16px] pr-[8px] py-[8px]">
                         <div className="flex flex-1 items-center">
                         <input
-                          className="w-full bg-transparent text-[16px] text-[#1e1e1e] placeholder:text-[#b3b3b3] outline-none [font-family:var(--font-instrument-sans)]"
+                          className="text-body-default-sans w-full bg-transparent text-[#1e1e1e] placeholder:text-[#b3b3b3] outline-none"
                           placeholder="Ask about the artwork"
                           value={inputValue}
                           onChange={(event) => handleInputChange(event.target.value)}
@@ -822,7 +822,7 @@ export function ArtworkReflectionChat({
                           />
                         </button>
                       </div>
-                      <p className="text-[12px] text-[#757575] [font-family:var(--font-instrument-sans)]">
+                      <p className="text-meta-small text-[#757575]">
                         Generated from web results, occasional errors may occur.
                       </p>
                     </div>

@@ -497,7 +497,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
               />
             </Link>
           ) : (
-            <p className="text-[16px] font-normal text-black [font-family:var(--font-inter)]">
+            <p className="text-body-default-sans text-black">
               highlight piece
             </p>
           )}
@@ -515,18 +515,18 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
 
       <div className="flex w-full flex-col gap-[16px] px-[20px]">
         <section className="flex w-full flex-col gap-[8px] pb-[32px] pt-[8px]">
-          <p className="text-[24px] font-semibold text-black [font-family:var(--font-literata)]">
+          <p className="text-header-content-h1 text-black">
             {artist.name}
           </p>
           <div className="flex w-full items-center justify-between text-[#757575]">
             {hasLifePeriodRange ? (
-              <p className="flex items-center gap-[4px] text-[18px] font-normal tracking-[-0.18px] [font-family:var(--font-fira-mono)]">
+              <p className="text-meta-large flex items-center gap-[4px] text-[#757575]">
                 <span>{lifePeriodParts[0]}</span>
                 <span>-</span>
                 <span>{lifePeriodParts[1]}</span>
               </p>
             ) : (
-              <p className="text-[18px] font-normal tracking-[-0.18px] [font-family:var(--font-fira-mono)]">
+              <p className="text-meta-large text-[#757575]">
                 {lifePeriod}
               </p>
             )}
@@ -537,19 +537,14 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
                     {flagEmoji}
                   </span>
                 ) : null}
-                <span
-                  className="text-[18px] font-normal tracking-[-0.18px] [font-family:var(--font-fira-mono)]"
-                >
+                <span className="text-meta-large text-[#757575]">
                   {artist.country}
                 </span>
               </div>
             ) : null}
           </div>
           {artist.quote ? (
-            <p
-              className="text-[18px] font-normal text-[#757575] [font-family:var(--font-instrument-sans)]"
-              style={{ fontVariationSettings: "'wdth' 100" }}
-            >
+            <p className="text-body-longform-sans text-[#757575]">
               “{artist.quote}”
             </p>
           ) : null}
@@ -584,7 +579,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
           <section className="flex w-full flex-col gap-[16px] pt-[32px]">
             {knownForTags.length > 0 ? (
               <div className="flex w-full flex-col gap-[8px]">
-                <p className="text-[14px] font-medium uppercase tracking-[0.28px] text-[#757575] [font-family:var(--font-fira-mono)]">
+                <p className="text-header-ui-overline text-[#757575]">
                   Known For
                 </p>
                 <div className="flex w-full gap-[8px] overflow-x-auto pb-[4px] hide-scrollbar">
@@ -600,10 +595,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
                         className="h-[24px] w-[24px]"
                         src={resolveTagIcon(tag)}
                       />
-                      <span
-                        className="text-[16px] font-medium text-black [font-family:var(--font-instrument-sans)]"
-                        style={{ fontVariationSettings: "'wdth' 100" }}
-                      >
+                      <span className="text-label-primary text-black">
                         {formatTagLabel(tag.name)}
                       </span>
                     </Link>
@@ -614,7 +606,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
 
             {themeTags.length > 0 ? (
               <div className="flex w-full flex-col gap-[8px]">
-                <p className="text-[14px] font-medium uppercase tracking-[0.28px] text-[#757575] [font-family:var(--font-fira-mono)]">
+                <p className="text-header-ui-overline text-[#757575]">
                   Themes
                 </p>
                 <div className="flex w-full gap-[8px] overflow-x-auto pb-[4px] hide-scrollbar">
@@ -630,10 +622,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
                         className="h-[24px] w-[24px]"
                         src={resolveTagIcon(tag)}
                       />
-                      <span
-                        className="text-[16px] font-medium text-black [font-family:var(--font-instrument-sans)]"
-                        style={{ fontVariationSettings: "'wdth' 100" }}
-                      >
+                      <span className="text-label-primary text-black">
                         {formatTagLabel(tag.name)}
                       </span>
                     </Link>
@@ -652,10 +641,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
 
         {masterpieces.length > 0 ? (
           <section className="flex w-full flex-col gap-[8px] pt-[16px]">
-            <p
-              className="text-[20px] font-medium text-[#1e1e1e] [font-family:var(--font-instrument-sans)]"
-              style={{ fontVariationSettings: "'wdth' 100" }}
-            >
+            <p className="text-header-ui-page text-[#1e1e1e]">
               Masterpieces
             </p>
             <div className="grid w-full grid-cols-2 justify-items-start gap-x-[20px] gap-y-[30px]">

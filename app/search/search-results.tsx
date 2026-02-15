@@ -353,16 +353,16 @@ export function SearchResults({
 
   if (!isRefreshing && sortedArtists.length === 0 && sortedArtworks.length === 0) {
     return (
-      <div className="flex w-full flex-col items-center justify-center px-[20px] py-[120px] text-center">
+      <div className="flex w-full flex-col items-center px-[20px] pt-[180px] text-center">
         <img
           alt=""
           aria-hidden="true"
-          className="h-[180px] w-[180px] object-contain opacity-60"
+          className="h-[200px] w-[200px] object-contain opacity-50"
           src="/images/illustrations/no-results.svg"
           loading="lazy"
           decoding="async"
         />
-        <p className="mt-[16px] max-w-[280px] text-[16px] font-normal leading-[22px] text-black [font-family:var(--font-instrument-sans)]">
+        <p className="text-label-primary mt-[8px] w-full max-w-[353px] text-center text-[#757575]">
           We couldn’t find any artists or artworks with that name. Try another search.
         </p>
       </div>
@@ -373,7 +373,7 @@ export function SearchResults({
     <div className="flex w-full flex-col gap-[32px] pb-[32px] pt-[16px]">
       {sortedArtists.length > 0 ? (
         <section className="flex w-full flex-col gap-[12px] px-[20px]">
-          <p className="text-[20px] font-medium leading-none text-[#757575] [font-family:var(--font-instrument-sans)]">
+          <p className="text-header-ui-page text-[#757575]">
             Artists
           </p>
           <div
@@ -397,7 +397,7 @@ export function SearchResults({
                     />
                   ) : null}
                 </div>
-                <p className="text-center text-[14px] font-semibold leading-[20px] text-black [font-family:var(--font-literata)]">
+                <p className="text-header-content-h3 text-center text-black">
                   {formatSurname(artist.name)}
                 </p>
               </Link>
@@ -408,7 +408,7 @@ export function SearchResults({
 
       {sortedArtworks.length > 0 ? (
         <section className="flex w-full flex-col gap-[16px] px-[20px]">
-          <p className="text-[20px] font-medium leading-none text-[#757575] [font-family:var(--font-instrument-sans)]">
+          <p className="text-header-ui-page text-[#757575]">
             Artworks
           </p>
           <div className="grid w-full grid-cols-2 justify-items-start gap-x-[20px] gap-y-[24px]">

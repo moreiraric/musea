@@ -121,7 +121,7 @@ function BottomSheet({
         onTouchEnd={handleTouchEnd}
       >
         <div className="mx-auto mb-[12px] h-[4px] w-[48px] rounded-full bg-[#d9d9d9]" />
-        <p className="mb-[12px] text-[14px] font-medium uppercase text-[#757575] [font-family:var(--font-fira-mono)]">
+        <p className="text-header-ui-overline mb-[12px] text-[#757575]">
           {label}
         </p>
         <div className="flex h-[calc(100%-52px)] flex-col gap-[8px] overflow-y-auto pb-[8px]">
@@ -129,14 +129,14 @@ function BottomSheet({
             <button
               key={option.id}
               type="button"
-              className="flex w-full items-center justify-between rounded-[12px] bg-white px-0 py-[12px] text-left text-[16px] text-black [font-family:var(--font-inter)]"
+              className="text-body-default-sans flex w-full items-center justify-between rounded-[12px] bg-white px-0 py-[12px] text-left text-[#1e1e1e]"
               onClick={() => {
                 onChange(option.slug);
                 onClose();
               }}
             >
               <span>{formatOptionLabel(option.name)}</span>
-              <span className="text-[14px] text-[#757575] [font-family:var(--font-inter)]">
+              <span className="text-[14px] text-[#757575] [font-family:var(--font-instrument-sans)]">
                 {counts[option.id] ?? 0}
               </span>
             </button>
@@ -184,7 +184,7 @@ export function TagFilters({
         className="inline-flex items-center gap-[8px] rounded-full border border-[#d9d9d9] bg-transparent px-[12px] py-[6px]"
         onClick={() => setOpenSheet("movement")}
       >
-        <span className="max-w-[140px] truncate text-[14px] font-medium text-black [font-family:var(--font-inter)]">
+        <span className="text-label-primary max-w-[140px] truncate text-black">
           {formatChipLabel(
             movementOptions.find((option) => option.slug === selectedMovement)?.name ?? "Movement",
           )}
@@ -197,7 +197,7 @@ export function TagFilters({
         className="inline-flex items-center gap-[8px] rounded-full border border-[#d9d9d9] bg-transparent px-[12px] py-[6px]"
         onClick={() => setOpenSheet("medium")}
       >
-        <span className="max-w-[140px] truncate text-[14px] font-medium text-black [font-family:var(--font-inter)]">
+        <span className="text-label-primary max-w-[140px] truncate text-black">
           {formatChipLabel(
             mediumOptions.find((option) => option.slug === selectedMedium)?.name ?? "Medium",
           )}
@@ -210,7 +210,7 @@ export function TagFilters({
         className="inline-flex items-center gap-[8px] rounded-full border border-[#d9d9d9] bg-transparent px-[12px] py-[6px]"
         onClick={() => setOpenSheet("technique")}
       >
-        <span className="max-w-[140px] truncate text-[14px] font-medium text-black [font-family:var(--font-inter)]">
+        <span className="text-label-primary max-w-[140px] truncate text-black">
           {formatChipLabel(
             techniqueOptions.find((option) => option.slug === selectedTechnique)?.name ?? "Technique",
           )}

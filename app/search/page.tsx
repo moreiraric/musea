@@ -300,7 +300,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       className="flex shrink-0 items-center justify-center rounded-full border border-[#d9d9d9] px-[14px] py-[10px]"
     >
       <span
-        className={`text-[16px] font-medium text-[#1e1e1e] [font-family:var(--font-instrument-sans)] ${
+        className={`text-label-primary text-[#1e1e1e] ${
           uppercase ? "uppercase" : "normal-case"
         }`}
       >
@@ -331,7 +331,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       ) : (
         <div className="flex w-full flex-col pb-[32px]">
           <section className="px-[20px] py-[16px]">
-            <p className="text-[20px] font-medium text-black [font-family:var(--font-instrument-sans)]">
+            <p className="text-header-ui-page text-[#1e1e1e]">
               Discover
             </p>
           </section>
@@ -346,7 +346,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                   src={categoryIconMap.movement}
                 />
               </div>
-              <p className="text-[16px] font-medium text-[#757575] [font-family:var(--font-instrument-sans)]">
+              <p className="text-label-primary text-[#757575]">
                 Movements
               </p>
             </div>
@@ -412,7 +412,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                     src={row.icon}
                   />
                 </div>
-                <p className="text-[16px] font-medium text-[#757575] [font-family:var(--font-instrument-sans)]">
+                <p className="text-label-primary text-[#757575]">
                   {row.label}
                 </p>
               </div>
@@ -432,7 +432,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                   src={categoryIconMap.theme}
                 />
               </div>
-              <p className="text-[16px] font-medium text-[#757575] [font-family:var(--font-instrument-sans)]">
+              <p className="text-label-primary text-[#757575]">
                 Themes
               </p>
             </div>
