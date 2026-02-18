@@ -3,6 +3,7 @@ import { unstable_noStore as noStore } from "next/cache";
 import { ArtworkFrameBig } from "@/components/artwork-frame-big";
 import { ArtworkCardSmall } from "@/components/artwork-card-small";
 import { ArtistChip } from "@/components/artist-chip";
+import { HomeTopBar } from "@/components/home-top-bar";
 import { MovementCardBig } from "@/components/movement-card-big";
 import { createSupabaseServerClient } from "@/lib/supabase";
 
@@ -132,24 +133,7 @@ export default async function Home() {
 
   return (
     <div className="relative flex w-full flex-col overflow-x-hidden bg-white">
-      <div className="pointer-events-none fixed left-0 top-0 z-30 w-full max-w-[393px]">
-        <div className="flex h-[100px] items-end bg-gradient-to-t from-[rgba(255,255,255,0)] to-[rgba(255,255,255,0.9)] px-[20px] pb-[8px] pt-[54px]">
-          <div className="flex w-full items-center justify-end">
-            <Link
-              href="/profile"
-              className="pointer-events-auto flex h-[40px] items-center rounded-full bg-[rgba(255,255,255,0.33)] px-[8px] py-[6px] shadow-[0px_0px_32px_rgba(0,0,0,0.1)] backdrop-blur-[16px]"
-              aria-label="Open profile"
-            >
-              <img
-                alt=""
-                aria-hidden="true"
-                className="h-[24px] w-[24px]"
-                src="/images/ui/other/icon-user-outline.svg"
-              />
-            </Link>
-          </div>
-        </div>
-      </div>
+      <HomeTopBar />
 
       <div className="flex w-full flex-col gap-[32px] pb-[32px] pt-[100px]">
         <section className="flex w-full flex-col gap-[8px]">
