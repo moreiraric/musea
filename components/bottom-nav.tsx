@@ -15,21 +15,21 @@ const navItems: Array<{
     id: "home",
     label: "Home",
     href: "/",
-    icon: "/images/ui/nav/icon-home-outline.svg",
+    icon: "/images/ui/nav/icon-home-filled-muted.svg",
     iconActive: "/images/ui/nav/icon-home-filled.svg",
   },
   {
     id: "discover",
     label: "Discover",
     href: "/discover",
-    icon: "/images/ui/nav/icon-discover-outline.svg",
+    icon: "/images/ui/nav/icon-discover-filled-muted.svg",
     iconActive: "/images/ui/nav/icon-discover-filled.svg",
   },
   {
     id: "saved",
     label: "Saved",
     href: "/saved",
-    icon: "/images/ui/nav/icon-bookmark-outline.svg",
+    icon: "/images/ui/nav/icon-bookmarked-filled-muted.svg",
     iconActive: "/images/ui/nav/icon-bookmarked-filled.svg",
   },
 ];
@@ -87,7 +87,7 @@ function DefaultNav() {
               }}
               className={[
                 "relative z-10 flex flex-1 flex-col items-center justify-center gap-[4px] rounded-full px-[16px] py-[8px] text-center text-[12px] font-semibold tracking-[0.36px] transition",
-                isActive ? "text-[#303030]" : "text-[#5a5a5a]",
+                isActive ? "text-[#303030]" : "text-[#b3b3b3]",
               ].join(" ")}
             >
               <img
