@@ -1,5 +1,267 @@
-import { redirect } from "next/navigation";
+import Link from "next/link";
+import { unstable_noStore as noStore } from "next/cache";
+import { ArtworkFrameBig } from "@/components/artwork-frame-big";
+import { ArtworkCardSmall } from "@/components/artwork-card-small";
+import { MovementCardBig } from "@/components/movement-card-big";
+import { createSupabaseServerClient } from "@/lib/supabase";
+
+export const dynamic = "force-dynamic";
+
+type ArtworkRow = {
+  id: string;
+  slug: string | null;
+  title: string;
+  image_url: string | null;
+};
+
+type TagRow = {
+  id: string;
+  slug: string | null;
+  name: string;
+};
+
+const ARTWORK_OF_THE_DAY_SLUG =
+  "woman-with-a-parasol-madame-monet-and-her-son-claude-monet";
+const MOVEMENT_OF_THE_WEEK_SLUG = "impressionism";
+
+function formatMovementYears(start?: number | null, end?: number | null) {
+  if (start && end) {
+    return `${start} - ${end}`;
+  }
+  return start ? `${start}` : end ? `${end}` : "";
+}
+
+function resolveMovementImage(slug?: string | null, iconUrl?: string | null) {
+  if (iconUrl) {
+    return iconUrl;
+  }
+  if (slug) {
+    return `/images/movements/${slug}.png`;
+  }
+  return "";
+}
+
+function formatTagLabel(name: string) {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => word[0]?.toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+}
 
 export default async function Home() {
-  redirect("/artwork/woman-with-a-parasol-madame-monet-and-her-son-claude-monet");
+  noStore();
+  const supabase = createSupabaseServerClient();
+
+  const [
+    { data: artworkOfDay, error: artworkError },
+    { data: movementOfWeek, error: movementError },
+    { data: emotionTags, error: emotionError },
+  ] = await Promise.all([
+    supabase
+      .from("artworks")
+      .select("id,slug,title,image_url")
+      .eq("slug", ARTWORK_OF_THE_DAY_SLUG)
+      .maybeSingle(),
+    supabase
+      .from("movements")
+      .select("id,name,slug,start_year,end_year,summary,icon_url")
+      .eq("slug", MOVEMENT_OF_THE_WEEK_SLUG)
+      .maybeSingle(),
+    supabase
+      .from("tags")
+      .select("id,slug,name")
+      .eq("category", "emotion")
+      .order("name"),
+  ]);
+
+  if (artworkError) {
+    throw new Error(artworkError.message);
+  }
+  if (movementError) {
+    throw new Error(movementError.message);
+  }
+  if (emotionError) {
+    throw new Error(emotionError.message);
+  }
+
+  let movementArtworks: ArtworkRow[] = [];
+  if (movementOfWeek?.id) {
+    const { data } = await supabase
+      .from("artworks")
+      .select("id,slug,title,image_url")
+      .eq("movement_id", movementOfWeek.id)
+      .order("year", { ascending: true, nullsFirst: false })
+      .order("title", { ascending: true })
+      .limit(6);
+    movementArtworks = (data ?? []) as ArtworkRow[];
+  }
+
+  const movementYears = formatMovementYears(
+    movementOfWeek?.start_year ?? null,
+    movementOfWeek?.end_year ?? null,
+  );
+  const movementImage = resolveMovementImage(
+    movementOfWeek?.slug ?? null,
+    movementOfWeek?.icon_url ?? null,
+  );
+  const movementSlugOrId = movementOfWeek?.slug ?? movementOfWeek?.id ?? null;
+  const movementHref = movementSlugOrId ? `/movement/${movementSlugOrId}` : null;
+  const fallbackArtworks = [
+    { id: "placeholder-1", title: "Artwork Title" },
+    { id: "placeholder-2", title: "Artwork Title" },
+    { id: "placeholder-3", title: "Artwork Title" },
+    { id: "placeholder-4", title: "Artwork Title" },
+    { id: "placeholder-5", title: "Artwork Title" },
+    { id: "placeholder-6", title: "Artwork Title" },
+  ];
+  const resolvedArtworks =
+    movementArtworks.length > 0
+      ? movementArtworks
+      : (fallbackArtworks as ArtworkRow[]);
+  const resolvedEmotionTags =
+    (emotionTags as TagRow[] | null | undefined) ?? [];
+
+  const artworkSlugOrId = artworkOfDay?.slug ?? artworkOfDay?.id ?? null;
+  const artworkHref = artworkSlugOrId ? `/artwork/${artworkSlugOrId}` : null;
+
+  return (
+    <div className="relative flex w-full flex-col overflow-x-hidden bg-white">
+      <div className="sticky top-0 z-30 w-full">
+        <div className="flex h-[100px] items-end bg-gradient-to-t from-[rgba(255,255,255,0)] to-[rgba(255,255,255,0.9)] px-[20px] pb-[8px] pt-[54px]">
+          <div className="flex w-full items-center justify-end">
+            <Link
+              href="/profile"
+              className="flex h-[40px] items-center rounded-full bg-[rgba(255,255,255,0.33)] px-[8px] py-[6px] shadow-[0px_0px_32px_rgba(0,0,0,0.1)] backdrop-blur-[16px]"
+              aria-label="Open profile"
+            >
+              <img
+                alt=""
+                aria-hidden="true"
+                className="h-[24px] w-[24px]"
+                src="/images/ui/other/icon-user-outline.svg"
+              />
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex w-full flex-col gap-[32px] pb-[32px]">
+        <section className="flex w-full flex-col gap-[10px]">
+          <div className="flex flex-col gap-[10px] px-[20px]">
+            <p className="text-header-ui-page text-[#1e1e1e]">
+              Welcome
+            </p>
+            <p className="text-header-ui-page text-[#757575]">
+              Artwork of the day
+            </p>
+          </div>
+          {artworkHref ? (
+            <Link href={artworkHref} className="block w-full">
+              <ArtworkFrameBig
+                className="w-full"
+                imageUrl={artworkOfDay?.image_url ?? null}
+                alt={artworkOfDay?.title ?? "Artwork of the day"}
+              />
+            </Link>
+          ) : (
+            <ArtworkFrameBig
+              className="w-full"
+              imageUrl={artworkOfDay?.image_url ?? null}
+              alt={artworkOfDay?.title ?? "Artwork of the day"}
+            />
+          )}
+        </section>
+
+        <section className="flex w-full flex-col gap-[32px] px-[20px]">
+          <div className="flex w-full flex-col gap-[16px]">
+            <p className="text-header-ui-page text-[#757575]">
+              Movement of the week
+            </p>
+            {movementHref ? (
+              <Link href={movementHref} className="block">
+                <MovementCardBig
+                  name={movementOfWeek?.name ?? "Movement Name"}
+                  years={movementYears || "YYYY - YYYY"}
+                  summary={
+                    movementOfWeek?.summary ??
+                    "This is a placeholder for the movement description in the big movement card."
+                  }
+                  imageUrl={movementImage}
+                />
+              </Link>
+            ) : (
+              <MovementCardBig
+                name={movementOfWeek?.name ?? "Movement Name"}
+                years={movementYears || "YYYY - YYYY"}
+                summary={
+                  movementOfWeek?.summary ??
+                  "This is a placeholder for the movement description in the big movement card."
+                }
+                imageUrl={movementImage}
+              />
+            )}
+          </div>
+          <div className="grid w-full grid-cols-2 justify-items-start gap-x-[20px] gap-y-[30px]">
+            {resolvedArtworks.map((artwork, index) => {
+              const key = artwork.id ?? `artwork-${index}`;
+              const href = artwork.slug ?? artwork.id ? `/artwork/${artwork.slug ?? artwork.id}` : null;
+              const card = (
+                <ArtworkCardSmall
+                  title={artwork.title ?? "Artwork Title"}
+                  imageUrl={artwork.image_url ?? null}
+                  imageAlt={artwork.title ?? "Artwork"}
+                  showArtistName={false}
+                />
+              );
+
+              return href ? (
+                <Link key={key} href={href} className="flex w-[168.5px] flex-col items-start">
+                  {card}
+                </Link>
+              ) : (
+                <div key={key} className="flex w-[168.5px] flex-col items-start">
+                  {card}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="flex w-full flex-col gap-[12px] overflow-clip">
+          <div className="flex w-full items-center px-[20px]">
+            <p className="text-label-primary text-[#757575]">
+              What emotion do you want to explore today?
+            </p>
+          </div>
+          <div className="flex w-full items-start gap-[8px] overflow-x-auto overflow-y-clip bg-white px-[20px] hide-scrollbar">
+            {resolvedEmotionTags.length > 0
+              ? resolvedEmotionTags.map((tag) => (
+                  <Link
+                    key={tag.id}
+                    href={`/tag/${tag.slug ?? tag.id}`}
+                    className="flex shrink-0 items-center justify-center rounded-full border border-[#d9d9d9] px-[14px] py-[10px]"
+                  >
+                    <span className="text-label-primary text-[#1e1e1e]">
+                      {formatTagLabel(tag.name)}
+                    </span>
+                  </Link>
+                ))
+              : ["Emotion", "Emotion", "Emotion", "Emotion", "Emotion"].map(
+                  (label, index) => (
+                    <div
+                      key={`emotion-placeholder-${index}`}
+                      className="flex shrink-0 items-center justify-center rounded-full border border-[#d9d9d9] px-[14px] py-[10px]"
+                    >
+                      <span className="text-label-primary text-[#1e1e1e]">
+                        {label}
+                      </span>
+                    </div>
+                  ),
+                )}
+          </div>
+        </section>
+      </div>
+    </div>
+  );
 }

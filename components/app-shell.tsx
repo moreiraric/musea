@@ -18,6 +18,7 @@ export function AppShell({ children }: AppShellProps) {
     pathname?.startsWith("/artwork/") ||
     pathname?.startsWith("/artist") ||
     pathname?.startsWith("/movement") ||
+    pathname === "/" ||
     pathname === "/saved" ||
     pathname?.startsWith("/search") ||
     pathname?.startsWith("/discover") ||
