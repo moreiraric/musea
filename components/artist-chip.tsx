@@ -16,7 +16,7 @@ export function ArtistChip({
   disableLink = false,
 }: ArtistChipProps) {
   const baseClassName = [
-    "flex items-center gap-[12px] rounded-full bg-[#f5f5f5] pl-[8px] pr-[16px] py-[8px]",
+    "flex items-center gap-[8px] rounded-full bg-[#f5f5f5] pl-[8px] pr-[16px] py-[8px]",
     className,
   ]
     .filter(Boolean)
@@ -35,7 +35,7 @@ export function ArtistChip({
           <div className="h-full w-full bg-[#d9d9d9]" />
         )}
       </div>
-      <p className="text-body-default-mono text-black">
+      <p className="text-body-default-mono text-[#1e1e1e]">
         {name}
       </p>
     </>

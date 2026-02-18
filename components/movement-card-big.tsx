@@ -24,7 +24,7 @@ export function MovementCardBig({
     <div className={containerClassName}>
       <div className="flex w-full flex-col items-center">
         <div className="flex items-center justify-center">
-          <div className="flex h-[132px] w-[132px] items-center justify-center overflow-hidden">
+          <div className="flex h-[98px] w-[98px] items-center justify-center overflow-hidden">
             {imageUrl ? (
               <img
                 alt={name}
@@ -46,7 +46,7 @@ export function MovementCardBig({
             ) : null}
           </div>
           {summary ? (
-            <p className="text-body-default-serif text-[#1e1e1e]">
+            <p className="text-body-default-serif leading-[26px] text-[#1e1e1e]">
               {summary}
             </p>
           ) : null}

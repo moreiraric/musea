@@ -2,6 +2,7 @@ import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
 import { ArtworkFrameBig } from "@/components/artwork-frame-big";
 import { ArtworkCardSmall } from "@/components/artwork-card-small";
+import { ArtistChip } from "@/components/artist-chip";
 import { MovementCardBig } from "@/components/movement-card-big";
 import { createSupabaseServerClient } from "@/lib/supabase";
 
@@ -60,7 +61,7 @@ export default async function Home() {
   ] = await Promise.all([
     supabase
       .from("artworks")
-      .select("id,slug,title,image_url")
+      .select("id,slug,title,image_url,year,artists(id,name,slug,image_url)")
       .eq("slug", ARTWORK_OF_THE_DAY_SLUG)
       .maybeSingle(),
     supabase
@@ -124,10 +125,14 @@ export default async function Home() {
 
   const artworkSlugOrId = artworkOfDay?.slug ?? artworkOfDay?.id ?? null;
   const artworkHref = artworkSlugOrId ? `/artwork/${artworkSlugOrId}` : null;
+  const artworkArtist = artworkOfDay?.artists ?? null;
+  const artistHref = artworkArtist?.slug ?? artworkArtist?.id
+    ? `/artist/${artworkArtist?.slug ?? artworkArtist?.id}`
+    : null;
 
   return (
     <div className="relative flex w-full flex-col overflow-x-hidden bg-white">
-      <div className="sticky top-0 z-30 w-full">
+      <div className="absolute left-0 top-0 z-30 w-full">
         <div className="flex h-[100px] items-end bg-gradient-to-t from-[rgba(255,255,255,0)] to-[rgba(255,255,255,0.9)] px-[20px] pb-[8px] pt-[54px]">
           <div className="flex w-full items-center justify-end">
             <Link
@@ -146,36 +151,60 @@ export default async function Home() {
         </div>
       </div>
 
-      <div className="flex w-full flex-col gap-[32px] pb-[32px]">
-        <section className="flex w-full flex-col gap-[10px]">
-          <div className="flex flex-col gap-[10px] px-[20px]">
+      <div className="flex w-full flex-col gap-[32px] pb-[32px] pt-[100px]">
+        <section className="flex w-full flex-col gap-[8px]">
+          <div className="flex flex-col gap-[16px] px-[20px]">
             <p className="text-header-ui-page text-[#1e1e1e]">
               Welcome
             </p>
-            <p className="text-header-ui-page text-[#757575]">
+            <p className="text-label-primary text-[#757575]">
               Artwork of the day
             </p>
           </div>
-          {artworkHref ? (
-            <Link href={artworkHref} className="block w-full">
+          <div className="flex w-full flex-col">
+            {artworkHref ? (
+              <Link href={artworkHref} className="block w-full">
+                <ArtworkFrameBig
+                  className="w-full"
+                  imageUrl={artworkOfDay?.image_url ?? null}
+                  alt={artworkOfDay?.title ?? "Artwork of the day"}
+                />
+              </Link>
+            ) : (
               <ArtworkFrameBig
                 className="w-full"
                 imageUrl={artworkOfDay?.image_url ?? null}
                 alt={artworkOfDay?.title ?? "Artwork of the day"}
               />
-            </Link>
-          ) : (
-            <ArtworkFrameBig
-              className="w-full"
-              imageUrl={artworkOfDay?.image_url ?? null}
-              alt={artworkOfDay?.title ?? "Artwork of the day"}
-            />
-          )}
+            )}
+            <div className="flex w-full flex-col gap-[16px] px-[20px] pb-[16px] pt-[8px]">
+              {artworkHref ? (
+                <Link href={artworkHref} className="text-header-content-h1 text-[#1e1e1e] capitalize">
+                  {artworkOfDay?.title ?? "Artwork Title"}
+                </Link>
+              ) : (
+                <p className="text-header-content-h1 text-[#1e1e1e] capitalize">
+                  {artworkOfDay?.title ?? "Artwork Title"}
+                </p>
+              )}
+              <div className="flex w-full items-center justify-between">
+                <ArtistChip
+                  name={artworkArtist?.name ?? "Artist Name"}
+                  imageUrl={artworkArtist?.image_url ?? null}
+                  href={artistHref}
+                  className="gap-[8px]"
+                />
+                <p className="text-body-default-mono text-[#757575]">
+                  {artworkOfDay?.year ?? "0000"}
+                </p>
+              </div>
+            </div>
+          </div>
         </section>
 
         <section className="flex w-full flex-col gap-[32px] px-[20px]">
-          <div className="flex w-full flex-col gap-[16px]">
-            <p className="text-header-ui-page text-[#757575]">
+          <div className="flex w-full flex-col gap-[12px]">
+            <p className="text-label-primary text-[#757575]">
               Movement of the week
             </p>
             {movementHref ? (
@@ -212,6 +241,7 @@ export default async function Home() {
                   imageUrl={artwork.image_url ?? null}
                   imageAlt={artwork.title ?? "Artwork"}
                   showArtistName={false}
+                  className="flex w-[168.5px] flex-col items-start"
                 />
               );
 
@@ -228,10 +258,10 @@ export default async function Home() {
           </div>
         </section>
 
-        <section className="flex w-full flex-col gap-[12px] overflow-clip">
+        <section className="flex w-full flex-col gap-[12px] overflow-clip py-[32px]">
           <div className="flex w-full items-center px-[20px]">
             <p className="text-label-primary text-[#757575]">
-              What emotion do you want to explore today?
+              Explore an emotion
             </p>
           </div>
           <div className="flex w-full items-start gap-[8px] overflow-x-auto overflow-y-clip bg-white px-[20px] hide-scrollbar">
