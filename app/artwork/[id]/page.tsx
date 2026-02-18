@@ -6,6 +6,7 @@ import { ArtworkTopBar } from "@/components/artwork-top-bar";
 import { ArtworkFull } from "@/components/artwork-full";
 import { CraftCardSheet } from "@/components/craft-card-sheet";
 import { MovementSheet } from "@/components/movement-sheet";
+import { MovementCardBig } from "@/components/movement-card-big";
 import { createSupabaseServerAdminClient, createSupabaseServerClient } from "@/lib/supabase";
 
 type ArtworkPageProps = {
@@ -557,65 +558,13 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
                   <p className="text-header-ui-overline text-[#757575]">
                     Movement
                   </p>
-                  <div className="flex w-full flex-col items-center justify-between rounded-[32px] border border-[#d9d9d9] bg-white px-[20px] py-[16px]">
-                    <div className="flex w-full flex-col items-center">
-                      <div className="flex h-[132px] w-[132px] items-center justify-center overflow-hidden rounded-[28px]">
-                        {movementImage ? (
-                          <img
-                            alt={movement.name}
-                            className="h-full w-full object-cover"
-                            src={movementImage}
-                          />
-                        ) : null}
-                      </div>
-                      <div className="mt-0 flex w-full flex-col items-center gap-[4px] text-center">
-                        <p className="text-header-content-h2 text-black">
-                          {movement.name}
-                        </p>
-                        {movementYears ? (
-                          <p className="text-body-default-mono text-[#757575]">
-                            {movementYears}
-                          </p>
-                        ) : null}
-                        <p className="text-body-default-serif text-[#1e1e1e]">
-                          {movement.summary ?? ""}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex w-full items-start justify-between pb-0 pt-[16px]">
-                      <button
-                        className="flex items-center gap-[4px] rounded-bl-[100px] rounded-br-[4px] rounded-tl-[100px] rounded-tr-[4px] py-[8px]"
-                        type="button"
-                        disabled={!previousMovement.data}
-                        data-movement-sheet-ignore
-                      >
-                        <img
-                          alt=""
-                          aria-hidden="true"
-                          className="h-[20px] w-[20px]"
-                          src="/images/ui/other/icon-caret-left.svg"
-                        />
-                        <span className="text-[14px] font-medium tracking-[-0.14px] text-[#757575] [font-family:var(--font-instrument-sans)]">
-                          {previousMovement.data?.name ?? "Previous"}
-                        </span>
-                      </button>
-                      <button
-                        className="flex items-center gap-[4px] rounded-bl-[4px] rounded-br-[100px] rounded-tl-[4px] rounded-tr-[100px] py-[8px] pl-[16px]"
-                        type="button"
-                        disabled={!nextMovement.data}
-                        data-movement-sheet-ignore
-                      >
-                        <span className="text-[14px] font-medium tracking-[-0.14px] text-[#757575] [font-family:var(--font-instrument-sans)]">
-                          {nextMovement.data?.name ?? "Next"}
-                        </span>
-                        <img
-                          alt=""
-                          aria-hidden="true"
-                          className="h-[20px] w-[20px]"
-                          src="/images/ui/other/icon-caret-right.svg"
-                        />
-                      </button>
-                    </div>
+                  <div className="flex w-full flex-col gap-[16px]">
+                    <MovementCardBig
+                      name={movement.name}
+                      years={movementYears}
+                      summary={movement.summary ?? ""}
+                      imageUrl={movementImage}
+                    />
                   </div>
                 </div>
               </section>
