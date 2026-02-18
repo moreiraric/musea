@@ -12,7 +12,7 @@ type AppShellProps = {
   children: ReactNode;
 };
 
-const PHONE_WIDTH = 402;
+const PHONE_WIDTH = 415;
 const PHONE_HEIGHT = 874;
 const PHONE_MIN_SCALE = 0.8;
 const APP_PADDING = 16;
@@ -64,8 +64,13 @@ export function AppShell({ children }: AppShellProps) {
         }}
       >
         <div
-          className="relative h-[874px] w-[402px] rounded-[72px] border border-black/10 bg-[#0b0b0b] p-[10px] shadow-[0_25px_60px_-30px_rgba(0,0,0,0.45)]"
-          style={{ transform: `scale(${phoneScale})`, transformOrigin: "top left" }}
+          className="relative cursor-none rounded-[72px] border border-black/10 bg-[#0b0b0b] p-[10px] shadow-[0_25px_60px_-30px_rgba(0,0,0,0.45)]"
+          style={{
+            width: `${PHONE_WIDTH}px`,
+            height: `${PHONE_HEIGHT}px`,
+            transform: `scale(${phoneScale})`,
+            transformOrigin: "top left",
+          }}
         >
           <div className="absolute left-1/2 top-[16px] z-40 h-[34px] w-[120px] -translate-x-1/2 rounded-[20px] bg-[#050505] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]" />
           <div className="absolute left-[-4px] top-[130px] h-[64px] w-[6px] rounded-full bg-[#1a1a1a]" />
@@ -73,12 +78,13 @@ export function AppShell({ children }: AppShellProps) {
           <div className="absolute right-[-4px] top-[180px] h-[96px] w-[6px] rounded-full bg-[#1a1a1a]" />
           <div
             id="app-viewport"
-            className="relative flex h-full cursor-none flex-col overflow-hidden rounded-[60px] bg-background"
+            className="relative flex h-full flex-col overflow-hidden rounded-[60px] bg-background"
+            data-scale={phoneScale}
           >
             <TabProvider>
               {hideTopNav ? null : <TopNav />}
               <TabViewport>{children}</TabViewport>
-              <div className="absolute bottom-0 left-0 right-0">
+              <div className="absolute bottom-0 left-0 right-0 z-40">
                 <BottomNav />
               </div>
               <TapCursor />

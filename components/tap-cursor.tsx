@@ -22,9 +22,13 @@ export function TapCursor() {
 
     const updatePosition = (event: MouseEvent) => {
       const rect = viewport.getBoundingClientRect();
+      const viewportWidth = viewport.clientWidth || 1;
+      const viewportHeight = viewport.clientHeight || 1;
+      const scaleX = rect.width / viewportWidth;
+      const scaleY = rect.height / viewportHeight;
       const next = {
-        x: event.clientX - rect.left,
-        y: event.clientY - rect.top,
+        x: (event.clientX - rect.left) / (scaleX || 1),
+        y: (event.clientY - rect.top) / (scaleY || 1),
       };
       if (rafRef.current !== null) {
         cancelAnimationFrame(rafRef.current);

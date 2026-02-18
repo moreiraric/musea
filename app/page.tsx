@@ -132,12 +132,12 @@ export default async function Home() {
 
   return (
     <div className="relative flex w-full flex-col overflow-x-hidden bg-white">
-      <div className="absolute left-0 top-0 z-30 w-full">
+      <div className="pointer-events-none fixed left-0 top-0 z-30 w-full max-w-[393px]">
         <div className="flex h-[100px] items-end bg-gradient-to-t from-[rgba(255,255,255,0)] to-[rgba(255,255,255,0.9)] px-[20px] pb-[8px] pt-[54px]">
           <div className="flex w-full items-center justify-end">
             <Link
               href="/profile"
-              className="flex h-[40px] items-center rounded-full bg-[rgba(255,255,255,0.33)] px-[8px] py-[6px] shadow-[0px_0px_32px_rgba(0,0,0,0.1)] backdrop-blur-[16px]"
+              className="pointer-events-auto flex h-[40px] items-center rounded-full bg-[rgba(255,255,255,0.33)] px-[8px] py-[6px] shadow-[0px_0px_32px_rgba(0,0,0,0.1)] backdrop-blur-[16px]"
               aria-label="Open profile"
             >
               <img
@@ -153,7 +153,7 @@ export default async function Home() {
 
       <div className="flex w-full flex-col gap-[32px] pb-[32px] pt-[100px]">
         <section className="flex w-full flex-col gap-[8px]">
-          <div className="flex flex-col gap-[16px] px-[20px]">
+          <div className="flex flex-col gap-[8px] px-[20px]">
             <p className="text-header-ui-page text-[#1e1e1e]">
               Welcome
             </p>
