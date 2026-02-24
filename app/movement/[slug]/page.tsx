@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArtworkCardSmall } from "@/components/artwork-card-small";
 import { ArtworkFull } from "@/components/artwork-full";
+import { MovementTimelineRow } from "@/components/movement-timeline-row";
 import { MovementTopBar } from "@/components/movement-top-bar";
 import { createSupabaseServerAdminClient, createSupabaseServerClient } from "@/lib/supabase";
 
@@ -121,56 +122,6 @@ function resolveMovementImage(slug?: string | null, iconUrl?: string | null) {
     return `/images/movements/${slug}.png`;
   }
   return "";
-}
-
-function MovementChip({
-  name,
-  iconUrl,
-  href,
-  isActive = false,
-}: {
-  name: string;
-  iconUrl?: string | null;
-  href?: string;
-  isActive?: boolean;
-}) {
-  const chipClassName = isActive
-    ? "flex shrink-0 items-center gap-[4px] rounded-[16px] border border-[#d9d9d9] bg-[#d9d9d9] pl-[8px] pr-[16px] py-[8px] leading-none"
-    : "flex shrink-0 items-center gap-[4px] rounded-[16px] border border-[#d9d9d9] bg-white pl-[8px] pr-[16px] py-[8px] leading-none";
-
-  const content = (
-    <>
-      {iconUrl ? (
-        <img
-          alt=""
-          className="h-[27px] w-[27px] shrink-0 object-contain"
-          src={iconUrl}
-          style={isActive ? { filter: "grayscale(1) brightness(0.5)" } : undefined}
-        />
-      ) : null}
-      <span
-        className={`text-label-chip text-center whitespace-nowrap ${
-          isActive ? "text-[#757575]" : "text-black"
-        }`}
-      >
-        {name}
-      </span>
-    </>
-  );
-
-  if (!href || isActive) {
-    return (
-      <div className={chipClassName} aria-current={isActive ? "true" : "false"}>
-        {content}
-      </div>
-    );
-  }
-
-  return (
-    <Link className={chipClassName} href={href}>
-      {content}
-    </Link>
-  );
 }
 
 function MovementEssaySection({ title, body, artwork }: MovementEssay) {
@@ -490,6 +441,13 @@ export default async function MovementPage({ params, searchParams }: MovementPag
           isActive: true,
         },
       ];
+  const timelineWithReturn = resolvedTimeline.map((item) => ({
+    ...item,
+    href:
+      fromParam && item.href
+        ? `${item.href}${item.href.includes("?") ? "&" : "?"}from=${encodeURIComponent(fromParam)}`
+        : item.href,
+  }));
 
   const resolvedEssays =
     movementEssays && movementEssays.some((essay) => essay.title.trim() || essay.body.trim())
@@ -559,24 +517,7 @@ export default async function MovementPage({ params, searchParams }: MovementPag
           </div>
         </div>
 
-        <div className="flex w-full items-center gap-[8px] overflow-x-auto px-[20px] pb-[4px] hide-scrollbar">
-          {resolvedTimeline.map((item) => {
-            const href =
-              fromParam && item.href
-                ? `${item.href}${item.href.includes("?") ? "&" : "?"}from=${encodeURIComponent(fromParam)}`
-                : item.href;
-            return (
-            <div key={item.id} className="shrink-0">
-              <MovementChip
-                name={item.name}
-                iconUrl={item.iconUrl}
-                isActive={item.isActive}
-                href={href}
-              />
-            </div>
-            );
-          })}
-        </div>
+        <MovementTimelineRow items={timelineWithReturn} />
       </div>
 
       <section className="flex w-full flex-col gap-[8px] overflow-hidden pb-[32px] pt-0">
@@ -585,7 +526,7 @@ export default async function MovementPage({ params, searchParams }: MovementPag
             About
           </p>
         </div>
-        <div className="flex w-full flex-col gap-0">
+        <div className="flex w-full flex-col gap-[64px]">
           {resolvedEssays.map((essay) => (
             <MovementEssaySection key={essay.id} {...essay} />
           ))}
