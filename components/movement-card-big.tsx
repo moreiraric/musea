@@ -14,7 +14,7 @@ export function MovementCardBig({
   className,
 }: MovementCardBigProps) {
   const containerClassName = [
-    "flex w-full flex-col items-center rounded-[32px] border border-[#d9d9d9] bg-white px-[20px] py-[30px] text-center",
+    "flex w-full flex-col items-center rounded-[32px] border border-[#d9d9d9] bg-white px-[20px] pb-[30px] pt-[20px] text-center",
     className,
   ]
     .filter(Boolean)
@@ -24,7 +24,7 @@ export function MovementCardBig({
     <div className={containerClassName}>
       <div className="flex w-full flex-col items-center">
         <div className="flex items-center justify-center">
-          <div className="flex h-[98px] w-[98px] items-center justify-center overflow-hidden">
+          <div className="flex h-[120px] w-[120px] items-center justify-center overflow-hidden">
             {imageUrl ? (
               <img
                 alt={name}

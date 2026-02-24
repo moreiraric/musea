@@ -141,7 +141,7 @@ export default async function Home() {
             <p className="text-header-ui-page text-[#1e1e1e]">
               Welcome
             </p>
-            <p className="text-label-primary text-[#757575]">
+            <p className="text-header-ui-overline text-[#757575]">
               Artwork of the day
             </p>
           </div>
@@ -188,7 +188,7 @@ export default async function Home() {
 
         <section className="flex w-full flex-col gap-[32px] px-[20px]">
           <div className="flex w-full flex-col gap-[12px]">
-            <p className="text-label-primary text-[#757575]">
+            <p className="text-header-ui-overline text-[#757575]">
               Movement of the week
             </p>
             {movementHref ? (
@@ -244,7 +244,7 @@ export default async function Home() {
 
         <section className="flex w-full flex-col gap-[12px] overflow-clip py-[32px]">
           <div className="flex w-full items-center px-[20px]">
-            <p className="text-label-primary text-[#757575]">
+            <p className="text-header-ui-overline text-[#757575]">
               Explore an emotion
             </p>
           </div>
