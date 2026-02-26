@@ -526,7 +526,7 @@ export default async function MovementPage({ params, searchParams }: MovementPag
             About
           </p>
         </div>
-        <div className="flex w-full flex-col gap-[64px]">
+        <div className="flex w-full flex-col gap-[32px]">
           {resolvedEssays.map((essay) => (
             <MovementEssaySection key={essay.id} {...essay} />
           ))}

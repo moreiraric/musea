@@ -1,10 +1,9 @@
 import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
-import { ArtworkFrameBig } from "@/components/artwork-frame-big";
 import { ArtworkCardSmall } from "@/components/artwork-card-small";
-import { ArtistChip } from "@/components/artist-chip";
+import { ArtworkFull } from "@/components/artwork-full";
 import { HomeTopBar } from "@/components/home-top-bar";
-import { MovementCardBig } from "@/components/movement-card-big";
+import { MovementCardSmall } from "@/components/movement-card-small";
 import { createSupabaseServerClient } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
@@ -145,76 +144,36 @@ export default async function Home() {
               Artwork of the day
             </p>
           </div>
-          <div className="flex w-full flex-col">
-            {artworkHref ? (
-              <Link href={artworkHref} className="block w-full">
-                <ArtworkFrameBig
-                  className="w-full"
-                  imageUrl={artworkOfDay?.image_url ?? null}
-                  alt={artworkOfDay?.title ?? "Artwork of the day"}
-                />
-              </Link>
-            ) : (
-              <ArtworkFrameBig
-                className="w-full"
-                imageUrl={artworkOfDay?.image_url ?? null}
-                alt={artworkOfDay?.title ?? "Artwork of the day"}
-              />
-            )}
-            <div className="flex w-full flex-col gap-[16px] px-[20px] pb-[16px] pt-[8px]">
-              {artworkHref ? (
-                <Link href={artworkHref} className="text-header-content-h1 text-[#1e1e1e] capitalize">
-                  {artworkOfDay?.title ?? "Artwork Title"}
-                </Link>
-              ) : (
-                <p className="text-header-content-h1 text-[#1e1e1e] capitalize">
-                  {artworkOfDay?.title ?? "Artwork Title"}
-                </p>
-              )}
-              <div className="flex w-full items-center justify-between">
-                <ArtistChip
-                  name={artworkArtist?.name ?? "Artist Name"}
-                  imageUrl={artworkArtist?.image_url ?? null}
-                  href={artistHref}
-                  className="gap-[8px]"
-                />
-                <p className="text-body-default-mono text-[#757575]">
-                  {artworkOfDay?.year ?? "0000"}
-                </p>
-              </div>
-            </div>
-          </div>
+          <ArtworkFull
+            className="w-full"
+            frameClassName="w-full"
+            artworkHref={artworkHref}
+            title={artworkOfDay?.title ?? "Artwork Title"}
+            year={artworkOfDay?.year ?? "0000"}
+            imageUrl={artworkOfDay?.image_url ?? null}
+            imageAlt={artworkOfDay?.title ?? "Artwork of the day"}
+            artist={{
+              name: artworkArtist?.name ?? "Artist Name",
+              imageUrl: artworkArtist?.image_url ?? null,
+              href: artistHref,
+            }}
+          />
         </section>
 
-        <section className="flex w-full flex-col gap-[32px] px-[20px]">
-          <div className="flex w-full flex-col gap-[12px]">
+        <section className="flex w-full flex-col gap-[16px] px-[20px]">
+          <div className="flex w-full flex-col gap-0">
             <p className="text-header-ui-overline text-[#757575]">
               Movement of the week
             </p>
-            {movementHref ? (
-              <Link href={movementHref} className="block">
-                <MovementCardBig
-                  name={movementOfWeek?.name ?? "Movement Name"}
-                  years={movementYears || "YYYY - YYYY"}
-                  summary={
-                    movementOfWeek?.summary ??
-                    "This is a placeholder for the movement description in the big movement card."
-                  }
-                  imageUrl={movementImage}
-                />
-              </Link>
-            ) : (
-              <MovementCardBig
-                name={movementOfWeek?.name ?? "Movement Name"}
-                years={movementYears || "YYYY - YYYY"}
-                summary={
-                  movementOfWeek?.summary ??
-                  "This is a placeholder for the movement description in the big movement card."
-                }
-                imageUrl={movementImage}
-              />
-            )}
           </div>
+          <MovementCardSmall
+            name={movementOfWeek?.name ?? "Movement Name"}
+            years={movementYears || undefined}
+            fallbackYears="YYYY - YYYY"
+            imageUrl={movementImage}
+            href={movementHref ?? undefined}
+            className="w-full"
+          />
           <div className="grid w-full grid-cols-2 justify-items-start gap-x-[20px] gap-y-[30px]">
             {resolvedArtworks.map((artwork, index) => {
               const key = artwork.id ?? `artwork-${index}`;

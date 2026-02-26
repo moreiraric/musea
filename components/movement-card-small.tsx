@@ -27,7 +27,7 @@ export function MovementCardSmall({
   const hasYearRange =
     normalizedYearParts.length === 2 && normalizedYearParts[0] && normalizedYearParts[1];
   const cardClassName = [
-    "flex h-[96px] w-[330px] items-center gap-[4px] rounded-[24px] border border-[#d9d9d9] bg-white pl-[8px] pr-[16px] py-[16px]",
+    "flex w-full items-center gap-[8px] rounded-[24px] border border-[#d9d9d9] bg-white pl-[12px] pr-[16px] pb-[12px] pt-[12px]",
     className,
   ]
     .filter(Boolean)
@@ -35,17 +35,17 @@ export function MovementCardSmall({
 
   const content = (
     <>
-      <div className="flex h-[64px] w-[64px] items-center justify-center overflow-hidden">
+      <div className="flex h-[72px] w-[72px] items-center justify-center overflow-hidden">
         {imageUrl ? (
-          <img alt={name} className="h-full w-full object-cover" src={imageUrl} />
+          <img alt={name} className="h-full w-full object-contain" src={imageUrl} />
         ) : null}
       </div>
-      <div className="flex flex-1 flex-col items-start justify-between text-center">
-        <p className="text-header-content-h2 text-[#1e1e1e]">
+      <div className="flex h-[59px] min-h-px min-w-0 flex-1 flex-col items-start justify-center gap-[4px]">
+        <p className="text-header-content-h3 w-full text-[#1e1e1e]">
           {name}
         </p>
         {normalizedYears ? (
-          <div className="text-body-default-mono flex items-center gap-[4px] text-[#757575]">
+          <div className="text-body-default-mono flex items-center justify-center gap-[4px] text-center text-[#757575]">
             {hasYearRange ? (
               <>
                 <span>{normalizedYearParts[0]}</span>

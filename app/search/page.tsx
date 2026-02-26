@@ -346,7 +346,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                   src={categoryIconMap.movement}
                 />
               </div>
-              <p className="text-label-primary text-[#757575]">
+              <p className="text-header-ui-overline text-[#757575]">
                 Movements
               </p>
             </div>
@@ -412,7 +412,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                     src={row.icon}
                   />
                 </div>
-                <p className="text-label-primary text-[#757575]">
+                <p className="text-header-ui-overline text-[#757575]">
                   {row.label}
                 </p>
               </div>
@@ -432,7 +432,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                   src={categoryIconMap.theme}
                 />
               </div>
-              <p className="text-label-primary text-[#757575]">
+              <p className="text-header-ui-overline text-[#757575]">
                 Themes
               </p>
             </div>

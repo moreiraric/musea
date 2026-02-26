@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { ReactNode } from "react";
 import { ArtworkFrameBig } from "@/components/artwork-frame-big";
 import { ArtistChip } from "@/components/artist-chip";
@@ -16,6 +17,7 @@ type ArtworkFullProps = {
   className?: string;
   image?: ReactNode;
   frameClassName?: string;
+  artworkHref?: string | null;
 };
 
 export function ArtworkFull({
@@ -28,18 +30,35 @@ export function ArtworkFull({
   className,
   image,
   frameClassName,
+  artworkHref,
 }: ArtworkFullProps) {
+  const frameContent = (
+    <ArtworkFrameBig
+      image={image}
+      imageUrl={imageUrl}
+      alt={imageAlt ?? title}
+      className={frameClassName}
+    />
+  );
+
   return (
     <div className={className ?? "flex flex-col items-start"}>
-      <ArtworkFrameBig
-        image={image}
-        imageUrl={imageUrl}
-        alt={imageAlt ?? title}
-        className={frameClassName}
-      />
+      {artworkHref ? (
+        <Link className="block w-full" href={artworkHref}>
+          {frameContent}
+        </Link>
+      ) : (
+        frameContent
+      )}
       <div className="flex w-full flex-col gap-[16px] px-[20px] pb-[16px] pt-[8px]">
         <div className="flex items-center">
-          <p className="text-header-content-h1 text-black">{title}</p>
+          {artworkHref ? (
+            <Link className="text-header-content-h2 text-black" href={artworkHref}>
+              {title}
+            </Link>
+          ) : (
+            <p className="text-header-content-h2 text-black">{title}</p>
+          )}
         </div>
         <div className="flex w-full items-center justify-between">
           {artist ? (
