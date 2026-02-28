@@ -20,7 +20,7 @@ export function CraftCard({ label, title, description, icon }: CraftCardProps) {
               className="h-[42px] w-[42px] opacity-80"
               src={icon}
             />
-            <p className="text-header-content-h2 text-[#1e1e1e]">
+            <p className="text-header-content-h2 capitalize text-[#1e1e1e]">
               {title}
             </p>
           </div>

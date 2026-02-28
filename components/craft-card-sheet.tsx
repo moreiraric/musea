@@ -189,7 +189,6 @@ export function CraftCardSheet({ cards }: { cards: CraftCardData[] }) {
                 onClick={closeSheet}
               />
               <div className="absolute bottom-0 left-0 right-0 flex h-[92%] flex-col overflow-hidden rounded-t-[36px] bg-white shadow-[0_-16px_40px_rgba(0,0,0,0.18)]">
-                <div className="pointer-events-none absolute left-0 right-0 top-0 z-10 h-[76px] bg-gradient-to-t from-transparent to-white/90" />
                 <div className="absolute left-0 right-0 top-0 z-20 flex items-center px-[20px] pb-[8px] pt-[20px]">
                   <button
                     type="button"
@@ -206,7 +205,7 @@ export function CraftCardSheet({ cards }: { cards: CraftCardData[] }) {
                   </button>
                 </div>
 
-                <div className="flex-1 overflow-y-auto pb-[32px] pt-[76px]">
+                <div className="flex-1 overflow-y-auto pb-[32px]">
                   {isLoading ? (
                     <div className="flex h-full w-full items-center justify-center">
                       <LoadingSpinner size={44} />
@@ -237,7 +236,7 @@ export function CraftCardSheet({ cards }: { cards: CraftCardData[] }) {
 
                       <div className="flex w-full flex-col items-start px-[20px]">
                         <section className="flex w-full flex-col gap-[10px] pb-[20px] pt-[20px]">
-                          <p className="text-[24px] font-semibold text-black [font-family:var(--font-literata)]">
+                          <p className="capitalize text-[24px] font-semibold text-black [font-family:var(--font-literata)]">
                             {data.tag.name}
                           </p>
                           <div className="flex w-full items-center">
