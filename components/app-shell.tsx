@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useEffect, useState } from "react";
+import { Suspense, type ReactNode, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { BottomNav } from "@/components/bottom-nav";
 import { TopNav } from "@/components/top-nav";
@@ -83,9 +83,13 @@ export function AppShell({ children }: AppShellProps) {
           >
             <TabProvider>
               {hideTopNav ? null : <TopNav />}
-              <TabViewport>{children}</TabViewport>
+              <Suspense fallback={<div className="flex min-h-0 flex-1 flex-col" />}>
+                <TabViewport>{children}</TabViewport>
+              </Suspense>
               <div className="absolute bottom-0 left-0 right-0 z-40">
-                <BottomNav />
+                <Suspense fallback={null}>
+                  <BottomNav />
+                </Suspense>
               </div>
               <TapCursor />
             </TabProvider>
