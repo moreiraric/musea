@@ -4,6 +4,70 @@ import { buildSearchFilter, buildSearchTokens } from "@/lib/search-utils";
 
 export const runtime = "nodejs";
 
+function isArtistRow(value: unknown): value is {
+  id: string;
+  slug: string | null;
+  name: string;
+  image_url: string | null;
+} {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+  const row = value as Record<string, unknown>;
+  return (
+    typeof row.id === "string" &&
+    typeof row.name === "string" &&
+    (typeof row.slug === "string" || row.slug === null || row.slug === undefined) &&
+    (typeof row.image_url === "string" ||
+      row.image_url === null ||
+      row.image_url === undefined)
+  );
+}
+
+function getRelatedArtist(value: unknown) {
+  if (Array.isArray(value)) {
+    return value.find(isArtistRow) ?? null;
+  }
+  return isArtistRow(value) ? value : null;
+}
+
+function parseArtworks(value: unknown) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.flatMap((row) => {
+    if (!row || typeof row !== "object") {
+      return [];
+    }
+    const record = row as Record<string, unknown>;
+    if (
+      typeof record.id !== "string" ||
+      typeof record.title !== "string" ||
+      (typeof record.slug !== "string" && record.slug !== null && record.slug !== undefined) ||
+      (typeof record.image_url !== "string" &&
+        record.image_url !== null &&
+        record.image_url !== undefined)
+    ) {
+      return [];
+    }
+
+    return [
+      {
+        id: record.id,
+        slug: typeof record.slug === "string" ? record.slug : null,
+        title: record.title,
+        image_url: typeof record.image_url === "string" ? record.image_url : null,
+        artists: getRelatedArtist(record.artists),
+      },
+    ];
+  });
+}
+
+function parseArtists(value: unknown) {
+  return Array.isArray(value) ? value.filter(isArtistRow) : [];
+}
+
 function clampNumber(value: number, min: number, max: number) {
   if (Number.isNaN(value)) {
     return min;
@@ -45,7 +109,9 @@ export async function GET(request: NextRequest) {
       return new Response(error.message, { status: 500 });
     }
 
-    const rows = (data ?? []) as { id: string }[];
+    const rows = Array.isArray(data)
+      ? data.filter((row): row is { id: string } => typeof row?.id === "string")
+      : [];
     matchingArtistIds = rows.map((row) => row.id);
   }
 
@@ -99,8 +165,8 @@ export async function GET(request: NextRequest) {
     return new Response(artistsResult.error.message, { status: 500 });
   }
 
-  const artworkRows = (artworksResult.data ?? []) as typeof artworksResult.data;
-  const artistRows = (artistsResult.data ?? []) as typeof artistsResult.data;
+  const artworkRows = parseArtworks(artworksResult.data);
+  const artistRows = parseArtists(artistsResult.data);
 
   const hasMoreArtworks = artworkRows.length > artworkLimit && artworkLimit > 0;
   const hasMoreArtists = artistRows.length > artistLimit && artistLimit > 0;

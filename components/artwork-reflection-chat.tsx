@@ -810,7 +810,9 @@ export function ArtworkReflectionChat({
                           className={`flex h-[32px] w-[32px] items-center justify-center rounded-full ${
                             inputValue.trim() ? "bg-[#2c2c2c]" : "bg-[#2c2c2c]/50"
                           }`}
-                          onClick={handleSend}
+                          onClick={() => {
+                            void handleSend();
+                          }}
                           aria-label="Send"
                           disabled={!inputValue.trim() || isThinking}
                         >

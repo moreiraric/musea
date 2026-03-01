@@ -48,6 +48,100 @@ type TagRow = {
   category: string | null;
 };
 
+function isSearchArtist(value: unknown): value is SearchArtist {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+  const row = value as Record<string, unknown>;
+  return (
+    typeof row.id === "string" &&
+    typeof row.name === "string" &&
+    (typeof row.slug === "string" || row.slug === null || row.slug === undefined) &&
+    (typeof row.image_url === "string" ||
+      row.image_url === null ||
+      row.image_url === undefined)
+  );
+}
+
+function getRelatedArtist(value: unknown): SearchArtist | null {
+  if (Array.isArray(value)) {
+    return value.find(isSearchArtist) ?? null;
+  }
+  return isSearchArtist(value) ? value : null;
+}
+
+function parseSearchArtworks(value: unknown): SearchArtwork[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.flatMap((row) => {
+    if (!row || typeof row !== "object") {
+      return [];
+    }
+    const record = row as Record<string, unknown>;
+    if (
+      typeof record.id !== "string" ||
+      typeof record.title !== "string" ||
+      (typeof record.slug !== "string" && record.slug !== null && record.slug !== undefined) ||
+      (typeof record.image_url !== "string" &&
+        record.image_url !== null &&
+        record.image_url !== undefined)
+    ) {
+      return [];
+    }
+    return [
+      {
+        id: record.id,
+        slug: typeof record.slug === "string" ? record.slug : null,
+        title: record.title,
+        image_url: typeof record.image_url === "string" ? record.image_url : null,
+        artists: getRelatedArtist(record.artists),
+      },
+    ];
+  });
+}
+
+function parseSearchArtists(value: unknown): SearchArtist[] {
+  return Array.isArray(value) ? value.filter(isSearchArtist) : [];
+}
+
+function isMovementRow(value: unknown): value is MovementRow {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+  const row = value as Record<string, unknown>;
+  return (
+    typeof row.id === "string" &&
+    typeof row.name === "string" &&
+    (typeof row.slug === "string" || row.slug === null || row.slug === undefined) &&
+    (typeof row.start_year === "number" ||
+      row.start_year === null ||
+      row.start_year === undefined) &&
+    (typeof row.end_year === "number" ||
+      row.end_year === null ||
+      row.end_year === undefined) &&
+    (typeof row.icon_url === "string" ||
+      row.icon_url === null ||
+      row.icon_url === undefined)
+  );
+}
+
+function isTagRow(value: unknown): value is TagRow {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+  const row = value as Record<string, unknown>;
+  return (
+    typeof row.id === "string" &&
+    typeof row.name === "string" &&
+    (typeof row.slug === "string" || row.slug === null || row.slug === undefined) &&
+    (typeof row.category === "string" ||
+      row.category === null ||
+      row.category === undefined)
+  );
+}
+
 const categoryIconMap: Record<string, string> = {
   movement: "/images/ui/other/icon-movement-outline.svg",
   medium: "/images/ui/components_and_tags/icon-medium.png",
@@ -158,7 +252,9 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         throw new Error(error.message);
       }
 
-      const rows = (data ?? []) as { id: string }[];
+      const rows = Array.isArray(data)
+        ? data.filter((row): row is { id: string } => typeof row?.id === "string")
+        : [];
       matchingArtistIds = rows.map((row) => row.id);
     }
 
@@ -182,7 +278,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       if (error) {
         throw new Error(error.message);
       }
-      const rows = (data ?? []) as SearchArtwork[];
+      const rows = parseSearchArtworks(data);
       initialHasMoreArtworks = rows.length > artworkPageSize;
       initialArtworks = initialHasMoreArtworks ? rows.slice(0, artworkPageSize) : rows;
     }
@@ -198,7 +294,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       if (error) {
         throw new Error(error.message);
       }
-      const rows = (data ?? []) as SearchArtist[];
+      const rows = parseSearchArtists(data);
       initialHasMoreArtists = rows.length > artistPageSize;
       initialArtists = initialHasMoreArtists ? rows.slice(0, artistPageSize) : rows;
     }
@@ -282,15 +378,25 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       throw new Error(themeTagsResult.error.message);
     }
 
-    movements = (movementsResult.data ?? []) as MovementRow[];
+    movements = Array.isArray(movementsResult.data)
+      ? movementsResult.data.filter(isMovementRow)
+      : [];
     movementColumns = chunk(movements, 2);
 
-    mediumTags = (mediumTagsResult.data ?? []) as TagRow[];
-    techniqueTags = (techniqueTagsResult.data ?? []) as TagRow[];
-    representationTags = (representationTagsResult.data ?? []) as TagRow[];
-    personalityTags = (personalityTagsResult.data ?? []) as TagRow[];
-    emotionTags = (emotionTagsResult.data ?? []) as TagRow[];
-    themeTags = (themeTagsResult.data ?? []) as TagRow[];
+    mediumTags = Array.isArray(mediumTagsResult.data) ? mediumTagsResult.data.filter(isTagRow) : [];
+    techniqueTags = Array.isArray(techniqueTagsResult.data)
+      ? techniqueTagsResult.data.filter(isTagRow)
+      : [];
+    representationTags = Array.isArray(representationTagsResult.data)
+      ? representationTagsResult.data.filter(isTagRow)
+      : [];
+    personalityTags = Array.isArray(personalityTagsResult.data)
+      ? personalityTagsResult.data.filter(isTagRow)
+      : [];
+    emotionTags = Array.isArray(emotionTagsResult.data)
+      ? emotionTagsResult.data.filter(isTagRow)
+      : [];
+    themeTags = Array.isArray(themeTagsResult.data) ? themeTagsResult.data.filter(isTagRow) : [];
   }
 
   const renderTag = (tag: TagRow, uppercase = false) => (

@@ -59,6 +59,7 @@ function BottomSheet({
   onClose,
   counts,
 }: SheetProps) {
+  const tabId = useTabScope();
   const sheetRef = useRef<HTMLDivElement | null>(null);
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
   const [dragOffset, setDragOffset] = useState(0);

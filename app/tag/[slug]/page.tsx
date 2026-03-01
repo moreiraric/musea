@@ -53,6 +53,12 @@ type TagOption = {
   name: string;
 };
 
+type BannerArtworkRow = {
+  slug: string | null;
+  title: string;
+  image_url: string | null;
+};
+
 function titleCase(value: string) {
   return value
     .split(" ")
@@ -141,6 +147,104 @@ function chunkArray<T>(items: T[], size = IN_CHUNK_SIZE) {
     chunks.push(items.slice(i, i + size));
   }
   return chunks;
+}
+
+function isMovementRow(value: unknown): value is MovementRow {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+  const row = value as Record<string, unknown>;
+  return typeof row.id === "string" && typeof row.slug === "string" && typeof row.name === "string";
+}
+
+function isTagOption(value: unknown): value is TagOption {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+  const row = value as Record<string, unknown>;
+  return typeof row.id === "string" && typeof row.slug === "string" && typeof row.name === "string";
+}
+
+function isRelatedArtist(value: unknown): value is NonNullable<ArtworkRow["artists"]> {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+  const row = value as Record<string, unknown>;
+  return (
+    typeof row.id === "string" &&
+    typeof row.name === "string" &&
+    (typeof row.slug === "string" || row.slug === null || row.slug === undefined) &&
+    (typeof row.image_url === "string" ||
+      row.image_url === null ||
+      row.image_url === undefined)
+  );
+}
+
+function getRelatedArtist(value: unknown): NonNullable<ArtworkRow["artists"]> | null {
+  if (Array.isArray(value)) {
+    return value.find(isRelatedArtist) ?? null;
+  }
+  return isRelatedArtist(value) ? value : null;
+}
+
+function isArtworkRow(value: unknown): value is ArtworkRow {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+  const row = value as Record<string, unknown>;
+  return (
+    typeof row.id === "string" &&
+    typeof row.title === "string" &&
+    (typeof row.slug === "string" || row.slug === null || row.slug === undefined) &&
+    (typeof row.image_url === "string" ||
+      row.image_url === null ||
+      row.image_url === undefined) &&
+    (typeof row.movement_id === "string" ||
+      row.movement_id === null ||
+      row.movement_id === undefined) &&
+    (typeof row.year === "number" || row.year === null || row.year === undefined)
+  );
+}
+
+function parseArtworkRows(value: unknown): ArtworkRow[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.flatMap((row) => {
+    if (!isArtworkRow(row)) {
+      return [];
+    }
+    return [{ ...row, artists: getRelatedArtist((row as { artists?: unknown }).artists) }];
+  });
+}
+
+function parseInnerArtworkRows(value: unknown): ArtworkRow[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.flatMap((row) => {
+    if (!row || typeof row !== "object") {
+      return [];
+    }
+    const artwork = (row as { artworks?: unknown }).artworks;
+    return parseArtworkRows(artwork ? [artwork] : []);
+  });
+}
+
+function isBannerArtworkRow(value: unknown): value is BannerArtworkRow {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+  const row = value as Record<string, unknown>;
+  return (
+    typeof row.title === "string" &&
+    (typeof row.slug === "string" || row.slug === null || row.slug === undefined) &&
+    (typeof row.image_url === "string" ||
+      row.image_url === null ||
+      row.image_url === undefined)
+  );
 }
 
 export default async function TagPage({ params, searchParams }: TagPageProps) {
@@ -249,13 +353,17 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
     throw new Error(techniqueTagsResult.error.message);
   }
 
-  const bannerArtwork = bannerResult.data as
-    | { slug: string | null; title: string; image_url: string | null }
-    | null;
+  const bannerArtwork = isBannerArtworkRow(bannerResult.data) ? bannerResult.data : null;
 
-  const movementOptions = (movementsResult.data ?? []) as MovementRow[];
-  const mediumOptions = (mediumTagsResult.data ?? []) as TagOption[];
-  const techniqueOptions = (techniqueTagsResult.data ?? []) as TagOption[];
+  const movementOptions = Array.isArray(movementsResult.data)
+    ? movementsResult.data.filter(isMovementRow)
+    : [];
+  const mediumOptions = Array.isArray(mediumTagsResult.data)
+    ? mediumTagsResult.data.filter(isTagOption)
+    : [];
+  const techniqueOptions = Array.isArray(techniqueTagsResult.data)
+    ? techniqueTagsResult.data.filter(isTagOption)
+    : [];
 
   const movementFilter = movementSlug
     ? movementOptions.find((movement) => movement.slug === movementSlug)
@@ -318,9 +426,7 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
         if (error) {
           throw new Error(error.message);
         }
-        baseArtworks = (data ?? [])
-          .map((row) => (row as { artworks: ArtworkRow | null }).artworks)
-          .filter(Boolean) as ArtworkRow[];
+        baseArtworks = parseInnerArtworkRows(data);
       } catch (error) {
         if (process.env.NODE_ENV !== "production") {
           console.warn("Tag page base artworks query failed", error);
@@ -338,7 +444,7 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
         if (error) {
           throw new Error(error.message);
         }
-        baseArtworks.push(...((data ?? []) as ArtworkRow[]));
+        baseArtworks.push(...parseArtworkRows(data));
       }
     }
   }

@@ -25,6 +25,68 @@ const ARTWORK_OF_THE_DAY_SLUG =
   "woman-with-a-parasol-madame-monet-and-her-son-claude-monet";
 const MOVEMENT_OF_THE_WEEK_SLUG = "impressionism";
 
+function isArtworkRow(value: unknown): value is ArtworkRow {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+  const row = value as Record<string, unknown>;
+  return (
+    typeof row.id === "string" &&
+    typeof row.title === "string" &&
+    (typeof row.slug === "string" || row.slug === null || row.slug === undefined) &&
+    (typeof row.image_url === "string" ||
+      row.image_url === null ||
+      row.image_url === undefined)
+  );
+}
+
+function parseArtworkRows(value: unknown): ArtworkRow[] {
+  return Array.isArray(value) ? value.filter(isArtworkRow) : [];
+}
+
+function isTagRow(value: unknown): value is TagRow {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+  const row = value as Record<string, unknown>;
+  return (
+    typeof row.id === "string" &&
+    typeof row.name === "string" &&
+    (typeof row.slug === "string" || row.slug === null || row.slug === undefined)
+  );
+}
+
+function parseTagRows(value: unknown): TagRow[] {
+  return Array.isArray(value) ? value.filter(isTagRow) : [];
+}
+
+function isRelatedArtist(value: unknown): value is {
+  id: string;
+  name: string;
+  slug: string | null;
+  image_url: string | null;
+} {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+  const row = value as Record<string, unknown>;
+  return (
+    typeof row.id === "string" &&
+    typeof row.name === "string" &&
+    (typeof row.slug === "string" || row.slug === null || row.slug === undefined) &&
+    (typeof row.image_url === "string" ||
+      row.image_url === null ||
+      row.image_url === undefined)
+  );
+}
+
+function getRelatedArtist(value: unknown) {
+  if (Array.isArray(value)) {
+    return value.find(isRelatedArtist) ?? null;
+  }
+  return isRelatedArtist(value) ? value : null;
+}
+
 function formatMovementYears(start?: number | null, end?: number | null) {
   if (start && end) {
     return `${start} - ${end}`;
@@ -95,7 +157,7 @@ export default async function Home() {
       .order("year", { ascending: true, nullsFirst: false })
       .order("title", { ascending: true })
       .limit(6);
-    movementArtworks = (data ?? []) as ArtworkRow[];
+    movementArtworks = parseArtworkRows(data);
   }
 
   const movementYears = formatMovementYears(
@@ -109,23 +171,22 @@ export default async function Home() {
   const movementSlugOrId = movementOfWeek?.slug ?? movementOfWeek?.id ?? null;
   const movementHref = movementSlugOrId ? `/movement/${movementSlugOrId}` : null;
   const fallbackArtworks = [
-    { id: "placeholder-1", title: "Artwork Title" },
-    { id: "placeholder-2", title: "Artwork Title" },
-    { id: "placeholder-3", title: "Artwork Title" },
-    { id: "placeholder-4", title: "Artwork Title" },
-    { id: "placeholder-5", title: "Artwork Title" },
-    { id: "placeholder-6", title: "Artwork Title" },
+    { id: "placeholder-1", slug: null, title: "Artwork Title", image_url: null },
+    { id: "placeholder-2", slug: null, title: "Artwork Title", image_url: null },
+    { id: "placeholder-3", slug: null, title: "Artwork Title", image_url: null },
+    { id: "placeholder-4", slug: null, title: "Artwork Title", image_url: null },
+    { id: "placeholder-5", slug: null, title: "Artwork Title", image_url: null },
+    { id: "placeholder-6", slug: null, title: "Artwork Title", image_url: null },
   ];
   const resolvedArtworks =
     movementArtworks.length > 0
       ? movementArtworks
-      : (fallbackArtworks as ArtworkRow[]);
-  const resolvedEmotionTags =
-    (emotionTags as TagRow[] | null | undefined) ?? [];
+      : fallbackArtworks;
+  const resolvedEmotionTags = parseTagRows(emotionTags);
 
   const artworkSlugOrId = artworkOfDay?.slug ?? artworkOfDay?.id ?? null;
   const artworkHref = artworkSlugOrId ? `/artwork/${artworkSlugOrId}` : null;
-  const artworkArtist = artworkOfDay?.artists ?? null;
+  const artworkArtist = getRelatedArtist(artworkOfDay?.artists);
   const artistHref = artworkArtist?.slug ?? artworkArtist?.id
     ? `/artist/${artworkArtist?.slug ?? artworkArtist?.id}`
     : null;

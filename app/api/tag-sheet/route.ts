@@ -4,6 +4,70 @@ import { createSupabaseServerClient } from "@/lib/supabase";
 const uuidRegex =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
+function isRelatedArtist(value: unknown): value is {
+  id: string;
+  name: string;
+  slug: string | null;
+  image_url: string | null;
+} {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+  const row = value as Record<string, unknown>;
+  return (
+    typeof row.id === "string" &&
+    typeof row.name === "string" &&
+    (typeof row.slug === "string" || row.slug === null || row.slug === undefined) &&
+    (typeof row.image_url === "string" ||
+      row.image_url === null ||
+      row.image_url === undefined)
+  );
+}
+
+function getRelatedArtist(value: unknown) {
+  if (Array.isArray(value)) {
+    return value.find(isRelatedArtist) ?? null;
+  }
+  return isRelatedArtist(value) ? value : null;
+}
+
+function parseArtworks(value: unknown) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.flatMap((row) => {
+    if (!row || typeof row !== "object") {
+      return [];
+    }
+    const artwork = (row as { artworks?: unknown }).artworks;
+    if (!artwork || typeof artwork !== "object") {
+      return [];
+    }
+    const record = artwork as Record<string, unknown>;
+    if (
+      typeof record.id !== "string" ||
+      typeof record.title !== "string" ||
+      (typeof record.slug !== "string" && record.slug !== null && record.slug !== undefined) ||
+      (typeof record.image_url !== "string" &&
+        record.image_url !== null &&
+        record.image_url !== undefined)
+    ) {
+      return [];
+    }
+
+    return [
+      {
+        id: record.id,
+        slug: typeof record.slug === "string" ? record.slug : null,
+        title: record.title,
+        image_url: typeof record.image_url === "string" ? record.image_url : null,
+        artists: getRelatedArtist(record.artists),
+      },
+    ];
+  });
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const raw = searchParams.get("slug") ?? "";
@@ -76,9 +140,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: artworksResult.error.message }, { status: 500 });
   }
 
-  const artworks = (artworksResult.data ?? [])
-    .map((row) => (row as { artworks: unknown }).artworks)
-    .filter(Boolean);
+  const artworks = parseArtworks(artworksResult.data);
 
   return NextResponse.json({
     tag,

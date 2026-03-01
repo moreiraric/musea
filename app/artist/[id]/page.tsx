@@ -126,6 +126,30 @@ function normalizeCategory(category?: string | null) {
   return (category ?? "other").toLowerCase();
 }
 
+function isTagRow(value: unknown): value is TagRow {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const row = value as Record<string, unknown>;
+  return (
+    typeof row.id === "string" &&
+    typeof row.name === "string" &&
+    (typeof row.slug === "string" || row.slug === null || row.slug === undefined) &&
+    (typeof row.category === "string" ||
+      row.category === null ||
+      row.category === undefined)
+  );
+}
+
+function getRelatedTag(value: unknown): TagRow | null {
+  if (Array.isArray(value)) {
+    return value.find(isTagRow) ?? null;
+  }
+
+  return isTagRow(value) ? value : null;
+}
+
 function resolveTagIcon(tag: TagRow) {
   const normalized =
     tag.category?.toLowerCase() ||
@@ -199,6 +223,35 @@ function getRelatedArtist(value: unknown): RelatedArtistRow | null {
   return isRelatedArtistRow(value) ? value : null;
 }
 
+function isMovementRow(value: unknown): value is MovementRow {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const row = value as Record<string, unknown>;
+  return (
+    typeof row.id === "string" &&
+    typeof row.name === "string" &&
+    typeof row.slug === "string" &&
+    (typeof row.start_year === "number" ||
+      row.start_year === null ||
+      row.start_year === undefined) &&
+    (typeof row.end_year === "number" ||
+      row.end_year === null ||
+      row.end_year === undefined) &&
+    (typeof row.summary === "string" ||
+      row.summary === null ||
+      row.summary === undefined) &&
+    (typeof row.icon_url === "string" ||
+      row.icon_url === null ||
+      row.icon_url === undefined)
+  );
+}
+
+function parseMovementRows(value: unknown): MovementRow[] {
+  return Array.isArray(value) ? value.filter(isMovementRow) : [];
+}
+
 function parseEssayArtworkRows(value: unknown): EssayArtworkRow[] {
   if (!Array.isArray(value)) {
     return [];
@@ -248,6 +301,27 @@ function parseMovementArtistRows(value: unknown): MovementArtistRow[] {
     const artist = getRelatedArtist((row as { artists?: unknown }).artists);
     return artist ? [artist] : [];
   });
+}
+
+function isMovementArtworkRow(value: unknown): value is MovementArtworkRow {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const row = value as Record<string, unknown>;
+  return (
+    typeof row.id === "string" &&
+    typeof row.title === "string" &&
+    (typeof row.image_url === "string" ||
+      row.image_url === null ||
+      row.image_url === undefined) &&
+    (typeof row.slug === "string" || row.slug === null || row.slug === undefined) &&
+    (typeof row.year === "number" || row.year === null || row.year === undefined)
+  );
+}
+
+function parseMovementArtworkRows(value: unknown): MovementArtworkRow[] {
+  return Array.isArray(value) ? value.filter(isMovementArtworkRow) : [];
 }
 
 function pickHighlightArtwork(artworks: ArtworkRow[]) {
@@ -395,7 +469,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
   }
 
   const movement = movementResult.data as MovementRow | null;
-  const movements = (movementsResult.data ?? []) as MovementRow[];
+  const movements = parseMovementRows(movementsResult.data);
   const missingStartYears = movements.filter((row) => row.start_year === null);
   if (missingStartYears.length > 0) {
     throw new Error(
@@ -498,7 +572,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
       href: artistRow.slug ? `/artist/${artistRow.slug}` : `/artist/${artistRow.id}`,
     }));
 
-  const movementArtworks = (movementArtworksResult.data ?? []) as MovementArtworkRow[];
+  const movementArtworks = parseMovementArtworkRows(movementArtworksResult.data);
   const movementArtworkCards = movementArtworks.map((artworkRow) => ({
     id: artworkRow.id,
     title: artworkRow.title,
@@ -508,7 +582,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
 
   const tagCounts = new Map<string, { tag: TagRow; count: number }>();
   (tagsResult.data ?? []).forEach((row) => {
-    const tag = (row as { tags: TagRow | null }).tags;
+    const tag = getRelatedTag((row as { tags?: unknown }).tags);
     if (!tag) {
       return;
     }
@@ -543,7 +617,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
     ? artist.life_period.replace(/\s*-\s*/g, "-")
     : "";
   const lifePeriodParts = lifePeriod
-    ? lifePeriod.split("-").map((part) => part.trim())
+    ? lifePeriod.split("-").map((part: string) => part.trim())
     : [];
   const hasLifePeriodRange =
     lifePeriodParts.length === 2 && lifePeriodParts[0] && lifePeriodParts[1];
