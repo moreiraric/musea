@@ -12,6 +12,34 @@ type ChatMessage = {
   content: string;
 };
 
+function isChatRole(value: unknown): value is ChatMessage["role"] {
+  return value === "assistant" || value === "user" || value === "system";
+}
+
+function parseChatMessages(value: unknown): ChatMessage[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.flatMap((message) => {
+    if (
+      message &&
+      typeof message === "object" &&
+      isChatRole((message as { role?: unknown }).role) &&
+      typeof (message as { content?: unknown }).content === "string"
+    ) {
+      return [
+        {
+          role: (message as { role: ChatMessage["role"] }).role,
+          content: (message as { content: string }).content,
+        },
+      ];
+    }
+
+    return [];
+  });
+}
+
 function approximateTokens(text: string) {
   return Math.ceil(text.length / 4);
 }
@@ -41,7 +69,7 @@ async function readSystemPrompt() {
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const messages = Array.isArray(body?.messages) ? (body.messages as ChatMessage[]) : [];
+  const messages = parseChatMessages(body?.messages);
   const artworkTitle =
     typeof body?.artworkTitle === "string" ? body.artworkTitle : "";
   const artworkName =
@@ -65,10 +93,10 @@ export async function POST(request: NextRequest) {
     .replace(/{{\s*artwork_name\s*}}/gi, artworkName || artistName)
     .replace(/{{\s*artist_name\s*}}/gi, artistName || artworkName);
 
-  const payloadMessages: ChatMessage[] = [
-    ...(resolvedPrompt ? [{ role: "system", content: resolvedPrompt }] : []),
-    ...trimmedMessages,
-  ];
+  const systemMessages: ChatMessage[] = resolvedPrompt
+    ? [{ role: "system", content: resolvedPrompt }]
+    : [];
+  const payloadMessages: ChatMessage[] = [...systemMessages, ...trimmedMessages];
 
   const perplexityResponse = await fetch(`${apiBaseUrl}/chat/completions`, {
     method: "POST",
