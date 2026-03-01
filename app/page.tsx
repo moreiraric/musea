@@ -135,8 +135,8 @@ export default async function Home() {
       <HomeTopBar />
 
       <div className="flex w-full flex-col gap-[32px] pb-[32px] pt-[100px]">
-        <section className="flex w-full flex-col gap-[8px]">
-          <div className="flex flex-col gap-[8px] px-[20px]">
+        <section className="flex w-full flex-col gap-[12px]">
+          <div className="flex flex-col gap-[16px] px-[20px]">
             <p className="text-header-ui-page text-[#1e1e1e]">
               Welcome
             </p>
@@ -161,19 +161,21 @@ export default async function Home() {
         </section>
 
         <section className="flex w-full flex-col gap-[16px] px-[20px]">
-          <div className="flex w-full flex-col gap-0">
-            <p className="text-header-ui-overline text-[#757575]">
-              Movement of the week
-            </p>
+          <div className="flex w-full flex-col gap-[12px]">
+            <div className="flex w-full flex-col gap-0">
+              <p className="text-header-ui-overline text-[#757575]">
+                Movement of the week
+              </p>
+            </div>
+            <MovementCardSmall
+              name={movementOfWeek?.name ?? "Movement Name"}
+              years={movementYears || undefined}
+              fallbackYears="YYYY - YYYY"
+              imageUrl={movementImage}
+              href={movementHref ?? undefined}
+              className="w-full"
+            />
           </div>
-          <MovementCardSmall
-            name={movementOfWeek?.name ?? "Movement Name"}
-            years={movementYears || undefined}
-            fallbackYears="YYYY - YYYY"
-            imageUrl={movementImage}
-            href={movementHref ?? undefined}
-            className="w-full"
-          />
           <div className="grid w-full grid-cols-2 justify-items-start gap-x-[20px] gap-y-[30px]">
             {resolvedArtworks.map((artwork, index) => {
               const key = artwork.id ?? `artwork-${index}`;
