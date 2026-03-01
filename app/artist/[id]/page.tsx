@@ -61,13 +61,20 @@ type MovementEssayRow = {
   p3_artwork_id: string | null;
 };
 
+type RelatedArtistRow = {
+  id: string;
+  name: string;
+  slug: string | null;
+  image_url: string | null;
+};
+
 type EssayArtworkRow = {
   id: string;
   title: string;
   year: number | null;
   image_url: string | null;
   slug: string | null;
-  artists?: { id: string; name: string; slug: string | null; image_url: string | null } | null;
+  artists?: RelatedArtistRow | null;
 };
 
 type MovementArtistRow = {
@@ -166,6 +173,81 @@ function countryToFlagEmoji(country?: string | null) {
     .split("")
     .map((char) => String.fromCodePoint(127397 + char.charCodeAt(0)))
     .join("");
+}
+
+function isRelatedArtistRow(value: unknown): value is RelatedArtistRow {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const row = value as Record<string, unknown>;
+  return (
+    typeof row.id === "string" &&
+    typeof row.name === "string" &&
+    (typeof row.slug === "string" || row.slug === null || row.slug === undefined) &&
+    (typeof row.image_url === "string" ||
+      row.image_url === null ||
+      row.image_url === undefined)
+  );
+}
+
+function getRelatedArtist(value: unknown): RelatedArtistRow | null {
+  if (Array.isArray(value)) {
+    return value.find(isRelatedArtistRow) ?? null;
+  }
+
+  return isRelatedArtistRow(value) ? value : null;
+}
+
+function parseEssayArtworkRows(value: unknown): EssayArtworkRow[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.flatMap((row) => {
+    if (!row || typeof row !== "object") {
+      return [];
+    }
+
+    const record = row as Record<string, unknown>;
+    if (
+      typeof record.id !== "string" ||
+      typeof record.title !== "string" ||
+      (typeof record.year !== "number" && record.year !== null && record.year !== undefined) ||
+      (typeof record.image_url !== "string" &&
+        record.image_url !== null &&
+        record.image_url !== undefined) ||
+      (typeof record.slug !== "string" && record.slug !== null && record.slug !== undefined)
+    ) {
+      return [];
+    }
+
+    return [
+      {
+        id: record.id,
+        title: record.title,
+        year: typeof record.year === "number" ? record.year : null,
+        image_url: typeof record.image_url === "string" ? record.image_url : null,
+        slug: typeof record.slug === "string" ? record.slug : null,
+        artists: getRelatedArtist(record.artists),
+      },
+    ];
+  });
+}
+
+function parseMovementArtistRows(value: unknown): MovementArtistRow[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.flatMap((row) => {
+    if (!row || typeof row !== "object") {
+      return [];
+    }
+
+    const artist = getRelatedArtist((row as { artists?: unknown }).artists);
+    return artist ? [artist] : [];
+  });
 }
 
 function pickHighlightArtwork(artworks: ArtworkRow[]) {
@@ -352,7 +434,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
     if (error) {
       throw new Error(error.message);
     }
-    essayArtworks = (data ?? []) as EssayArtworkRow[];
+    essayArtworks = parseEssayArtworkRows(data);
   }
   const essayArtworkMap = new Map(essayArtworks.map((row) => [row.id, row]));
   const movementEssays = essayRow
@@ -402,9 +484,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
       })
     : undefined;
 
-  const artistRows = (movementArtistsResult.data ?? [])
-    .map((row) => row.artists)
-    .filter(Boolean) as MovementArtistRow[];
+  const artistRows = parseMovementArtistRows(movementArtistsResult.data);
   const uniqueArtists = new Map<string, MovementArtistRow>();
   artistRows.forEach((artistRow) => {
     uniqueArtists.set(artistRow.id, artistRow);
