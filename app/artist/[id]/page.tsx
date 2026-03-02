@@ -325,16 +325,7 @@ function parseMovementArtworkRows(value: unknown): MovementArtworkRow[] {
 }
 
 function pickHighlightArtwork(artworks: ArtworkRow[]) {
-  const withYear = artworks.find((artwork) => artwork.year !== null);
-  if (withYear) {
-    return withYear;
-  }
-  const byCreated = [...artworks].sort((a, b) => {
-    const aTime = a.created_at ? Date.parse(a.created_at) : 0;
-    const bTime = b.created_at ? Date.parse(b.created_at) : 0;
-    return bTime - aTime;
-  });
-  return byCreated[0] ?? null;
+  return artworks[2] ?? artworks[1] ?? artworks[0] ?? null;
 }
 
 export default async function ArtistDetailPage({ params }: ArtistPageProps) {
@@ -633,7 +624,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
         artistSlug={artist.slug}
         artistName={artist.name}
       />
-      <section className="relative w-full pb-[75px]">
+      <section className="relative w-full pb-[50px]">
         <div
           className={`flex h-[175px] w-full items-center justify-center overflow-hidden bg-[#f5f5f5] ${
             bannerHasImage ? "" : "px-[32px] py-[10px]"
@@ -656,7 +647,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
             </p>
           )}
         </div>
-        <div className="absolute left-[18px] top-[100px] h-[150px] w-[100px] overflow-hidden rounded-[1000px] border-2 border-white bg-[#d9d9d9]">
+        <div className="absolute left-[20px] top-[100px] h-[125px] w-[83px] overflow-hidden rounded-[1000px] border-2 border-white bg-[#d9d9d9]">
           {artist.image_url ? (
             <img
               alt={artist.name}
@@ -668,7 +659,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
       </section>
 
       <div className="flex w-full flex-col gap-[16px] px-[20px]">
-        <section className="flex w-full flex-col gap-[8px] pb-[32px] pt-[8px]">
+        <section className="flex w-full flex-col gap-[16px] pb-[32px] pt-[8px]">
           <p className="text-header-content-h1 text-black">
             {artist.name}
           </p>
@@ -698,7 +689,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
             ) : null}
           </div>
           {artist.quote ? (
-            <p className="text-body-longform-sans text-[#757575]">
+            <p className="text-body-default-sans text-[#757575]">
               “{artist.quote}”
             </p>
           ) : null}

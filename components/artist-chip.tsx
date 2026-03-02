@@ -8,6 +8,16 @@ type ArtistChipProps = {
   disableLink?: boolean;
 };
 
+const MAX_ARTIST_NAME_LENGTH = 20;
+
+function truncateArtistName(name: string) {
+  if (name.length <= MAX_ARTIST_NAME_LENGTH) {
+    return name;
+  }
+
+  return `${name.slice(0, MAX_ARTIST_NAME_LENGTH).trimEnd()}...`;
+}
+
 export function ArtistChip({
   name,
   imageUrl,
@@ -36,7 +46,7 @@ export function ArtistChip({
         )}
       </div>
       <p className="text-body-default-mono text-[#1e1e1e]">
-        {name}
+        {truncateArtistName(name)}
       </p>
     </>
   );
