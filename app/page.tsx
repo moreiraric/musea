@@ -24,6 +24,7 @@ type TagRow = {
 const ARTWORK_OF_THE_DAY_SLUG =
   "woman-with-a-parasol-madame-monet-and-her-son-claude-monet";
 const MOVEMENT_OF_THE_WEEK_SLUG = "impressionism";
+const HOME_OMITTED_ARTWORK_TITLES = new Set(["the origin of the world"]);
 
 function isArtworkRow(value: unknown): value is ArtworkRow {
   if (!value || typeof value !== "object") {
@@ -112,6 +113,10 @@ function formatTagLabel(name: string) {
     .join(" ");
 }
 
+function isAllowedHomeArtwork(artwork: ArtworkRow) {
+  return !HOME_OMITTED_ARTWORK_TITLES.has(artwork.title.trim().toLowerCase());
+}
+
 export default async function Home() {
   noStore();
   const supabase = createSupabaseServerClient();
@@ -156,8 +161,8 @@ export default async function Home() {
       .eq("movement_id", movementOfWeek.id)
       .order("year", { ascending: true, nullsFirst: false })
       .order("title", { ascending: true })
-      .limit(6);
-    movementArtworks = parseArtworkRows(data);
+      .limit(8);
+    movementArtworks = parseArtworkRows(data).filter(isAllowedHomeArtwork).slice(0, 6);
   }
 
   const movementYears = formatMovementYears(
