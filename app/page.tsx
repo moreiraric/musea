@@ -197,7 +197,7 @@ export default async function Home() {
 
       <div className="flex w-full flex-col gap-[32px] pb-[32px] pt-[100px]">
         <section className="flex w-full flex-col gap-[12px]">
-          <div className="flex flex-col gap-[16px] px-[20px]">
+          <div className="flex flex-col gap-[8px] px-[20px]">
             <p className="text-header-ui-page text-[#1e1e1e]">
               Welcome
             </p>

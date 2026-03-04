@@ -1,7 +1,7 @@
 "use client";
 
 import { createPortal } from "react-dom";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTabScope, useTabState } from "@/components/tab-state";
 
 type ArtworkTopBarProps = {
@@ -21,32 +21,26 @@ type ArtworkTopBarProps = {
 const STORAGE_KEY = "savedArtworks";
 
 export function ArtworkTopBar({ artwork, artist }: ArtworkTopBarProps) {
-  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
-  const [isSaved, setIsSaved] = useState(false);
-  const tabId = useTabScope();
-  const { goBackInTab } = useTabState();
-
-  useEffect(() => {
-    setPortalTarget(document.getElementById("app-viewport"));
-  }, []);
-
-  useEffect(() => {
+  const [isSaved, setIsSaved] = useState(() => {
     if (typeof window === "undefined") {
-      return;
+      return false;
     }
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
       const parsed = raw ? JSON.parse(raw) : [];
       const list = Array.isArray(parsed) ? parsed : [];
-      const exists = list.some(
+      return list.some(
         (item: { id?: string; slug?: string }) =>
           item?.id === artwork.id || (artwork.slug && item?.slug === artwork.slug),
       );
-      setIsSaved(exists);
     } catch {
-      setIsSaved(false);
+      return false;
     }
-  }, [artwork.id, artwork.slug]);
+  });
+  const tabId = useTabScope();
+  const { goBackInTab } = useTabState();
+  const portalTarget =
+    typeof document === "undefined" ? null : document.getElementById("app-viewport");
 
   if (!portalTarget) {
     return null;
@@ -115,7 +109,7 @@ export function ArtworkTopBar({ artwork, artist }: ArtworkTopBarProps) {
       <div className="flex w-full items-center justify-between">
         <div className="flex items-center">
           <button
-            className="flex h-[48px] w-[48px] items-center justify-center rounded-full bg-[rgba(217,217,217,0.33)] shadow-[0_0_32px_rgba(0,0,0,0.2)] backdrop-blur-[16px]"
+            className="flex h-[48px] w-[48px] items-center justify-center rounded-full bg-[rgba(255,255,255,0.33)] shadow-[0_0_32px_rgba(0,0,0,0.1)] backdrop-blur-[16px]"
             type="button"
             onClick={() => goBackInTab(tabId)}
             aria-label="Go back"
@@ -130,7 +124,7 @@ export function ArtworkTopBar({ artwork, artist }: ArtworkTopBarProps) {
         </div>
         <div className="flex items-center gap-[10px]">
           <button
-            className="flex h-[48px] items-center rounded-full bg-[rgba(217,217,217,0.33)] px-[12px] py-[8px] shadow-[0_0_32px_rgba(0,0,0,0.2)] backdrop-blur-[16px]"
+            className="flex h-[48px] w-[48px] items-center justify-center rounded-full bg-[rgba(255,255,255,0.33)] shadow-[0_0_32px_rgba(0,0,0,0.1)] backdrop-blur-[16px]"
             type="button"
             aria-label="Save artwork"
             onClick={handleSave}
@@ -147,7 +141,7 @@ export function ArtworkTopBar({ artwork, artist }: ArtworkTopBarProps) {
             />
           </button>
           <button
-            className="flex h-[48px] items-center rounded-full bg-[rgba(217,217,217,0.33)] px-[12px] py-[8px] shadow-[0_0_32px_rgba(0,0,0,0.2)] backdrop-blur-[16px]"
+            className="flex h-[48px] w-[48px] items-center justify-center rounded-full bg-[rgba(255,255,255,0.33)] shadow-[0_0_32px_rgba(0,0,0,0.1)] backdrop-blur-[16px]"
             type="button"
             aria-label="Share artwork"
             onClick={handleShare}

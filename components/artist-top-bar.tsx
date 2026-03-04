@@ -1,7 +1,6 @@
 "use client";
 
 import { createPortal } from "react-dom";
-import { useEffect, useState } from "react";
 import { useTabScope, useTabState } from "@/components/tab-state";
 
 type ArtistTopBarProps = {
@@ -11,13 +10,10 @@ type ArtistTopBarProps = {
 };
 
 export function ArtistTopBar({ artistId, artistSlug, artistName }: ArtistTopBarProps) {
-  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
+  const portalTarget =
+    typeof document === "undefined" ? null : document.getElementById("app-viewport");
   const tabId = useTabScope();
   const { goBackInTab } = useTabState();
-
-  useEffect(() => {
-    setPortalTarget(document.getElementById("app-viewport"));
-  }, []);
 
   if (!portalTarget) {
     return null;

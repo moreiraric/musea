@@ -17,8 +17,9 @@ export function DiscoverSearchHeader({
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [value, setValue] = useState(query);
-  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
   const tabId = useTabScope();
+  const portalTarget =
+    typeof document === "undefined" ? null : document.getElementById("app-viewport");
 
   useEffect(() => {
     setValue(query);
@@ -33,10 +34,6 @@ export function DiscoverSearchHeader({
     });
     return () => cancelAnimationFrame(id);
   }, [isSearchOpen]);
-
-  useEffect(() => {
-    setPortalTarget(document.getElementById("app-viewport"));
-  }, []);
 
   const submitSearch = () => {
     const next = value.trim();
@@ -63,12 +60,12 @@ export function DiscoverSearchHeader({
               type="button"
               aria-label="Open search"
               onClick={() => router.push("/discover?search=1")}
-              className="pointer-events-auto flex h-[42px] w-[42px] items-center justify-center rounded-full bg-[rgba(217,217,217,0.33)] shadow-[0_0_32px_rgba(0,0,0,0.2)] backdrop-blur-[16px]"
+              className="pointer-events-auto flex h-[42px] w-[42px] items-center justify-center rounded-full bg-[rgba(255,255,255,0.33)] shadow-[0_0_32px_rgba(0,0,0,0.1)] backdrop-blur-[16px]"
             >
               <img
                 alt=""
                 aria-hidden="true"
-                className="h-[20px] w-[20px]"
+                className="h-[24px] w-[24px]"
                 src="/images/ui/nav/icon-search-outline.svg"
               />
             </button>

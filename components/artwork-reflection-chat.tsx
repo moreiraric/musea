@@ -172,7 +172,7 @@ export function ArtworkReflectionChat({
         main.style.pointerEvents = previousMainPointerEvents ?? "";
       }
     };
-  }, [isOpen]);
+  }, [isActiveTab, isOpen]);
 
   useEffect(() => {
     latestMessagesRef.current = messages;
@@ -648,18 +648,12 @@ export function ArtworkReflectionChat({
               >
                 <div className="relative flex h-full flex-col">
                   <div className="pointer-events-none absolute left-1/2 top-[8px] h-[4px] w-[48px] -translate-x-1/2 rounded-full bg-[#d9d9d9]" />
-                  <div
-                    className="flex h-[100px] w-full items-end bg-gradient-to-t from-[rgba(255,255,255,0)] to-white px-[20px] pb-[16px]"
-                    style={{
-                      backgroundImage:
-                        "linear-gradient(180.34086741623048deg, rgba(255, 255, 255, 0) 1.4162%, rgb(255, 255, 255) 56.069%)",
-                    }}
-                  >
+                  <div className="flex h-[100px] w-full items-end bg-gradient-to-t from-[rgba(255,255,255,0)] from-50% to-[rgba(255,255,255,0.9)] px-[20px] pb-[8px] pt-[51px]">
                     <div className="flex w-full items-center gap-[16px]">
                       <div className="flex items-center">
                         <button
                           type="button"
-                          className="flex h-[48px] w-[48px] items-center justify-center rounded-full bg-[rgba(217,217,217,0.33)] p-[8px] shadow-[0px_0px_32px_0px_rgba(0,0,0,0.2)] backdrop-blur-[16px]"
+                          className="flex h-[48px] w-[48px] items-center justify-center rounded-full bg-[rgba(255,255,255,0.33)] p-[8px] shadow-[0px_0px_32px_0px_rgba(0,0,0,0.1)] backdrop-blur-[16px]"
                           onClick={handleClose}
                           aria-label="Close"
                         >
@@ -671,7 +665,7 @@ export function ArtworkReflectionChat({
                           />
                         </button>
                       </div>
-                      <p className="text-label-primary flex-1 truncate text-[#1e1e1e]">
+                      <p className="text-body-default-sans flex-1 truncate text-[#1e1e1e]">
                         {title}
                       </p>
                     </div>
@@ -763,7 +757,7 @@ export function ArtworkReflectionChat({
                             src="/images/ui/other/icoon-sparkle-outline.svg"
                           />
                           <p className="text-label-primary text-[#757575]">
-                            Curious? I can explain what you're seeing.
+                            Curious? I can explain what you&apos;re seeing.
                           </p>
                         </div>
                         <div

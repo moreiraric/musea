@@ -192,7 +192,7 @@ export function CraftCardSheet({ cards }: { cards: CraftCardData[] }) {
                 <div className="absolute left-0 right-0 top-0 z-20 flex items-center px-[20px] pb-[8px] pt-[20px]">
                   <button
                     type="button"
-                    className="flex h-[48px] w-[48px] items-center justify-center rounded-full bg-[rgba(217,217,217,0.33)] p-[8px] shadow-[0px_0px_32px_rgba(0,0,0,0.2)] backdrop-blur-[16px]"
+                    className="flex h-[48px] w-[48px] items-center justify-center rounded-full bg-[rgba(255,255,255,0.33)] p-[8px] shadow-[0px_0px_32px_rgba(0,0,0,0.1)] backdrop-blur-[16px]"
                     aria-label="Close tag sheet"
                     onClick={closeSheet}
                   >

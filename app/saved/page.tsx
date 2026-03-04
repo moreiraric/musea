@@ -1,7 +1,7 @@
 "use client";
 
 import { createPortal } from "react-dom";
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { ArtworkCardSmall } from "@/components/artwork-card-small";
 import { useTabScope } from "@/components/tab-state";
@@ -17,38 +17,29 @@ type SavedArtwork = {
 const STORAGE_KEY = "savedArtworks";
 
 export default function SavedPage() {
-  const [savedArtworks, setSavedArtworks] = useState<SavedArtwork[]>([]);
-  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
+  const [savedArtworks, setSavedArtworks] = useState<SavedArtwork[]>(() => {
+    if (typeof window === "undefined") {
+      return [];
+    }
+    try {
+      const raw = window.localStorage.getItem(STORAGE_KEY);
+      if (!raw) {
+        return [];
+      }
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  });
   const [isEditing, setIsEditing] = useState(false);
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
   const tabId = useTabScope();
+  const portalTarget =
+    typeof document === "undefined" ? null : document.getElementById("app-viewport");
 
   const getKey = (artwork: SavedArtwork, index: number) =>
     artwork.id ?? artwork.slug ?? `idx-${index}`;
-
-  const selectedCount = useMemo(() => selectedKeys.size, [selectedKeys]);
-
-  useEffect(() => {
-    setPortalTarget(document.getElementById("app-viewport"));
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      return;
-    }
-    try {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) {
-        setSavedArtworks(parsed);
-      }
-    } catch {
-      // Ignore malformed storage values.
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!isEditing) {
-      setSelectedKeys(new Set());
-    }
-  }, [isEditing]);
 
   const toggleSelection = (key: string) => {
     setSelectedKeys((prev) => {
@@ -92,7 +83,7 @@ export default function SavedPage() {
                   <div className="flex items-center gap-[10px]">
                     <button
                       type="button"
-                      className="text-label-primary flex h-[48px] items-center rounded-full bg-[rgba(220,38,38,0.2)] px-[16px] py-[8px] text-[#dc2626] shadow-[0_0_32px_rgba(220,38,38,0.2)] backdrop-blur-[16px]"
+                      className="text-label-primary flex h-[48px] items-center rounded-full bg-[rgba(255,255,255,0.33)] px-[16px] py-[8px] text-[#dc2626] shadow-[0_0_32px_rgba(0,0,0,0.1)] backdrop-blur-[16px]"
                       onClick={handleDelete}
                       aria-label="Delete selected artworks"
                     >
@@ -100,8 +91,11 @@ export default function SavedPage() {
                     </button>
                     <button
                       type="button"
-                      className="text-label-primary flex h-[48px] items-center rounded-full bg-[rgba(217,217,217,0.33)] px-[16px] py-[8px] text-black shadow-[0_0_32px_rgba(0,0,0,0.2)] backdrop-blur-[16px]"
-                      onClick={() => setIsEditing(false)}
+                      className="text-label-primary flex h-[48px] items-center rounded-full bg-[rgba(255,255,255,0.33)] px-[16px] py-[8px] text-black shadow-[0_0_32px_rgba(0,0,0,0.1)] backdrop-blur-[16px]"
+                      onClick={() => {
+                        setIsEditing(false);
+                        setSelectedKeys(new Set());
+                      }}
                     >
                       Done
                     </button>
@@ -109,7 +103,7 @@ export default function SavedPage() {
                 ) : (
                   <button
                     type="button"
-                    className="text-label-primary flex h-[48px] items-center rounded-full bg-[rgba(217,217,217,0.33)] px-[16px] py-[8px] text-black shadow-[0_0_32px_rgba(0,0,0,0.2)] backdrop-blur-[16px]"
+                    className="text-label-primary flex h-[48px] items-center rounded-full bg-[rgba(255,255,255,0.33)] px-[16px] py-[8px] text-black shadow-[0_0_32px_rgba(0,0,0,0.1)] backdrop-blur-[16px]"
                     onClick={() => setIsEditing(true)}
                   >
                     Edit
