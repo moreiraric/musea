@@ -12,15 +12,15 @@ type ArtworkImageViewerProps = {
 export function ArtworkImageViewer({ src, alt }: ArtworkImageViewerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [scale, setScale] = useState(1);
-  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
   const touchStartY = useRef<number | null>(null);
   const tabId = useTabScope();
+  const portalTarget =
+    typeof document === "undefined" ? null : document.getElementById("app-viewport");
 
   useEffect(() => {
     if (!isOpen) {
       return;
     }
-    setPortalTarget(document.getElementById("app-viewport"));
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const onKeyDown = (event: KeyboardEvent) => {
@@ -61,11 +61,15 @@ export function ArtworkImageViewer({ src, alt }: ArtworkImageViewerProps) {
     <>
       <button
         type="button"
-        className="block w-full"
+        className="flex h-full w-full items-center justify-center"
         onClick={() => setIsOpen(true)}
         aria-label="Open artwork image"
       >
-        <img alt={alt} className="h-auto w-full" src={src} />
+        <img
+          alt={alt}
+          className="block max-h-full w-auto max-w-full object-contain"
+          src={src}
+        />
       </button>
 
       {isOpen

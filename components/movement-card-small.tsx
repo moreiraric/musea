@@ -7,6 +7,8 @@ type MovementCardSmallProps = {
   href?: string;
   className?: string;
   fallbackYears?: string;
+  compact?: boolean;
+  desaturateImage?: boolean;
 };
 
 export function MovementCardSmall({
@@ -16,6 +18,8 @@ export function MovementCardSmall({
   href,
   className,
   fallbackYears,
+  compact = false,
+  desaturateImage = false,
 }: MovementCardSmallProps) {
   const resolvedYears = years && years.trim().length > 0 ? years : fallbackYears;
   const normalizedYears = resolvedYears
@@ -32,12 +36,21 @@ export function MovementCardSmall({
   ]
     .filter(Boolean)
     .join(" ");
+  const imageFrameClassName = compact
+    ? "flex h-[54px] w-[54px] shrink-0 items-center justify-center overflow-hidden"
+    : "flex h-[72px] w-[72px] shrink-0 items-center justify-center overflow-hidden";
+  const imageClassName = compact ? "h-[54px] w-[54px] object-contain" : "h-full w-full object-contain";
 
   const content = (
     <>
-      <div className="flex h-[72px] w-[72px] items-center justify-center overflow-hidden">
+      <div className={imageFrameClassName}>
         {imageUrl ? (
-          <img alt={name} className="h-full w-full object-contain" src={imageUrl} />
+          <img
+            alt={name}
+            className={imageClassName}
+            src={imageUrl}
+            style={desaturateImage ? { filter: "grayscale(1) brightness(0.55)" } : undefined}
+          />
         ) : null}
       </div>
       <div className="flex h-[59px] min-h-px min-w-0 flex-1 flex-col items-start justify-center gap-[4px]">

@@ -6,8 +6,9 @@ import type {
   ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
+import { ArtistPortrait } from "@/components/artist-portrait";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ArtworkFull } from "@/components/artwork-full";
 import { ArtworkCardSmall } from "@/components/artwork-card-small";
@@ -177,52 +178,6 @@ function MovementEssaySection({
   );
 }
 
-function ArtistPortrait({ name, imageUrl, href }: MovementArtist) {
-  const formatSurname = (fullName: string) => {
-    const parts = fullName.trim().split(/\s+/).filter(Boolean);
-    if (parts.length <= 1) {
-      return fullName;
-    }
-    const remainder = parts.slice(1).join(" ");
-    if (!remainder) {
-      return fullName;
-    }
-    const firstChar = remainder[0];
-    const next =
-      firstChar && firstChar === firstChar.toLowerCase()
-        ? `${firstChar.toUpperCase()}${remainder.slice(1)}`
-        : remainder;
-    return next;
-  };
-
-  const content = (
-    <>
-      <div className="h-[150px] w-[100px] overflow-hidden rounded-full bg-[#d9d9d9]">
-        {imageUrl ? (
-          <img alt={name} className="h-full w-full object-cover" src={imageUrl} />
-        ) : null}
-      </div>
-      <p className="text-header-content-h3 text-black">
-        {formatSurname(name)}
-      </p>
-    </>
-  );
-
-  if (href) {
-    return (
-      <Link className="flex w-[100px] flex-col items-center justify-center gap-[8px]" href={href}>
-        {content}
-      </Link>
-    );
-  }
-
-  return (
-    <div className="flex w-[100px] flex-col items-center justify-center gap-[8px]">
-      {content}
-    </div>
-  );
-}
-
 function getThumbnailUrl(url?: string | null) {
   if (!url) {
     return null;
@@ -262,32 +217,19 @@ export function MovementSheet({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
-  const [isOpen, setIsOpen] = useState(false);
   const timelineRef = useRef<HTMLDivElement | null>(null);
   const activeChipRef = useRef<HTMLDivElement | null>(null);
   const movementYears = formatMovementYears(movement.startYear, movement.endYear);
   const tabId = useTabScope();
   const isSheetOpen = searchParams?.get("movementSheet") === "1";
+  const portalTarget =
+    typeof document === "undefined" ? null : document.getElementById("app-viewport");
   const sheetPath = useMemo(() => {
     const params = new URLSearchParams(searchParams?.toString());
     params.set("movementSheet", "1");
     const query = params.toString();
     return query ? `${pathname}?${query}` : pathname;
   }, [pathname, searchParams]);
-
-  useEffect(() => {
-    setPortalTarget(document.getElementById("app-viewport"));
-  }, []);
-
-  useEffect(() => {
-    if (isSheetOpen && !isOpen) {
-      setIsOpen(true);
-    }
-    if (!isSheetOpen && isOpen) {
-      setIsOpen(false);
-    }
-  }, [isSheetOpen, isOpen]);
 
   const resolvedTimeline = useMemo(() => {
     if (timeline && timeline.length > 0) {
@@ -334,7 +276,7 @@ export function MovementSheet({
   }, [resolvedTimeline, sheetPath]);
 
   useEffect(() => {
-    if (!isOpen) {
+    if (!isSheetOpen) {
       return;
     }
     const activeChip = activeChipRef.current;
@@ -354,7 +296,7 @@ export function MovementSheet({
         behavior: "smooth",
       });
     });
-  }, [isOpen, resolvedTimeline]);
+  }, [isSheetOpen, resolvedTimeline]);
 
   const resolvedEssays = useMemo(() => {
     const hasEssayContent = essays?.some(
@@ -406,28 +348,26 @@ export function MovementSheet({
     ];
   }, [artworks]);
 
-  const openSheet = () => {
-    setIsOpen(true);
+  const openSheet = useCallback(() => {
     if (!isSheetOpen) {
       const params = new URLSearchParams(searchParams?.toString());
       params.set("movementSheet", "1");
       const query = params.toString();
       router.push(query ? `${pathname}?${query}` : pathname);
     }
-  };
+  }, [isSheetOpen, pathname, router, searchParams]);
 
-  const closeSheet = () => {
-    setIsOpen(false);
+  const closeSheet = useCallback(() => {
     if (isSheetOpen) {
       const params = new URLSearchParams(searchParams?.toString());
       params.delete("movementSheet");
       const query = params.toString();
       router.replace(query ? `${pathname}?${query}` : pathname);
     }
-  };
+  }, [isSheetOpen, pathname, router, searchParams]);
 
   useEffect(() => {
-    if (!isOpen) {
+    if (!isSheetOpen) {
       return;
     }
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -437,7 +377,7 @@ export function MovementSheet({
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [closeSheet, isOpen]);
+  }, [closeSheet, isSheetOpen]);
 
   const handleTriggerClick = (event: ReactMouseEvent<HTMLDivElement>) => {
     if (event.target instanceof HTMLElement) {
@@ -487,26 +427,26 @@ export function MovementSheet({
         <div
           data-tab={tabId}
           className={`tab-portal absolute inset-0 z-40 transition-opacity duration-300 ${
-            isOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
+            isSheetOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
           }`}
           onWheel={(event) => {
-            if (isOpen) {
+            if (isSheetOpen) {
               event.preventDefault();
               event.stopPropagation();
             }
           }}
           onTouchMove={(event) => {
-            if (isOpen) {
+            if (isSheetOpen) {
               event.preventDefault();
               event.stopPropagation();
             }
           }}
-          aria-hidden={!isOpen}
+          aria-hidden={!isSheetOpen}
         >
           <button
             type="button"
             className={`absolute inset-0 bg-black/40 transition-opacity duration-300 ${
-              isOpen ? "opacity-100" : "opacity-0"
+              isSheetOpen ? "opacity-100" : "opacity-0"
             }`}
             aria-label="Close movement details"
             onClick={closeSheet}
@@ -514,7 +454,7 @@ export function MovementSheet({
 
           <div
             className={`absolute bottom-0 left-0 right-0 flex h-[92%] flex-col overflow-hidden rounded-t-[36px] bg-white shadow-[0_-16px_40px_rgba(0,0,0,0.18)] transition-transform duration-500 ease-out ${
-              isOpen ? "translate-y-0" : "translate-y-full"
+              isSheetOpen ? "translate-y-0" : "translate-y-full"
             }`}
             style={{ willChange: "transform" }}
             role="dialog"
@@ -604,7 +544,7 @@ export function MovementSheet({
                       Artists
                     </p>
                   </div>
-                  <div className="-mx-[20px] flex w-[calc(100%+40px)] items-center gap-[16px] overflow-x-auto pb-[4px] pl-[20px] pr-[20px] hide-scrollbar">
+                  <div className="-mx-[20px] flex w-[calc(100%+40px)] items-center gap-[8px] overflow-x-auto pb-[4px] pl-[20px] pr-[20px] hide-scrollbar">
                     {resolvedArtists.map((artist) => (
                       <ArtistPortrait key={artist.id} {...artist} />
                     ))}

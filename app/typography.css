@@ -31,7 +31,7 @@
   font-size: 14px;
   font-weight: 500;
   line-height: 16px;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
@@ -74,7 +74,7 @@
 .text-label-primary {
   font-family: var(--font-instrument-sans, "Instrument Sans", sans-serif);
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 400;
   line-height: 20px;
 }
 
@@ -95,7 +95,7 @@
 
 .text-meta-large {
   font-family: var(--font-fira-mono, "Fira Mono", monospace);
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 400;
   line-height: 20px;
   letter-spacing: -0.16px;

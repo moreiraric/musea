@@ -642,7 +642,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
           }
           image={
             artwork.image_url ? (
-              <div className="w-full bg-[#d9d9d9]">
+              <div className="flex h-full w-full items-center justify-center">
                 <ArtworkImageViewer
                   alt={artwork.title}
                   src={artwork.image_url}

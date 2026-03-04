@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArtistPortrait } from "@/components/artist-portrait";
 import { ArtworkCardSmall } from "@/components/artwork-card-small";
 import { ArtworkFull } from "@/components/artwork-full";
 import { MovementTimelineRow } from "@/components/movement-timeline-row";
@@ -292,52 +293,6 @@ function MovementEssaySection({ title, body, artwork }: MovementEssay) {
       ) : (
         artworkContent
       )}
-    </div>
-  );
-}
-
-function ArtistPortrait({ name, imageUrl, href }: MovementArtist) {
-  const formatSurname = (fullName: string) => {
-    const parts = fullName.trim().split(/\s+/).filter(Boolean);
-    if (parts.length <= 1) {
-      return fullName;
-    }
-    const remainder = parts.slice(1).join(" ");
-    if (!remainder) {
-      return fullName;
-    }
-    const firstChar = remainder[0];
-    const next =
-      firstChar && firstChar === firstChar.toLowerCase()
-        ? `${firstChar.toUpperCase()}${remainder.slice(1)}`
-        : remainder;
-    return next;
-  };
-
-  const content = (
-    <>
-      <div className="h-[150px] w-[100px] overflow-hidden rounded-full bg-[#d9d9d9]">
-        {imageUrl ? (
-          <img alt={name} className="h-full w-full object-cover" src={imageUrl} />
-        ) : null}
-      </div>
-      <p className="text-header-content-h3 text-black">
-        {formatSurname(name)}
-      </p>
-    </>
-  );
-
-  if (href) {
-    return (
-      <Link className="flex w-[100px] flex-col items-center justify-center gap-[8px]" href={href}>
-        {content}
-      </Link>
-    );
-  }
-
-  return (
-    <div className="flex w-[100px] flex-col items-center justify-center gap-[8px]">
-      {content}
     </div>
   );
 }
@@ -669,7 +624,7 @@ export default async function MovementPage({ params, searchParams }: MovementPag
             Artists
           </p>
         </div>
-        <div className="-mx-[20px] flex w-[calc(100%+40px)] items-center gap-[16px] overflow-x-auto pb-[4px] pl-[20px] pr-[20px] hide-scrollbar">
+        <div className="-mx-[20px] flex w-[calc(100%+40px)] items-center gap-[8px] overflow-x-auto pb-[4px] pl-[20px] pr-[20px] hide-scrollbar">
           {resolvedArtists.map((artist) => (
             <ArtistPortrait key={artist.id} {...artist} />
           ))}

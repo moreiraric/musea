@@ -1,7 +1,7 @@
 "use client";
 
 import { createPortal } from "react-dom";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTabScope } from "@/components/tab-state";
 
@@ -45,7 +45,6 @@ function CaretIcon() {
 type SheetProps = {
   label: string;
   options: FilterOption[];
-  value?: string | null;
   onChange: (value: string) => void;
   onClose: () => void;
   counts: Record<string, number>;
@@ -54,21 +53,16 @@ type SheetProps = {
 function BottomSheet({
   label,
   options,
-  value,
   onChange,
   onClose,
   counts,
 }: SheetProps) {
   const tabId = useTabScope();
   const sheetRef = useRef<HTMLDivElement | null>(null);
-  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
+  const portalTarget =
+    typeof document === "undefined" ? null : document.getElementById("app-viewport");
   const [dragOffset, setDragOffset] = useState(0);
   const startYRef = useRef<number | null>(null);
-  const selected = options.find((option) => option.slug === value);
-
-  useEffect(() => {
-    setPortalTarget(document.getElementById("app-viewport"));
-  }, []);
 
   const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
     startYRef.current = event.touches[0]?.clientY ?? null;
@@ -164,7 +158,6 @@ export function TagFilters({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [openSheet, setOpenSheet] = useState<"movement" | "medium" | "technique" | null>(null);
-  const tabId = useTabScope();
 
   const updateParam = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -179,10 +172,10 @@ export function TagFilters({
   };
 
   return (
-    <div className="-mx-[20px] flex w-[calc(100%+40px)] gap-[10px] overflow-x-auto overflow-y-visible px-[20px] pb-[4px] hide-scrollbar">
+    <div className="-mx-[20px] flex w-[calc(100%+40px)] gap-[8px] overflow-x-auto overflow-y-visible px-[20px] pb-[4px] hide-scrollbar">
       <button
         type="button"
-        className="inline-flex items-center gap-[8px] rounded-full border border-[#d9d9d9] bg-transparent px-[12px] py-[6px]"
+        className="inline-flex items-center gap-[8px] rounded-full border border-[#d9d9d9] bg-transparent pl-[12px] pr-[16px] py-[8px]"
         onClick={() => setOpenSheet("movement")}
       >
         <span className="text-label-primary max-w-[140px] truncate text-black">
@@ -195,7 +188,7 @@ export function TagFilters({
 
       <button
         type="button"
-        className="inline-flex items-center gap-[8px] rounded-full border border-[#d9d9d9] bg-transparent px-[12px] py-[6px]"
+        className="inline-flex items-center gap-[8px] rounded-full border border-[#d9d9d9] bg-transparent pl-[12px] pr-[16px] py-[8px]"
         onClick={() => setOpenSheet("medium")}
       >
         <span className="text-label-primary max-w-[140px] truncate text-black">
@@ -208,7 +201,7 @@ export function TagFilters({
 
       <button
         type="button"
-        className="inline-flex items-center gap-[8px] rounded-full border border-[#d9d9d9] bg-transparent px-[12px] py-[6px]"
+        className="inline-flex items-center gap-[8px] rounded-full border border-[#d9d9d9] bg-transparent pl-[12px] pr-[16px] py-[8px]"
         onClick={() => setOpenSheet("technique")}
       >
         <span className="text-label-primary max-w-[140px] truncate text-black">
@@ -223,7 +216,6 @@ export function TagFilters({
         <BottomSheet
           label="Movement"
           options={movementOptions}
-          value={selectedMovement}
           onChange={(value) => updateParam("movement", value)}
           onClose={() => setOpenSheet(null)}
           counts={movementCounts}
@@ -233,7 +225,6 @@ export function TagFilters({
         <BottomSheet
           label="Medium"
           options={mediumOptions}
-          value={selectedMedium}
           onChange={(value) => updateParam("medium", value)}
           onClose={() => setOpenSheet(null)}
           counts={mediumCounts}
@@ -243,7 +234,6 @@ export function TagFilters({
         <BottomSheet
           label="Technique"
           options={techniqueOptions}
-          value={selectedTechnique}
           onChange={(value) => updateParam("technique", value)}
           onClose={() => setOpenSheet(null)}
           counts={techniqueCounts}

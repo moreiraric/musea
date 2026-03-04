@@ -23,7 +23,7 @@ export function ArtistEssay({ text }: ArtistEssayProps) {
     <div className="relative w-full">
       <p
         ref={paragraphRef}
-        className="text-body-longform-sans text-[#1e1e1e]"
+        className="text-body-default-sans text-[#1e1e1e]"
         style={
           isExpanded
             ? undefined
@@ -40,7 +40,7 @@ export function ArtistEssay({ text }: ArtistEssayProps) {
       {!isExpanded && isOverflowing ? (
         <button
           type="button"
-          className="text-body-longform-sans absolute bottom-0 right-0 bg-white pl-[6px] font-bold text-[#1e1e1e]"
+          className="text-body-default-sans absolute bottom-0 right-0 bg-white pl-[6px] font-bold text-[#1e1e1e]"
           onClick={() => setIsExpanded(true)}
         >
           ...See More

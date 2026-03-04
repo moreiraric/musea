@@ -1,17 +1,13 @@
 "use client";
 
 import { createPortal } from "react-dom";
-import { useEffect, useState } from "react";
 import { useTabScope, useTabState } from "@/components/tab-state";
 
 export function TagTopBar({ backHref }: { backHref?: string }) {
-  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
+  const portalTarget =
+    typeof document === "undefined" ? null : document.getElementById("app-viewport");
   const tabId = useTabScope();
   const { goBackInTab } = useTabState();
-
-  useEffect(() => {
-    setPortalTarget(document.getElementById("app-viewport"));
-  }, []);
 
   if (!portalTarget) {
     return null;
@@ -27,7 +23,7 @@ export function TagTopBar({ backHref }: { backHref?: string }) {
           type="button"
           onClick={() => goBackInTab(tabId, backHref)}
           aria-label="Back"
-          className="pointer-events-auto flex h-[42px] w-[42px] items-center justify-center rounded-full border border-white bg-[rgba(255,255,255,0.33)] shadow-[0_0_32px_rgba(0,0,0,0.1)] backdrop-blur-[16px]"
+          className="pointer-events-auto flex h-[48px] w-[48px] items-center justify-center rounded-full bg-[rgba(217,217,217,0.33)] p-[8px] shadow-[0_0_32px_rgba(0,0,0,0.2)] backdrop-blur-[16px]"
         >
           <img
             alt=""

@@ -17,18 +17,6 @@ type TagRow = {
   category: string | null;
 };
 
-type ArtistRow = {
-  id: string;
-  name: string;
-  slug: string;
-  image_url: string | null;
-  life_period: string | null;
-  country: string | null;
-  quote: string | null;
-  bio: string | null;
-  primary_movement_id: string | null;
-};
-
 type ArtworkRow = {
   id: string;
   title: string;
@@ -328,6 +316,8 @@ function pickHighlightArtwork(artworks: ArtworkRow[]) {
   return artworks[2] ?? artworks[1] ?? artworks[0] ?? null;
 }
 
+const MAX_MASTERPIECES = 6;
+
 export default async function ArtistDetailPage({ params }: ArtistPageProps) {
   const resolvedParams = await Promise.resolve(params);
   const artistParam = typeof resolvedParams?.id === "string" ? resolvedParams.id : "";
@@ -613,20 +603,21 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
   const hasLifePeriodRange =
     lifePeriodParts.length === 2 && lifePeriodParts[0] && lifePeriodParts[1];
 
-  const masterpieces = artworkList;
+  const masterpieces = artworkList.slice(0, MAX_MASTERPIECES);
 
   const bannerHasImage = Boolean(highlightArtwork?.image_url);
+  const hasTags = knownForTags.length > 0 || themeTags.length > 0;
 
   return (
-    <div className="relative flex w-full flex-col overflow-x-hidden bg-white pt-[116px]">
+    <div className="relative flex w-full flex-col overflow-x-hidden bg-white pb-[50px]">
       <ArtistTopBar
         artistId={artist.id}
         artistSlug={artist.slug}
         artistName={artist.name}
       />
-      <section className="relative w-full pb-[50px]">
+      <section className="relative h-[314px] w-full shrink-0 overflow-hidden">
         <div
-          className={`flex h-[175px] w-full items-center justify-center overflow-hidden bg-[#f5f5f5] ${
+          className={`flex h-[250px] w-full items-center justify-center overflow-hidden bg-[#f5f5f5] ${
             bannerHasImage ? "" : "px-[32px] py-[10px]"
           }`}
         >
@@ -647,7 +638,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
             </p>
           )}
         </div>
-        <div className="absolute left-[20px] top-[100px] h-[125px] w-[83px] overflow-hidden rounded-[1000px] border-2 border-white bg-[#d9d9d9]">
+        <div className="absolute left-[20px] top-[187px] h-[125px] w-[83px] overflow-hidden rounded-[1000px] border-2 border-white bg-[#d9d9d9]">
           {artist.image_url ? (
             <img
               alt={artist.name}
@@ -658,12 +649,12 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
         </div>
       </section>
 
-      <div className="flex w-full flex-col gap-[16px] px-[20px]">
-        <section className="flex w-full flex-col gap-[16px] pb-[32px] pt-[8px]">
+      <div className="flex w-full flex-col gap-[16px] px-[20px] pb-[32px]">
+        <section className="flex w-full flex-col gap-[16px] pt-[8px]">
           <p className="text-header-content-h1 text-black">
             {artist.name}
           </p>
-          <div className="flex w-full items-center justify-between text-[#757575]">
+          <div className="flex w-full items-center justify-between gap-[12px] text-[#757575]">
             {hasLifePeriodRange ? (
               <p className="text-meta-large flex items-center gap-[4px] text-[#757575]">
                 <span>{lifePeriodParts[0]}</span>
@@ -676,7 +667,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
               </p>
             )}
             {artist.country ? (
-              <div className="flex min-w-[151px] items-center justify-end gap-[8px]">
+              <div className="flex shrink-0 items-center justify-end gap-[8px]">
                 {flagEmoji ? (
                   <span className="text-[24px] font-medium [font-family:var(--font-inter)]">
                     {flagEmoji}
@@ -720,14 +711,14 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
           />
         ) : null}
 
-        {knownForTags.length > 0 || themeTags.length > 0 ? (
-          <section className="flex w-full flex-col gap-[16px] pt-[32px]">
+        {hasTags ? (
+          <section className="flex w-full flex-col gap-[16px] pt-[16px]">
             {knownForTags.length > 0 ? (
               <div className="flex w-full flex-col gap-[8px]">
                 <p className="text-header-ui-overline text-[#757575]">
                   Known For
                 </p>
-                <div className="flex w-full gap-[8px] overflow-x-auto pb-[4px] hide-scrollbar">
+                <div className="-mx-[20px] flex w-[calc(100%+40px)] gap-[8px] overflow-x-auto pb-[4px] pl-[20px] pr-[20px] hide-scrollbar">
                   {knownForTags.map((tag) => (
                     <Link
                       key={tag.id}
@@ -754,7 +745,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
                 <p className="text-header-ui-overline text-[#757575]">
                   Themes
                 </p>
-                <div className="flex w-full gap-[8px] overflow-x-auto pb-[4px] hide-scrollbar">
+                <div className="-mx-[20px] flex w-[calc(100%+40px)] gap-[8px] overflow-x-auto pb-[4px] pl-[20px] pr-[20px] hide-scrollbar">
                   {themeTags.map((tag) => (
                     <Link
                       key={tag.id}
@@ -779,7 +770,10 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
         ) : null}
 
         {artist.bio ? (
-          <section className="flex w-full border-t border-[#d9d9d9] pt-[16px]">
+          <section className="flex w-full flex-col gap-[4px] border-t border-[#d9d9d9] pt-[16px]">
+            <p className="text-header-ui-overline text-[#757575]">
+              About
+            </p>
             <ArtistEssay text={artist.bio} />
           </section>
         ) : null}

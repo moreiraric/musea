@@ -17,15 +17,6 @@ type TagPageProps = {
   };
 };
 
-type TagRow = {
-  id: string;
-  slug: string;
-  name: string;
-  description: string | null;
-  banner: string | null;
-  category: string;
-};
-
 type ArtworkRow = {
   id: string;
   slug: string | null;
@@ -625,14 +616,18 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
   }
 
   return (
-    <div className="flex w-full flex-col overflow-x-hidden bg-white pt-[100px]">
+    <div className="flex w-full flex-col overflow-x-hidden bg-white">
       <TagTopBar />
       <section className="flex w-full flex-col">
-        <div className="flex h-[200px] w-full items-center justify-center bg-[#f5f5f5]">
+        <div
+          className={`flex h-[291px] w-full items-center justify-center bg-[#f5f5f5] ${
+            bannerImageUrl ? "" : "px-[32px] py-[10px]"
+          }`}
+        >
           {bannerImageUrl ? (
             <img
               alt={bannerAlt}
-              className="h-full w-full object-cover"
+              className="block h-full w-full object-cover"
               src={bannerImageUrl}
             />
           ) : (
@@ -644,7 +639,7 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
       </section>
 
       <div className="flex w-full flex-col items-start px-[20px]">
-        <section className="flex w-full flex-col gap-[10px] pb-[20px] pt-[20px]">
+        <section className="flex w-full flex-col gap-[10px] py-[16px]">
           <p className="text-header-content-h1 text-[#1e1e1e]">
             {titleCase(tag.name)}
           </p>
@@ -655,7 +650,7 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
           </div>
         </section>
 
-        <section className="flex w-full flex-col gap-[12px] border-t border-[#d9d9d9] pb-[16px] pt-[16px]">
+        <section className="flex w-full flex-col gap-[8px] border-t border-[#d9d9d9] py-[16px]">
           <p className="text-header-ui-overline text-[#757575]">
             Filters
           </p>
@@ -677,8 +672,8 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
           ) : null}
         </section>
 
-        <section className="flex w-full flex-col items-start justify-center pb-[32px]">
-          <div className="grid w-full grid-cols-2 justify-items-start gap-x-[20px] gap-y-[28px]">
+        <section className="flex w-full flex-col items-start justify-center">
+          <div className="grid w-full grid-cols-2 justify-items-start gap-x-[20px] gap-y-[30px]">
             {artworks.length > 0 ? (
               artworks.map((artwork) => (
                 <Link
