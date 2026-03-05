@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArtistPortrait } from "@/components/artist-portrait";
+import { ArtistPortraitAndName } from "@/components/artist-portrait";
 import { ArtworkCardSmall } from "@/components/artwork-card-small";
 import { ArtworkFull } from "@/components/artwork-full";
 import { MovementTimelineRow } from "@/components/movement-timeline-row";
@@ -624,9 +624,9 @@ export default async function MovementPage({ params, searchParams }: MovementPag
             Artists
           </p>
         </div>
-        <div className="-mx-[20px] flex w-[calc(100%+40px)] items-center gap-[8px] overflow-x-auto pb-[4px] pl-[20px] pr-[20px] hide-scrollbar">
+        <div className="-mx-[20px] flex w-[calc(100%+40px)] items-start gap-[8px] overflow-x-auto pb-[4px] pl-[20px] pr-[20px] hide-scrollbar">
           {resolvedArtists.map((artist) => (
-            <ArtistPortrait key={artist.id} {...artist} />
+            <ArtistPortraitAndName key={artist.id} {...artist} />
           ))}
         </div>
       </section>

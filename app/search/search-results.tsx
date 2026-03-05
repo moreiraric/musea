@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { UIEvent } from "react";
+import { ArtistPortraitAndName } from "@/components/artist-portrait";
 import { ArtworkCardSmall } from "@/components/artwork-card-small";
 import { buildSearchTokens, scoreRelevance } from "@/lib/search-utils";
 
@@ -101,18 +102,6 @@ function getThumbnailUrl(url?: string | null, size = 360) {
     // ignore invalid URLs
   }
   return url;
-}
-
-function formatSurname(fullName: string) {
-  const parts = fullName.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) {
-    return fullName;
-  }
-  const last = parts[parts.length - 1] ?? fullName;
-  const firstChar = last[0];
-  return firstChar && firstChar === firstChar.toLowerCase()
-    ? `${firstChar.toUpperCase()}${last.slice(1)}`
-    : last;
 }
 
 function getArtistKey(artist: SearchArtist) {
@@ -377,30 +366,16 @@ export function SearchResults({
             Artists
           </p>
           <div
-            className="-mx-[20px] flex w-[calc(100%+40px)] items-center gap-[16px] overflow-x-auto overflow-y-visible px-[20px] pb-[4px] hide-scrollbar"
+            className="-mx-[20px] flex w-[calc(100%+40px)] items-start gap-[8px] overflow-x-auto overflow-y-visible px-[20px] pb-[4px] hide-scrollbar"
             onScroll={handleArtistScroll}
           >
             {sortedArtists.map((artist) => (
-              <Link
+              <ArtistPortraitAndName
                 key={getArtistKey(artist)}
+                name={artist.name}
+                imageUrl={getThumbnailUrl(artist.image_url, 240) ?? artist.image_url}
                 href={`/artist/${artist.slug ?? artist.id}`}
-                className="flex w-[92px] shrink-0 flex-col items-center justify-center gap-[8px]"
-              >
-                <div className="h-[120px] w-[92px] overflow-hidden rounded-[1000px] bg-[#d9d9d9]">
-                  {artist.image_url ? (
-                    <img
-                      alt={artist.name}
-                      className="h-full w-full object-cover"
-                      src={getThumbnailUrl(artist.image_url, 240) ?? artist.image_url}
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  ) : null}
-                </div>
-                <p className="text-header-content-h3 text-center text-black">
-                  {formatSurname(artist.name)}
-                </p>
-              </Link>
+              />
             ))}
           </div>
         </section>
