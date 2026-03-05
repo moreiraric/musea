@@ -649,7 +649,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
                 />
               </div>
             ) : (
-              <div className="flex min-h-[232px] w-full items-center justify-center bg-[#d9d9d9] text-sm text-[#757575]">
+              <div className="text-body-default-sans flex min-h-[232px] w-full items-center justify-center bg-[#d9d9d9] text-[#757575]">
                 Image unavailable
               </div>
             )
