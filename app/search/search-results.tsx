@@ -319,7 +319,7 @@ export function SearchResults({
     <div className="flex w-full flex-col gap-[32px] pb-[32px] pt-[16px]">
       {sortedArtists.length > 0 ? (
         <section className="flex w-full flex-col gap-[12px] px-[20px]">
-          <p className="text-header-ui-page text-[#757575]">
+          <p className="text-label-primary text-[#757575]">
             Artists
           </p>
           <div
@@ -340,7 +340,7 @@ export function SearchResults({
 
       {sortedArtworks.length > 0 ? (
         <section className="flex w-full flex-col gap-[16px] px-[20px]">
-          <p className="text-header-ui-page text-[#757575]">
+          <p className="text-label-primary text-[#757575]">
             Artworks
           </p>
           <div className="grid w-full grid-cols-2 justify-items-start gap-x-[20px] gap-y-[24px]">
