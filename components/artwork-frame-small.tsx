@@ -1,4 +1,7 @@
 import type { ReactNode } from "react";
+import { ImageWithFallback } from "@/components/image-with-fallback";
+
+const brokenImageIconSrc = "/images/ui/other/image-broken.svg";
 
 type ArtworkFrameSmallProps = {
   imageUrl?: string | null;
@@ -30,16 +33,23 @@ export function ArtworkFrameSmall({
         image
       ) : imageUrl ? (
         <div className="flex w-full flex-1 items-center justify-center overflow-hidden">
-          <img
+          <ImageWithFallback
+            src={imageUrl}
             alt={alt ?? ""}
             className="block h-full w-full object-contain"
-            src={imageUrl}
             loading={loading}
             decoding={decoding}
           />
         </div>
       ) : (
-        <div className="min-h-px min-w-px w-full flex-1 bg-[#d9d9d9]" />
+        <div className="flex min-h-px min-w-px w-full flex-1 items-center justify-center bg-[#d9d9d9]">
+          <img
+            alt=""
+            aria-hidden="true"
+            className="h-[32px] w-[32px] object-contain opacity-70"
+            src={brokenImageIconSrc}
+          />
+        </div>
       )}
     </div>
   );

@@ -1,4 +1,7 @@
 import type { ReactNode } from "react";
+import { ImageWithFallback } from "@/components/image-with-fallback";
+
+const brokenImageIconSrc = "/images/ui/other/image-broken.svg";
 
 type ArtworkFrameBigProps = {
   imageUrl?: string | null;
@@ -27,13 +30,22 @@ export function ArtworkFrameBig({
           {image}
         </div>
       ) : imageUrl ? (
-        <img
-          alt={alt ?? ""}
-          className="block max-h-[560px] w-auto max-w-full object-contain"
-          src={imageUrl}
-        />
+        <div className="flex h-full max-h-[560px] w-full items-center justify-center overflow-hidden">
+          <ImageWithFallback
+            src={imageUrl}
+            alt={alt ?? ""}
+            className="block max-h-[560px] w-auto max-w-full object-contain"
+          />
+        </div>
       ) : (
-        <div className="min-h-px min-w-px w-full flex-1 bg-[#d9d9d9]" />
+        <div className="flex min-h-px min-w-px w-full flex-1 items-center justify-center bg-[#d9d9d9]">
+          <img
+            alt=""
+            aria-hidden="true"
+            className="h-[32px] w-[32px] object-contain opacity-70"
+            src={brokenImageIconSrc}
+          />
+        </div>
       )}
     </div>
   );
