@@ -3,6 +3,7 @@ import { unstable_noStore as noStore } from "next/cache";
 import { SearchResults } from "@/app/search/search-results";
 import { MovementCardSmall } from "@/components/movement-card-small";
 import { DiscoverSearchHeader } from "@/components/discover-search-header";
+import { ThemeTile } from "@/components/theme-tile";
 import { createSupabaseServerClient } from "@/lib/supabase";
 import { buildSearchFilter, buildSearchTokens } from "@/lib/search-utils";
 
@@ -534,7 +535,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                 <img
                   alt=""
                   aria-hidden="true"
-                  className="absolute inset-0 h-full w-full object-contain"
+                  className="absolute inset-0 h-full w-full object-contain opacity-80"
                   src={categoryIconMap.theme}
                 />
               </div>
@@ -542,8 +543,15 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                 Themes
               </p>
             </div>
-            <div className="flex w-full flex-wrap items-start gap-[8px] overflow-x-auto overflow-y-clip px-[20px] hide-scrollbar">
-              {themeTags.map((tag) => renderTag(tag, false))}
+            <div className="grid w-full grid-cols-2 gap-[8px] px-[20px]">
+              {themeTags.map((tag) => (
+                <ThemeTile
+                  key={tag.id}
+                  href={`/tag/${tag.slug ?? tag.id}`}
+                  name={tag.name}
+                  slug={tag.slug}
+                />
+              ))}
             </div>
           </section>
           </div>
