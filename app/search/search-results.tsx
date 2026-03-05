@@ -53,50 +53,7 @@ function getThumbnailUrl(url?: string | null, size = 360) {
       return parsed.toString();
     }
     if (parsed.hostname === "upload.wikimedia.org") {
-      const isCommons = parsed.pathname.includes("/wikipedia/commons/");
-      if (isCommons) {
-        const segments = parsed.pathname.split("/").filter(Boolean);
-        const commonsIndex = segments.indexOf("commons");
-        const filename = segments[segments.length - 1];
-        if (commonsIndex !== -1 && filename) {
-          const extension = filename.split(".").pop()?.toLowerCase() ?? "";
-          const needsRaster =
-            extension === "svg" || extension === "tif" || extension === "tiff";
-          const rasterSuffix = needsRaster
-            ? extension === "svg"
-              ? ".png"
-              : ".jpg"
-            : "";
-          const sizeSegment = `${size}px-${filename}${rasterSuffix}`;
-
-          if (segments.includes("thumb")) {
-            segments[segments.length - 1] = sizeSegment;
-            parsed.pathname = `/${segments.join("/")}`;
-            return parsed.toString();
-          }
-
-          const prefix = segments.slice(0, commonsIndex + 1).join("/");
-          const rest = segments.slice(commonsIndex + 1).join("/");
-          parsed.pathname = `/${prefix}/thumb/${rest}/${sizeSegment}`;
-          return parsed.toString();
-        }
-      }
-    }
-    if (parsed.pathname.includes("/storage/v1/render/image/")) {
-      parsed.searchParams.set("width", String(size));
-      parsed.searchParams.set("quality", "80");
-      parsed.searchParams.set("resize", "contain");
-      return parsed.toString();
-    }
-    if (parsed.pathname.includes("/storage/v1/object/public/")) {
-      parsed.pathname = parsed.pathname.replace(
-        "/storage/v1/object/public/",
-        "/storage/v1/render/image/public/",
-      );
-      parsed.searchParams.set("width", String(size));
-      parsed.searchParams.set("quality", "80");
-      parsed.searchParams.set("resize", "contain");
-      return parsed.toString();
+      return url;
     }
   } catch {
     // ignore invalid URLs

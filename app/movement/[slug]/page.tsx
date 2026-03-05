@@ -302,23 +302,7 @@ function getThumbnailUrl(url?: string | null) {
     return null;
   }
   try {
-    const parsed = new URL(url);
-    if (parsed.pathname.includes("/storage/v1/render/image/")) {
-      parsed.searchParams.set("width", "400");
-      parsed.searchParams.set("quality", "80");
-      parsed.searchParams.set("resize", "contain");
-      return parsed.toString();
-    }
-    if (parsed.pathname.includes("/storage/v1/object/public/")) {
-      parsed.pathname = parsed.pathname.replace(
-        "/storage/v1/object/public/",
-        "/storage/v1/render/image/public/",
-      );
-      parsed.searchParams.set("width", "400");
-      parsed.searchParams.set("quality", "80");
-      parsed.searchParams.set("resize", "contain");
-      return parsed.toString();
-    }
+    new URL(url);
     return url;
   } catch {
     return url;
