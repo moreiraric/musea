@@ -157,6 +157,11 @@ export function TagFilters({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const rowRef = useRef<HTMLDivElement | null>(null);
+  const isMouseDownRef = useRef(false);
+  const didDragRef = useRef(false);
+  const dragStartXRef = useRef(0);
+  const scrollStartLeftRef = useRef(0);
   const [openSheet, setOpenSheet] = useState<"movement" | "medium" | "technique" | null>(null);
 
   const updateParam = (key: string, value: string) => {
@@ -171,8 +176,58 @@ export function TagFilters({
     router.refresh();
   };
 
+  const handleMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (event.button !== 0) {
+      return;
+    }
+    const row = rowRef.current;
+    if (!row) {
+      return;
+    }
+    isMouseDownRef.current = true;
+    didDragRef.current = false;
+    dragStartXRef.current = event.clientX;
+    scrollStartLeftRef.current = row.scrollLeft;
+  };
+
+  const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (!isMouseDownRef.current) {
+      return;
+    }
+    const row = rowRef.current;
+    if (!row) {
+      return;
+    }
+    const delta = event.clientX - dragStartXRef.current;
+    if (Math.abs(delta) > 3) {
+      didDragRef.current = true;
+      event.preventDefault();
+    }
+    row.scrollLeft = scrollStartLeftRef.current - delta;
+  };
+
+  const handleMouseUpOrLeave = () => {
+    isMouseDownRef.current = false;
+  };
+
+  const handleClickCapture = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (didDragRef.current) {
+      event.preventDefault();
+      event.stopPropagation();
+      didDragRef.current = false;
+    }
+  };
+
   return (
-    <div className="-mx-[20px] flex w-[calc(100%+40px)] gap-[8px] overflow-x-auto overflow-y-visible px-[20px] pb-[4px] hide-scrollbar">
+    <div
+      ref={rowRef}
+      className="-mx-[20px] flex w-[calc(100%+40px)] select-none gap-[8px] overflow-x-auto overflow-y-visible px-[20px] pb-[4px] hide-scrollbar cursor-grab active:cursor-grabbing"
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUpOrLeave}
+      onMouseLeave={handleMouseUpOrLeave}
+      onClickCapture={handleClickCapture}
+    >
       <button
         type="button"
         className="inline-flex items-center gap-[8px] rounded-full border border-[#d9d9d9] bg-transparent pl-[12px] pr-[16px] py-[8px]"
