@@ -41,7 +41,7 @@ export function ArtistEssay({ text }: ArtistEssayProps) {
         <button
           type="button"
           className="text-body-default-sans absolute bottom-0 right-0 bg-white pl-[6px] text-[#1e1e1e]"
-          style={{ fontWeight: 600 }}
+          style={{ fontWeight: 500 }}
           onClick={() => setIsExpanded(true)}
         >
           ...See More
