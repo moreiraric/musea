@@ -40,7 +40,8 @@ export function ArtistEssay({ text }: ArtistEssayProps) {
       {!isExpanded && isOverflowing ? (
         <button
           type="button"
-          className="text-body-default-sans absolute bottom-0 right-0 bg-white pl-[6px] font-bold text-[#1e1e1e]"
+          className="text-body-default-sans absolute bottom-0 right-0 bg-white pl-[6px] text-[#1e1e1e]"
+          style={{ fontWeight: 600 }}
           onClick={() => setIsExpanded(true)}
         >
           ...See More
