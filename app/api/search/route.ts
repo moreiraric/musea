@@ -1,6 +1,10 @@
 import { NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase";
-import { buildSearchFilter, buildSearchTokens } from "@/lib/search-utils";
+import {
+  buildSearchFilter,
+  buildSearchTokens,
+  matchesSearchText,
+} from "@/lib/search-utils";
 
 export const runtime = "nodejs";
 
@@ -165,8 +169,13 @@ export async function GET(request: NextRequest) {
     return new Response(artistsResult.error.message, { status: 500 });
   }
 
-  const artworkRows = parseArtworks(artworksResult.data);
-  const artistRows = parseArtists(artistsResult.data);
+  const artworkRows = parseArtworks(artworksResult.data).filter((artwork) =>
+    matchesSearchText(artwork.title, query) ||
+    matchesSearchText(artwork.artists?.name ?? "", query),
+  );
+  const artistRows = parseArtists(artistsResult.data).filter((artist) =>
+    matchesSearchText(artist.name, query),
+  );
 
   const hasMoreArtworks = artworkRows.length > artworkLimit && artworkLimit > 0;
   const hasMoreArtists = artistRows.length > artistLimit && artistLimit > 0;

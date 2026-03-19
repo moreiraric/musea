@@ -6,7 +6,11 @@ import { DiscoverSearchHeader } from "@/components/discover-search-header";
 import { HorizontalDragScroll } from "@/components/horizontal-drag-scroll";
 import { ThemeTile } from "@/components/theme-tile";
 import { createSupabaseServerClient } from "@/lib/supabase";
-import { buildSearchFilter, buildSearchTokens } from "@/lib/search-utils";
+import {
+  buildSearchFilter,
+  buildSearchTokens,
+  matchesSearchText,
+} from "@/lib/search-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -280,7 +284,10 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       if (error) {
         throw new Error(error.message);
       }
-      const rows = parseSearchArtworks(data);
+      const rows = parseSearchArtworks(data).filter((artwork) =>
+        matchesSearchText(artwork.title, query) ||
+        matchesSearchText(artwork.artists?.name ?? "", query),
+      );
       initialHasMoreArtworks = rows.length > artworkPageSize;
       initialArtworks = initialHasMoreArtworks ? rows.slice(0, artworkPageSize) : rows;
     }
@@ -296,7 +303,9 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       if (error) {
         throw new Error(error.message);
       }
-      const rows = parseSearchArtists(data);
+      const rows = parseSearchArtists(data).filter((artist) =>
+        matchesSearchText(artist.name, query),
+      );
       initialHasMoreArtists = rows.length > artistPageSize;
       initialArtists = initialHasMoreArtists ? rows.slice(0, artistPageSize) : rows;
     }
