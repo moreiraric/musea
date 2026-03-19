@@ -1,6 +1,7 @@
 "use client";
 
 import { useLayoutEffect, useRef, useState } from "react";
+import { useMouseDragScroll } from "@/components/use-mouse-drag-scroll";
 
 type ArtistEssayProps = {
   text: string;
@@ -8,6 +9,14 @@ type ArtistEssayProps = {
 
 export function ArtistEssay({ text }: ArtistEssayProps) {
   const paragraphRef = useRef<HTMLParagraphElement | null>(null);
+  const {
+    containerRef,
+    handlePointerDown,
+    handlePointerMove,
+    handlePointerUp,
+    handleClickCapture,
+    handleDragStart,
+  } = useMouseDragScroll<HTMLDivElement>();
   const [isExpanded, setIsExpanded] = useState(false);
   const [isOverflowing, setIsOverflowing] = useState(false);
 
@@ -20,7 +29,16 @@ export function ArtistEssay({ text }: ArtistEssayProps) {
   }, [text, isExpanded]);
 
   return (
-    <div className="relative w-full">
+    <div
+      ref={containerRef}
+      className="relative w-full cursor-grab active:cursor-grabbing"
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerUp}
+      onClickCapture={handleClickCapture}
+      onDragStart={handleDragStart}
+    >
       <p
         ref={paragraphRef}
         className="text-body-default-sans text-[#1e1e1e]"

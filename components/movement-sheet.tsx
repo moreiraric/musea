@@ -13,6 +13,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ArtworkFull } from "@/components/artwork-full";
 import { ArtworkCardSmall } from "@/components/artwork-card-small";
 import { useTabScope } from "@/components/tab-state";
+import { useMouseDragScroll } from "@/components/use-mouse-drag-scroll";
 
 type MovementSummary = {
   id?: string | null;
@@ -139,6 +140,14 @@ function MovementEssaySection({
   artwork,
   onArtworkClick,
 }: MovementEssay & { onArtworkClick?: () => void }) {
+  const {
+    containerRef,
+    handlePointerDown,
+    handlePointerMove,
+    handlePointerUp,
+    handleClickCapture,
+    handleDragStart,
+  } = useMouseDragScroll<HTMLDivElement>();
   const artworkContent = (
     <ArtworkFull
       className="w-full"
@@ -158,7 +167,16 @@ function MovementEssaySection({
   );
 
   return (
-    <div className="flex w-full flex-col gap-[16px]">
+    <div
+      ref={containerRef}
+      className="flex w-full cursor-grab flex-col gap-[16px] active:cursor-grabbing"
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerUp}
+      onClickCapture={handleClickCapture}
+      onDragStart={handleDragStart}
+    >
       <div className="flex w-full flex-col gap-[4px] px-[20px]">
         <p className="text-header-content-h2 text-black">
           {title}

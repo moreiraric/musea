@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import { useMouseDragScroll } from "@/components/use-mouse-drag-scroll";
 
 type Slide = {
   title: string;
@@ -11,10 +12,50 @@ const slideWidth = 275;
 const slideGap = 64;
 
 export function ArtworkSlides({ slides }: { slides: Slide[] }) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
+  const snapResetTimeoutRef = useRef<number | null>(null);
+  const handleDragStartState = (scrollTarget: HTMLElement) => {
+    if (snapResetTimeoutRef.current !== null) {
+      window.clearTimeout(snapResetTimeoutRef.current);
+      snapResetTimeoutRef.current = null;
+    }
+
+    scrollTarget.style.scrollBehavior = "auto";
+    scrollTarget.style.scrollSnapType = "none";
+  };
+
+  const handleDragEndState = (scrollTarget: HTMLElement) => {
+    const stride = slideWidth + slideGap;
+    const maxIndex = Math.max(0, slides.length - 1);
+    const nextIndex = Math.max(0, Math.min(maxIndex, Math.round(scrollTarget.scrollLeft / stride)));
+    const nextLeft = nextIndex * stride;
+
+    scrollTarget.style.scrollSnapType = "x mandatory";
+    scrollTarget.style.scrollBehavior = "smooth";
+    scrollTarget.scrollTo({ left: nextLeft, behavior: "smooth" });
+
+    snapResetTimeoutRef.current = window.setTimeout(() => {
+      scrollTarget.style.scrollBehavior = "";
+      scrollTarget.style.scrollSnapType = "";
+      snapResetTimeoutRef.current = null;
+    }, 220);
+  };
+
+  const {
+    containerRef,
+    handlePointerDown,
+    handlePointerMove,
+    handlePointerUp,
+    handleClickCapture,
+    handleDragStart,
+  } =
+    useMouseDragScroll<HTMLDivElement>({
+      axis: "x",
+      onDragStart: handleDragStartState,
+      onDragEnd: handleDragEndState,
+    });
   const [activeIndex, setActiveIndex] = useState(0);
 
-  const handleScroll = useCallback(() => {
+  const handleScroll = () => {
     const container = containerRef.current;
     if (!container) {
       return;
@@ -23,14 +64,20 @@ export function ArtworkSlides({ slides }: { slides: Slide[] }) {
     const nextIndex = Math.round(container.scrollLeft / stride);
     const clampedIndex = Math.max(0, Math.min(slides.length - 1, nextIndex));
     setActiveIndex(clampedIndex);
-  }, [slides.length]);
+  };
 
   return (
     <div className="-mx-[20px]">
       <div
         ref={containerRef}
-        className="hide-scrollbar flex w-[calc(100%+40px)] gap-[64px] overflow-x-auto pb-[4px] pl-[20px] pr-[calc(20px+50%)] [scroll-padding-left:20px] [scroll-snap-type:x_mandatory]"
+        className="hide-scrollbar flex w-[calc(100%+40px)] cursor-grab gap-[64px] overflow-x-auto pb-[4px] pl-[20px] pr-[calc(20px+50%)] active:cursor-grabbing [scroll-padding-left:20px] [scroll-snap-type:x_mandatory]"
         onScroll={handleScroll}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+        onClickCapture={handleClickCapture}
+        onDragStart={handleDragStart}
       >
         {slides.map((slide, index) => (
           <article
