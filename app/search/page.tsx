@@ -3,6 +3,7 @@ import { unstable_noStore as noStore } from "next/cache";
 import { SearchResults } from "@/app/search/search-results";
 import { MovementCardSmall } from "@/components/movement-card-small";
 import { DiscoverSearchHeader } from "@/components/discover-search-header";
+import { HorizontalDragScroll } from "@/components/horizontal-drag-scroll";
 import { ThemeTile } from "@/components/theme-tile";
 import { createSupabaseServerClient } from "@/lib/supabase";
 import { buildSearchFilter, buildSearchTokens } from "@/lib/search-utils";
@@ -457,7 +458,10 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                 Movements
               </p>
             </div>
-            <div className="flex w-full items-start gap-[10px] overflow-x-auto px-[20px] hide-scrollbar [scroll-padding-left:20px] [scroll-snap-type:x_mandatory]">
+            <HorizontalDragScroll
+              className="flex w-full items-start gap-[10px] overflow-x-auto px-[20px] hide-scrollbar [scroll-padding-left:20px] [scroll-snap-type:x_mandatory]"
+              disableSnapWhileDragging
+            >
               {movementColumns.map((column, columnIndex) => (
                 <div
                   key={`movement-col-${columnIndex}`}
@@ -490,7 +494,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                   })}
                 </div>
               ))}
-            </div>
+            </HorizontalDragScroll>
           </section>
 
           {[
@@ -523,9 +527,9 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                   {row.label}
                 </p>
               </div>
-              <div className="flex w-full items-start gap-[8px] overflow-x-auto px-[20px] hide-scrollbar">
+              <HorizontalDragScroll className="flex w-full items-start gap-[8px] overflow-x-auto px-[20px] hide-scrollbar">
                 {row.tags.map((tag) => renderTag(tag, Boolean(row.uppercase)))}
-              </div>
+              </HorizontalDragScroll>
             </section>
           ))}
 

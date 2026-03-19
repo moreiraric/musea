@@ -5,6 +5,7 @@ import { ArtworkSlides } from "@/components/artwork-slides";
 import { ArtworkTopBar } from "@/components/artwork-top-bar";
 import { ArtworkFull } from "@/components/artwork-full";
 import { CraftCardSheet } from "@/components/craft-card-sheet";
+import { HorizontalDragScroll } from "@/components/horizontal-drag-scroll";
 import { MovementSheet } from "@/components/movement-sheet";
 import { MovementCardBig } from "@/components/movement-card-big";
 import { createSupabaseServerAdminClient, createSupabaseServerClient } from "@/lib/supabase";
@@ -673,7 +674,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
             <p className="text-header-ui-overline text-[#757575]">
               Tags
             </p>
-            <div className="-mx-[20px] flex w-[calc(100%+40px)] gap-[8px] overflow-x-auto pb-[4px] pl-[20px] pr-[20px] hide-scrollbar">
+            <HorizontalDragScroll className="-mx-[20px] flex w-[calc(100%+40px)] gap-[8px] overflow-x-auto pb-[4px] pl-[20px] pr-[20px] hide-scrollbar">
               {displayTags.map((tag) => (
                 <Link
                   key={tag.id}
@@ -691,7 +692,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
                   </span>
                 </Link>
               ))}
-            </div>
+            </HorizontalDragScroll>
           </section>
         ) : null}
 

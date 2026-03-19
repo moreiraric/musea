@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArtistEssay } from "@/components/artist-essay";
 import { ArtistTopBar } from "@/components/artist-top-bar";
 import { ArtworkCardSmall } from "@/components/artwork-card-small";
+import { HorizontalDragScroll } from "@/components/horizontal-drag-scroll";
 import { MovementSheet } from "@/components/movement-sheet";
 import { MovementCardSmall } from "@/components/movement-card-small";
 import { createSupabaseServerAdminClient, createSupabaseServerClient } from "@/lib/supabase";
@@ -718,7 +719,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
                 <p className="text-header-ui-overline text-[#757575]">
                   Known For
                 </p>
-                <div className="-mx-[20px] flex w-[calc(100%+40px)] gap-[8px] overflow-x-auto pb-[4px] pl-[20px] pr-[20px] hide-scrollbar">
+                <HorizontalDragScroll className="-mx-[20px] flex w-[calc(100%+40px)] gap-[8px] overflow-x-auto pb-[4px] pl-[20px] pr-[20px] hide-scrollbar">
                   {knownForTags.map((tag) => (
                     <Link
                       key={tag.id}
@@ -736,7 +737,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
                       </span>
                     </Link>
                   ))}
-                </div>
+                </HorizontalDragScroll>
               </div>
             ) : null}
 
@@ -745,7 +746,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
                 <p className="text-header-ui-overline text-[#757575]">
                   Themes
                 </p>
-                <div className="-mx-[20px] flex w-[calc(100%+40px)] gap-[8px] overflow-x-auto pb-[4px] pl-[20px] pr-[20px] hide-scrollbar">
+                <HorizontalDragScroll className="-mx-[20px] flex w-[calc(100%+40px)] gap-[8px] overflow-x-auto pb-[4px] pl-[20px] pr-[20px] hide-scrollbar">
                   {themeTags.map((tag) => (
                     <Link
                       key={tag.id}
@@ -763,7 +764,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
                       </span>
                     </Link>
                   ))}
-                </div>
+                </HorizontalDragScroll>
               </div>
             ) : null}
           </section>

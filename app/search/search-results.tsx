@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { UIEvent } from "react";
 import { ArtistPortraitAndName } from "@/components/artist-portrait";
 import { ArtworkCardSmall } from "@/components/artwork-card-small";
+import { HorizontalDragScroll } from "@/components/horizontal-drag-scroll";
 import { buildSearchTokens, scoreRelevance } from "@/lib/search-utils";
 
 type SearchArtist = {
@@ -122,22 +123,6 @@ export function SearchResults({
     },
     [query],
   );
-
-  useEffect(() => {
-    setArtworks(initialArtworks);
-    setArtists(initialArtists);
-    setHasMoreArtworks(initialHasMoreArtworks);
-    setHasMoreArtists(initialHasMoreArtists);
-    setIsLoadingArtworks(false);
-    setIsLoadingArtists(false);
-    setIsRefreshing(false);
-  }, [
-    query,
-    initialArtworks,
-    initialArtists,
-    initialHasMoreArtworks,
-    initialHasMoreArtists,
-  ]);
 
   useEffect(() => {
     let isActive = true;
@@ -322,7 +307,7 @@ export function SearchResults({
           <p className="text-label-primary text-[#757575]">
             Artists
           </p>
-          <div
+          <HorizontalDragScroll
             className="-mx-[20px] flex w-[calc(100%+40px)] items-start gap-[8px] overflow-x-auto overflow-y-visible px-[20px] pb-[4px] hide-scrollbar"
             onScroll={handleArtistScroll}
           >
@@ -334,7 +319,7 @@ export function SearchResults({
                 href={`/artist/${artist.slug ?? artist.id}`}
               />
             ))}
-          </div>
+          </HorizontalDragScroll>
         </section>
       ) : null}
 

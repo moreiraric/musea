@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef } from "react";
+import { HorizontalDragScroll } from "@/components/horizontal-drag-scroll";
 
 type MovementTimelineItem = {
   id: string;
@@ -113,7 +114,7 @@ export function MovementTimelineRow({
   }, [items]);
 
   return (
-    <div
+    <HorizontalDragScroll
       ref={timelineRef}
       className={className ?? "flex w-full items-center gap-[8px] overflow-x-auto px-[20px] pb-[4px] hide-scrollbar"}
     >
@@ -131,6 +132,6 @@ export function MovementTimelineRow({
           />
         </div>
       ))}
-    </div>
+    </HorizontalDragScroll>
   );
 }

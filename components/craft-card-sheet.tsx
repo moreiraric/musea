@@ -3,6 +3,7 @@
 import { createPortal } from "react-dom";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { HorizontalDragScroll } from "@/components/horizontal-drag-scroll";
 import { useTabScope } from "@/components/tab-state";
 import { CraftCard } from "@/components/craft-card";
 import { ArtworkCardSmall } from "@/components/artwork-card-small";
@@ -121,7 +122,7 @@ export function CraftCardSheet({ cards }: { cards: CraftCardData[] }) {
 
   return (
     <>
-      <div className="-mx-[20px] flex w-[calc(100%+40px)] gap-[16px] overflow-x-auto py-[2px] pl-[20px] pr-[20px] hide-scrollbar">
+      <HorizontalDragScroll className="-mx-[20px] flex w-[calc(100%+40px)] gap-[16px] overflow-x-auto py-[2px] pl-[20px] pr-[20px] hide-scrollbar">
         {cards.map((card) => (
           <button
             key={card.label}
@@ -137,7 +138,7 @@ export function CraftCardSheet({ cards }: { cards: CraftCardData[] }) {
             />
           </button>
         ))}
-      </div>
+      </HorizontalDragScroll>
 
       {activeCard && portalTarget
         ? createPortal(

@@ -1,6 +1,13 @@
 "use client";
 
-import { useRef, type DragEvent as ReactDragEvent, type PointerEvent as ReactPointerEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  type DragEvent as ReactDragEvent,
+  type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 
 function isScrollable(element: HTMLElement, axis: "x" | "y") {
   const style = window.getComputedStyle(element);
@@ -36,6 +43,7 @@ type MouseDragScrollOptions = {
   axis?: "x" | "y";
   onDragStart?: (scrollTarget: HTMLElement) => void;
   onDragEnd?: (scrollTarget: HTMLElement) => void;
+  allowInteractiveChildren?: boolean;
 };
 
 export function useMouseDragScroll<T extends HTMLElement>(
@@ -44,6 +52,7 @@ export function useMouseDragScroll<T extends HTMLElement>(
   const axis = options.axis ?? "y";
   const onDragStart = options.onDragStart;
   const onDragEnd = options.onDragEnd;
+  const allowInteractiveChildren = options.allowInteractiveChildren ?? false;
   const containerRef = useRef<T | null>(null);
   const scrollTargetRef = useRef<HTMLElement | null>(null);
   const activePointerIdRef = useRef<number | null>(null);
@@ -54,16 +63,8 @@ export function useMouseDragScroll<T extends HTMLElement>(
   const scrollStartTopRef = useRef(0);
   const previousUserSelectRef = useRef("");
 
-  const finishPointerDrag = (element?: T | null) => {
+  const finishPointerDrag = useCallback(() => {
     const scrollTarget = scrollTargetRef.current;
-
-    if (
-      element &&
-      activePointerIdRef.current !== null &&
-      element.hasPointerCapture(activePointerIdRef.current)
-    ) {
-      element.releasePointerCapture(activePointerIdRef.current);
-    }
 
     activePointerIdRef.current = null;
     scrollTargetRef.current = null;
@@ -72,7 +73,53 @@ export function useMouseDragScroll<T extends HTMLElement>(
     if (scrollTarget) {
       onDragEnd?.(scrollTarget);
     }
-  };
+  }, [onDragEnd]);
+
+  useEffect(() => {
+    const handleWindowPointerMove = (event: PointerEvent) => {
+      if (event.pointerId !== activePointerIdRef.current || event.pointerType !== "mouse") {
+        return;
+      }
+
+      const scrollTarget = scrollTargetRef.current;
+      if (!scrollTarget) {
+        finishPointerDrag();
+        return;
+      }
+
+      const delta =
+        axis === "x"
+          ? event.clientX - dragStartXRef.current
+          : event.clientY - dragStartYRef.current;
+      if (Math.abs(delta) > 3) {
+        didDragRef.current = true;
+      }
+
+      if (axis === "x") {
+        scrollTarget.scrollLeft = scrollStartLeftRef.current - delta;
+      } else {
+        scrollTarget.scrollTop = scrollStartTopRef.current - delta;
+      }
+    };
+
+    const handleWindowPointerEnd = (event: PointerEvent) => {
+      if (event.pointerId !== activePointerIdRef.current || event.pointerType !== "mouse") {
+        return;
+      }
+
+      finishPointerDrag();
+    };
+
+    window.addEventListener("pointermove", handleWindowPointerMove);
+    window.addEventListener("pointerup", handleWindowPointerEnd);
+    window.addEventListener("pointercancel", handleWindowPointerEnd);
+
+    return () => {
+      window.removeEventListener("pointermove", handleWindowPointerMove);
+      window.removeEventListener("pointerup", handleWindowPointerEnd);
+      window.removeEventListener("pointercancel", handleWindowPointerEnd);
+    };
+  }, [axis, finishPointerDrag]);
 
   const handlePointerDown = (event: ReactPointerEvent<T>) => {
     didDragRef.current = false;
@@ -82,7 +129,10 @@ export function useMouseDragScroll<T extends HTMLElement>(
     }
 
     const target = event.target as HTMLElement | null;
-    if (target?.closest("button, a, input, select, textarea, label")) {
+    if (
+      !allowInteractiveChildren &&
+      target?.closest("button, a, input, select, textarea, label")
+    ) {
       return;
     }
 
@@ -99,36 +149,11 @@ export function useMouseDragScroll<T extends HTMLElement>(
     scrollStartTopRef.current = scrollTarget.scrollTop;
     previousUserSelectRef.current = document.body.style.userSelect;
     document.body.style.userSelect = "none";
-    event.currentTarget.setPointerCapture(event.pointerId);
     onDragStart?.(scrollTarget);
-    event.preventDefault();
   };
 
   const handlePointerMove = (event: ReactPointerEvent<T>) => {
-    if (event.pointerId !== activePointerIdRef.current) {
-      return;
-    }
-
-    const scrollTarget = scrollTargetRef.current;
-    if (!scrollTarget) {
-      finishPointerDrag(event.currentTarget);
-      return;
-    }
-
-    const delta =
-      axis === "x"
-        ? event.clientX - dragStartXRef.current
-        : event.clientY - dragStartYRef.current;
-    if (Math.abs(delta) > 3) {
-      didDragRef.current = true;
-      event.preventDefault();
-    }
-
-    if (axis === "x") {
-      scrollTarget.scrollLeft = scrollStartLeftRef.current - delta;
-    } else {
-      scrollTarget.scrollTop = scrollStartTopRef.current - delta;
-    }
+    void event;
   };
 
   const handlePointerUp = (event: ReactPointerEvent<T>) => {
@@ -136,10 +161,10 @@ export function useMouseDragScroll<T extends HTMLElement>(
       return;
     }
 
-    finishPointerDrag(event.currentTarget);
+    finishPointerDrag();
   };
 
-  const handleClickCapture = (event: ReactPointerEvent<T>) => {
+  const handleClickCapture = (event: ReactMouseEvent<T>) => {
     if (!didDragRef.current) {
       return;
     }

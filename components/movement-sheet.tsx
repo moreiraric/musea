@@ -9,6 +9,7 @@ import { createPortal } from "react-dom";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import { ArtistPortrait } from "@/components/artist-portrait";
+import { HorizontalDragScroll } from "@/components/horizontal-drag-scroll";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ArtworkFull } from "@/components/artwork-full";
 import { ArtworkCardSmall } from "@/components/artwork-card-small";
@@ -506,7 +507,7 @@ export function MovementSheet({
                     </div>
                   </div>
 
-                  <div
+                  <HorizontalDragScroll
                     ref={timelineRef}
                     className="flex w-full items-center gap-[8px] overflow-x-auto px-[20px] pb-[4px] hide-scrollbar"
                   >
@@ -524,7 +525,7 @@ export function MovementSheet({
                         />
                       </div>
                     ))}
-                  </div>
+                  </HorizontalDragScroll>
                 </div>
 
                 <section className="flex w-full flex-col gap-[8px] overflow-hidden pt-0 pb-[32px]">
@@ -546,11 +547,11 @@ export function MovementSheet({
                       Artists
                     </p>
                   </div>
-                  <div className="-mx-[20px] flex w-[calc(100%+40px)] items-center gap-[8px] overflow-x-auto pb-[4px] pl-[20px] pr-[20px] hide-scrollbar">
+                  <HorizontalDragScroll className="-mx-[20px] flex w-[calc(100%+40px)] items-center gap-[8px] overflow-x-auto pb-[4px] pl-[20px] pr-[20px] hide-scrollbar">
                     {resolvedArtists.map((artist) => (
                       <ArtistPortrait key={artist.id} {...artist} />
                     ))}
-                  </div>
+                  </HorizontalDragScroll>
                 </section>
 
                 <section className="flex w-full flex-col gap-[8px] px-[20px] py-[32px]">

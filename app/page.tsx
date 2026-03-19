@@ -3,6 +3,7 @@ import { unstable_noStore as noStore } from "next/cache";
 import { ArtworkCardSmall } from "@/components/artwork-card-small";
 import { ArtworkFull } from "@/components/artwork-full";
 import { HomeTopBar } from "@/components/home-top-bar";
+import { HorizontalDragScroll } from "@/components/horizontal-drag-scroll";
 import { MovementCardSmall } from "@/components/movement-card-small";
 import { createSupabaseServerClient } from "@/lib/supabase";
 
@@ -275,7 +276,7 @@ export default async function Home() {
               Explore an emotion
             </p>
           </div>
-          <div className="flex w-full items-start gap-[8px] overflow-x-auto overflow-y-clip bg-white px-[20px] hide-scrollbar">
+          <HorizontalDragScroll className="flex w-full items-start gap-[8px] overflow-x-auto overflow-y-clip bg-white px-[20px] hide-scrollbar">
             {resolvedEmotionTags.length > 0
               ? resolvedEmotionTags.map((tag) => (
                   <Link
@@ -300,7 +301,7 @@ export default async function Home() {
                     </div>
                   ),
                 )}
-          </div>
+          </HorizontalDragScroll>
         </section>
       </div>
     </div>
