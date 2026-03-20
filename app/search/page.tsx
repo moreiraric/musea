@@ -10,9 +10,12 @@ import {
   buildSearchFilter,
   buildSearchTokens,
   matchesSearchText,
+  scoreRelevance,
 } from "@/lib/search-utils";
 
 export const dynamic = "force-dynamic";
+
+const SEARCH_CANDIDATE_LIMIT = 500;
 
 type SearchPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -294,7 +297,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         .from("artists")
         .select("id")
         .or(artistFilter)
-        .limit(5000);
+        .limit(SEARCH_CANDIDATE_LIMIT);
 
       if (error) {
         throw new Error(error.message);
@@ -320,16 +323,34 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         .from("artworks")
         .select("id,slug,title,image_url,artists(id,name,slug,image_url)")
         .or(artworkFilter)
-        .order("title", { ascending: true })
-        .range(0, artworkPageSize);
+        .limit(SEARCH_CANDIDATE_LIMIT);
 
       if (error) {
         throw new Error(error.message);
       }
-      const rows = parseSearchArtworks(data).filter((artwork) =>
-        matchesSearchText(artwork.title, query) ||
-        matchesSearchText(artwork.artists?.name ?? "", query),
-      );
+      const rows = parseSearchArtworks(data)
+        .filter((artwork) =>
+          matchesSearchText(artwork.title, query) ||
+          matchesSearchText(artwork.artists?.name ?? "", query),
+        )
+        .sort((a, b) => {
+          const artistNameA = a.artists?.name ?? "";
+          const artistNameB = b.artists?.name ?? "";
+          const scoreA = Math.max(
+            scoreRelevance(a.title, query, tokens),
+            scoreRelevance(artistNameA, query, tokens),
+          );
+          const scoreB = Math.max(
+            scoreRelevance(b.title, query, tokens),
+            scoreRelevance(artistNameB, query, tokens),
+          );
+
+          if (scoreA !== scoreB) {
+            return scoreB - scoreA;
+          }
+
+          return a.title.localeCompare(b.title);
+        });
       initialHasMoreArtworks = rows.length > artworkPageSize;
       initialArtworks = initialHasMoreArtworks ? rows.slice(0, artworkPageSize) : rows;
     }
@@ -339,15 +360,23 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         .from("artists")
         .select("id,slug,name,image_url")
         .or(artistFilter)
-        .order("name", { ascending: true })
-        .range(0, artistPageSize);
+        .limit(SEARCH_CANDIDATE_LIMIT);
 
       if (error) {
         throw new Error(error.message);
       }
-      const rows = parseSearchArtists(data).filter((artist) =>
-        matchesSearchText(artist.name, query),
-      );
+      const rows = parseSearchArtists(data)
+        .filter((artist) => matchesSearchText(artist.name, query))
+        .sort((a, b) => {
+          const scoreA = scoreRelevance(a.name, query, tokens);
+          const scoreB = scoreRelevance(b.name, query, tokens);
+
+          if (scoreA !== scoreB) {
+            return scoreB - scoreA;
+          }
+
+          return a.name.localeCompare(b.name);
+        });
       initialHasMoreArtists = rows.length > artistPageSize;
       initialArtists = initialHasMoreArtists ? rows.slice(0, artistPageSize) : rows;
     }

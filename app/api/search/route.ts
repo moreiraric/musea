@@ -4,9 +4,12 @@ import {
   buildSearchFilter,
   buildSearchTokens,
   matchesSearchText,
+  scoreRelevance,
 } from "@/lib/search-utils";
 
 export const runtime = "nodejs";
+
+const SEARCH_CANDIDATE_LIMIT = 500;
 
 function isArtistRow(value: unknown): value is {
   id: string;
@@ -107,7 +110,7 @@ export async function GET(request: NextRequest) {
       .from("artists")
       .select("id")
       .or(artistFilter)
-      .limit(5000);
+      .limit(SEARCH_CANDIDATE_LIMIT);
 
     if (error) {
       return new Response(error.message, { status: 500 });
@@ -143,8 +146,7 @@ export async function GET(request: NextRequest) {
           .from("artworks")
           .select("id,slug,title,image_url,artists(id,name,slug,image_url)")
           .or(artworkFilter)
-          .order("title", { ascending: true })
-          .range(artworkOffset, artworkOffset + artworkLimit)
+          .limit(SEARCH_CANDIDATE_LIMIT)
       : Promise.resolve({ data: [], error: null });
 
   const artistPromise =
@@ -153,8 +155,7 @@ export async function GET(request: NextRequest) {
           .from("artists")
           .select("id,slug,name,image_url")
           .or(artistFilter)
-          .order("name", { ascending: true })
-          .range(artistOffset, artistOffset + artistLimit)
+          .limit(SEARCH_CANDIDATE_LIMIT)
       : Promise.resolve({ data: [], error: null });
 
   const [artworksResult, artistsResult] = await Promise.all([
@@ -169,19 +170,54 @@ export async function GET(request: NextRequest) {
     return new Response(artistsResult.error.message, { status: 500 });
   }
 
-  const artworkRows = parseArtworks(artworksResult.data).filter((artwork) =>
-    matchesSearchText(artwork.title, query) ||
-    matchesSearchText(artwork.artists?.name ?? "", query),
-  );
-  const artistRows = parseArtists(artistsResult.data).filter((artist) =>
-    matchesSearchText(artist.name, query),
-  );
+  const rankedArtworkRows = parseArtworks(artworksResult.data)
+    .filter((artwork) =>
+      matchesSearchText(artwork.title, query) ||
+      matchesSearchText(artwork.artists?.name ?? "", query),
+    )
+    .sort((a, b) => {
+      const artistNameA = a.artists?.name ?? "";
+      const artistNameB = b.artists?.name ?? "";
+      const scoreA = Math.max(
+        scoreRelevance(a.title, query, tokens),
+        scoreRelevance(artistNameA, query, tokens),
+      );
+      const scoreB = Math.max(
+        scoreRelevance(b.title, query, tokens),
+        scoreRelevance(artistNameB, query, tokens),
+      );
 
-  const hasMoreArtworks = artworkRows.length > artworkLimit && artworkLimit > 0;
-  const hasMoreArtists = artistRows.length > artistLimit && artistLimit > 0;
+      if (scoreA !== scoreB) {
+        return scoreB - scoreA;
+      }
 
-  const artworks = hasMoreArtworks ? artworkRows.slice(0, artworkLimit) : artworkRows;
-  const artists = hasMoreArtists ? artistRows.slice(0, artistLimit) : artistRows;
+      return a.title.localeCompare(b.title);
+    });
+
+  const rankedArtistRows = parseArtists(artistsResult.data)
+    .filter((artist) => matchesSearchText(artist.name, query))
+    .sort((a, b) => {
+      const scoreA = scoreRelevance(a.name, query, tokens);
+      const scoreB = scoreRelevance(b.name, query, tokens);
+
+      if (scoreA !== scoreB) {
+        return scoreB - scoreA;
+      }
+
+      return a.name.localeCompare(b.name);
+    });
+
+  const artworks = artworkLimit > 0
+    ? rankedArtworkRows.slice(artworkOffset, artworkOffset + artworkLimit)
+    : [];
+  const artists = artistLimit > 0
+    ? rankedArtistRows.slice(artistOffset, artistOffset + artistLimit)
+    : [];
+
+  const hasMoreArtworks =
+    artworkLimit > 0 && artworkOffset + artworks.length < rankedArtworkRows.length;
+  const hasMoreArtists =
+    artistLimit > 0 && artistOffset + artists.length < rankedArtistRows.length;
 
   return Response.json({
     artworks,
