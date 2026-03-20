@@ -90,7 +90,14 @@ When presenting options:
 - KISS, YAGNI, SOLID
 - Match existing codebase patterns
 - Small, incremental changes
-- Clear comments for non-obvious logic
+
+### Commenting Standards
+- Add a 1-2 line summary at the top of each file describing its main purpose
+- Add short, clear comments throughout the code so it is easy to find and understand different parts later
+- Add a short comment above each major function, class, and section explaining what it does
+- Group related parts with high-level section comments like `// === AUTH LOGIC ===` and `// === DATA PROCESSING ===`
+- Comment complex or non-obvious logic inside functions, but skip obvious lines like `i++` or `return true`
+- Keep comments concise and in plain English
 
 ---
 
