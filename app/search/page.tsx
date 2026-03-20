@@ -161,6 +161,13 @@ const categoryIconMap: Record<string, string> = {
 const uuidRegex =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
+const representationSortOrder = new Map([
+  ["realism", 0],
+  ["semi-abstract", 1],
+  ["semi abstract", 1],
+  ["abstract", 2],
+]);
+
 function formatMovementYears(start?: number | null, end?: number | null) {
   if (start && end) {
     return `${start} - ${end}`;
@@ -179,11 +186,46 @@ function resolveMovementImage(slug?: string | null, iconUrl?: string | null) {
 }
 
 function formatTagLabel(name: string) {
+  const normalized = name.trim().toLowerCase().replace(/\s+/g, " ");
+  if (normalized === "semi abstract" || normalized === "semi-abstract") {
+    return "Semi-Abstract";
+  }
+
   return name
     .split(" ")
     .filter(Boolean)
     .map((word) => word[0]?.toUpperCase() + word.slice(1).toLowerCase())
     .join(" ");
+}
+
+function sortRepresentationTags(tags: TagRow[]) {
+  return [...tags].sort((a, b) => {
+    const keyA = (a.slug ?? a.name).trim().toLowerCase();
+    const keyB = (b.slug ?? b.name).trim().toLowerCase();
+    const orderA = representationSortOrder.get(keyA) ?? Number.MAX_SAFE_INTEGER;
+    const orderB = representationSortOrder.get(keyB) ?? Number.MAX_SAFE_INTEGER;
+
+    if (orderA !== orderB) {
+      return orderA - orderB;
+    }
+
+    return a.name.localeCompare(b.name);
+  });
+}
+
+function sortMediumTags(tags: TagRow[]) {
+  return [...tags].sort((a, b) => {
+    const keyA = (a.slug ?? a.name).trim().toLowerCase();
+    const keyB = (b.slug ?? b.name).trim().toLowerCase();
+    const isGouacheA = keyA === "gouache";
+    const isGouacheB = keyB === "gouache";
+
+    if (isGouacheA !== isGouacheB) {
+      return isGouacheA ? 1 : -1;
+    }
+
+    return a.name.localeCompare(b.name);
+  });
 }
 
 function chunk<T>(items: T[], size: number) {
@@ -394,12 +436,14 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       : [];
     movementColumns = chunk(movements, 2);
 
-    mediumTags = Array.isArray(mediumTagsResult.data) ? mediumTagsResult.data.filter(isTagRow) : [];
+    mediumTags = Array.isArray(mediumTagsResult.data)
+      ? sortMediumTags(mediumTagsResult.data.filter(isTagRow))
+      : [];
     techniqueTags = Array.isArray(techniqueTagsResult.data)
       ? techniqueTagsResult.data.filter(isTagRow)
       : [];
     representationTags = Array.isArray(representationTagsResult.data)
-      ? representationTagsResult.data.filter(isTagRow)
+      ? sortRepresentationTags(representationTagsResult.data.filter(isTagRow))
       : [];
     personalityTags = Array.isArray(personalityTagsResult.data)
       ? personalityTagsResult.data.filter(isTagRow)
