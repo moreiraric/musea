@@ -1,5 +1,8 @@
 "use client";
 
+// Bottom-sheet overlay opened from artwork craft cards.
+// It loads a tag summary and related artworks on demand so the artwork page stays lightweight.
+
 import { createPortal } from "react-dom";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -34,6 +37,7 @@ type TagSheetData = {
   }>;
 };
 
+// Rewrites supported image URLs to thumbnail-friendly variants for the sheet grid.
 function getGridImageUrl(url: string, size = 360) {
   try {
     const parsed = new URL(url);
@@ -53,6 +57,7 @@ function getGridImageUrl(url: string, size = 360) {
   return url;
 }
 
+// Renders the craft-card rail and the lazy-loaded tag sheet overlay.
 export function CraftCardSheet({ cards }: { cards: CraftCardData[] }) {
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
   const [activeCard, setActiveCard] = useState<CraftCardData | null>(null);
@@ -85,6 +90,7 @@ export function CraftCardSheet({ cards }: { cards: CraftCardData[] }) {
       return;
     }
     const controller = new AbortController();
+    // Load the selected tag only when its sheet is opened.
     const load = async () => {
       setIsLoading(true);
       setErrorMessage("");
@@ -114,6 +120,7 @@ export function CraftCardSheet({ cards }: { cards: CraftCardData[] }) {
     if (!data) {
       return "";
     }
+    // Fall back to the first artwork image when the tag has no explicit banner.
     const fallback = data.artworks.find((artwork) => Boolean(artwork.image_url));
     return data.bannerArtwork?.image_url ?? fallback?.image_url ?? "";
   }, [data]);

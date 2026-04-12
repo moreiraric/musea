@@ -1,6 +1,11 @@
 "use client";
 
+// Shared image wrapper that swaps in a broken-image icon when loading fails.
+// This keeps artwork cards and detail views visually stable when museum URLs break.
+
 import { useState } from "react";
+
+// === CONSTANTS AND TYPES ===
 
 const brokenImageIconSrc = "/images/ui/other/image-broken.svg";
 
@@ -13,6 +18,7 @@ type ImageWithFallbackProps = {
   decoding?: "async" | "auto" | "sync";
 };
 
+// Renders a normal image until the source is missing or errors out.
 export function ImageWithFallback({
   src,
   alt = "",
@@ -41,6 +47,7 @@ export function ImageWithFallback({
       src={src}
       loading={loading}
       decoding={decoding}
+      // Switch to the fallback icon after the first load failure.
       onError={() => setHasError(true)}
     />
   );

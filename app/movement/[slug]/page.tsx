@@ -1,3 +1,6 @@
+// Movement detail page with essay sections, artist lists, artwork grids, and timeline navigation.
+// It loads the movement plus related essay and artwork context from Supabase.
+
 import Link from "next/link";
 import { ArtistPortraitAndName } from "@/components/artist-portrait";
 import { ArtworkCardSmall } from "@/components/artwork-card-small";
@@ -116,6 +119,9 @@ type MovementArtwork = {
 const uuidRegex =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
+// === HELPER FUNCTIONS ===
+
+// Formats the movement year range shown in the hero header.
 function formatMovementYears(start?: number | null, end?: number | null) {
   if (start && end) {
     return `${start} - ${end}`;
@@ -133,6 +139,7 @@ function resolveMovementImage(slug?: string | null, iconUrl?: string | null) {
   return "";
 }
 
+// Validates the joined artist rows used across essays and artist lists.
 function isRelatedArtistRow(value: unknown): value is RelatedArtistRow {
   if (!value || typeof value !== "object") {
     return false;
@@ -186,6 +193,7 @@ function parseMovementRows(value: unknown): MovementRow[] {
   return Array.isArray(value) ? value.filter(isMovementRow) : [];
 }
 
+// Parses artwork rows used inside the essay sections.
 function parseEssayArtworkRows(value: unknown): EssayArtworkRow[] {
   if (!Array.isArray(value)) {
     return [];
@@ -237,6 +245,7 @@ function parseMovementArtistRows(value: unknown): MovementArtistRow[] {
   });
 }
 
+// Validates the simple artwork rows used for the lower grid.
 function isMovementArtworkRow(value: unknown): value is MovementArtworkRow {
   if (!value || typeof value !== "object") {
     return false;
@@ -258,6 +267,7 @@ function parseMovementArtworkRows(value: unknown): MovementArtworkRow[] {
   return Array.isArray(value) ? value.filter(isMovementArtworkRow) : [];
 }
 
+// Renders one essay section and its optional linked artwork.
 function MovementEssaySection({ title, body, artwork }: MovementEssay) {
   const artworkContent = (
     <ArtworkFull
@@ -298,6 +308,7 @@ function MovementEssaySection({ title, body, artwork }: MovementEssay) {
   );
 }
 
+// Normalizes artwork thumbnails used in related grids.
 function getThumbnailUrl(url?: string | null) {
   if (!url) {
     return null;
@@ -310,6 +321,7 @@ function getThumbnailUrl(url?: string | null) {
   }
 }
 
+// Fetches the movement detail data and renders the full page.
 export default async function MovementPage({ params, searchParams }: MovementPageProps) {
   const resolvedParams = await Promise.resolve(params);
   const movementParam = typeof resolvedParams?.slug === "string" ? resolvedParams.slug : "";
@@ -321,6 +333,7 @@ export default async function MovementPage({ params, searchParams }: MovementPag
   const supabase = createSupabaseServerClient();
   const adminSupabase = createSupabaseServerAdminClient();
 
+  // Resolve the requested movement from either a UUID or a slug.
   const movementQuery = supabase
     .from("movements")
     .select("id,name,slug,start_year,end_year,summary,icon_url")
@@ -347,6 +360,7 @@ export default async function MovementPage({ params, searchParams }: MovementPag
 
   const movementId = movement.id;
 
+  // Once the movement is known, load its supporting timeline, essays, and related entities together.
   const [movementsResult, essaysResult, movementArtistsResult, movementArtworksResult] =
     await Promise.all([
       supabase
@@ -389,6 +403,7 @@ export default async function MovementPage({ params, searchParams }: MovementPag
     throw new Error(movementArtworksResult.error.message);
   }
 
+  // Build timeline, essay, artist, and artwork UI models from the raw query results.
   const essayRow = Array.isArray(essaysResult.data)
     ? ((essaysResult.data[0] ?? null) as MovementEssayRow | null)
     : null;
@@ -406,6 +421,7 @@ export default async function MovementPage({ params, searchParams }: MovementPag
   const movementYears = formatMovementYears(movement.start_year, movement.end_year);
   const movementImage = resolveMovementImage(movement.slug ?? null, movement.icon_url ?? null);
 
+  // Build the full timeline so users can move laterally through adjacent movements.
   const movementTimeline: MovementTimelineItem[] = movements.map((row) => ({
     id: row.id,
     name: row.name,
@@ -432,6 +448,7 @@ export default async function MovementPage({ params, searchParams }: MovementPag
   }
   const essayArtworkMap = new Map(essayArtworks.map((row) => [row.id, row]));
 
+  // Each essay paragraph can optionally pull in a specific supporting artwork.
   const movementEssays: MovementEssay[] | undefined = essayRow
     ? [
         {
@@ -562,6 +579,7 @@ export default async function MovementPage({ params, searchParams }: MovementPag
         forceBackHref={Boolean(fromParam)}
       />
 
+      {/* Start with the movement identity block and the horizontal timeline. */}
       <div className="flex w-full flex-col gap-[32px] pb-[32px] pt-[20px]">
         <div className="flex flex-col items-center gap-0">
           <div className="flex h-[200px] w-[200px] items-center justify-center overflow-hidden">
@@ -590,6 +608,7 @@ export default async function MovementPage({ params, searchParams }: MovementPag
         <MovementTimelineRow items={timelineWithReturn} />
       </div>
 
+      {/* The essay sections carry the long-form movement explanation. */}
       <section className="flex w-full flex-col gap-[8px] overflow-hidden pb-[32px] pt-0">
         <div className="flex w-full items-center px-[20px]">
           <p className="text-header-ui-overline text-[#757575]">
@@ -603,6 +622,7 @@ export default async function MovementPage({ params, searchParams }: MovementPag
         </div>
       </section>
 
+      {/* Related artists and artworks turn the essay into an exploration path. */}
       <section className="flex w-full flex-col gap-[8px] px-[20px] py-[32px]">
         <div className="flex items-end py-[8px]">
           <p className="text-header-ui-overline text-[#757575]">

@@ -1,9 +1,13 @@
 "use client";
 
+// Floating home header that owns the profile bubble interaction.
+// It uses the shared viewport portal so the control stays pinned over scrolling content.
+
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTabScope } from "@/components/tab-state";
 
+// Renders the home page top bar and dismissible profile teaser.
 export function HomeTopBar() {
   const [isProfileBubbleOpen, setIsProfileBubbleOpen] = useState(false);
   const bubbleTimeoutRef = useRef<number | null>(null);
@@ -23,6 +27,7 @@ export function HomeTopBar() {
       return;
     }
 
+    // Auto-close the bubble so it behaves like a temporary hint, not a sticky menu.
     bubbleTimeoutRef.current = window.setTimeout(() => {
       setIsProfileBubbleOpen(false);
       bubbleTimeoutRef.current = null;

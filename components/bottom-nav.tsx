@@ -1,5 +1,8 @@
 "use client";
 
+// Bottom tab navigation for the app shell.
+// It coordinates visual tab selection with the custom per-tab history state.
+
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { TabId, useTabState } from "@/components/tab-state";
@@ -32,6 +35,7 @@ const navItems: Array<{
   },
 ];
 
+// Renders the icon for a bottom navigation item.
 function NavIcon({
   name,
   className,
@@ -93,6 +97,7 @@ function NavIcon({
   );
 }
 
+// Renders the active tab indicator and the interactive tab links.
 function DefaultNav() {
   const router = useRouter();
   const pathname = usePathname();
@@ -138,12 +143,14 @@ function DefaultNav() {
               onClick={(event) => {
                 const isActiveTab = item.id === activeTab;
                 if (isActiveTab) {
+                  // Re-tapping a tab resets that tab back to its root route.
                   event.preventDefault();
                   if (fullPath !== item.href) {
                     router.replace(item.href);
                   }
                   return;
                 }
+                // Switching tabs restores the last path visited inside that tab.
                 setActiveTab(item.id);
                 const target = tabPaths[item.id] ?? item.href;
                 setPendingSwitch({ tab: item.id, path: target });
@@ -164,6 +171,7 @@ function DefaultNav() {
   );
 }
 
+// Wraps the bottom navigation in the gradient chrome used by the phone shell.
 export function BottomNav() {
   return (
     <nav className="w-full bg-gradient-to-b from-[rgba(255,255,255,0)] to-[rgba(255,255,255,0.9)] pb-[env(safe-area-inset-bottom)]">

@@ -1,5 +1,8 @@
 "use client";
 
+// Full-screen artwork image viewer opened from the detail page.
+// It supports escape-to-close, double-tap zoom, and swipe-down dismissal when not zoomed.
+
 import { createPortal } from "react-dom";
 import { useEffect, useRef, useState, type TouchEvent } from "react";
 import { useTabScope } from "@/components/tab-state";
@@ -9,6 +12,7 @@ type ArtworkImageViewerProps = {
   alt: string;
 };
 
+// Renders the preview trigger and fullscreen image dialog.
 export function ArtworkImageViewer({ src, alt }: ArtworkImageViewerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [scale, setScale] = useState(1);
@@ -35,10 +39,12 @@ export function ArtworkImageViewer({ src, alt }: ArtworkImageViewerProps) {
     };
   }, [isOpen]);
 
+  // Keeps zoom behavior binary so the image stays easy to reset.
   const toggleZoom = () => {
     setScale((current) => (current === 1 ? 2 : 1));
   };
 
+  // Record the starting touch point for swipe-to-dismiss.
   const handleTouchStart = (event: TouchEvent<HTMLDivElement>) => {
     if (scale !== 1) {
       return;
@@ -46,6 +52,7 @@ export function ArtworkImageViewer({ src, alt }: ArtworkImageViewerProps) {
     touchStartY.current = event.touches[0]?.clientY ?? null;
   };
 
+  // A downward swipe closes the viewer only when the image is not zoomed in.
   const handleTouchEnd = (event: TouchEvent<HTMLDivElement>) => {
     if (scale !== 1 || touchStartY.current === null) {
       return;

@@ -1,7 +1,12 @@
 "use client";
 
+// Floating artist page header rendered through the shared viewport portal.
+// It provides back navigation and native sharing without affecting page layout.
+
 import { createPortal } from "react-dom";
 import { useTabScope, useTabState } from "@/components/tab-state";
+
+// === TYPES ===
 
 type ArtistTopBarProps = {
   artistId: string;
@@ -9,6 +14,7 @@ type ArtistTopBarProps = {
   artistName: string;
 };
 
+// Renders the artist page top bar with back and share actions.
 export function ArtistTopBar({ artistId, artistSlug, artistName }: ArtistTopBarProps) {
   const portalTarget =
     typeof document === "undefined" ? null : document.getElementById("app-viewport");
@@ -19,6 +25,7 @@ export function ArtistTopBar({ artistId, artistSlug, artistName }: ArtistTopBarP
     return null;
   }
 
+  // Shares the canonical artist URL when the browser supports native share.
   const handleShare = async () => {
     if (typeof window === "undefined") {
       return;

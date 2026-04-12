@@ -1,3 +1,7 @@
+// Simple top navigation shell used by older or lightweight layouts.
+// It keeps the brand label and search affordance in a fixed header.
+
+// Renders the basic top navigation bar.
 export function TopNav() {
   return (
     <header className="shrink-0 border-b border-border/70 bg-background/90 backdrop-blur">

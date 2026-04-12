@@ -1,4 +1,9 @@
+// Tile component for theme and tag navigation grids.
+// It maps known theme names to a matching illustration so the grid stays recognizable.
+
 import Link from "next/link";
+
+// === TYPES AND ICON MAPPING ===
 
 type ThemeTileProps = {
   href: string;
@@ -38,10 +43,12 @@ const themeIconMap: Record<string, string> = {
 
 const defaultThemeIcon = "/images/ui/theme_icons/Property%201=ScribbleLoop.png";
 
+// Normalizes labels so slug and name lookups share the same key shape.
 function normalizeKey(value: string) {
   return value.trim().toLowerCase().replace(/\s+/g, "-");
 }
 
+// Converts stored theme labels into a clean title-case display label.
 function formatThemeLabel(name: string) {
   return name
     .split(" ")
@@ -50,12 +57,14 @@ function formatThemeLabel(name: string) {
     .join(" ");
 }
 
+// Resolves the most specific icon match and falls back to the default asset.
 function resolveThemeIcon(slug?: string | null, name?: string | null) {
   const slugKey = normalizeKey(slug ?? "");
   const nameKey = normalizeKey(name ?? "");
   return themeIconMap[slugKey] ?? themeIconMap[nameKey] ?? defaultThemeIcon;
 }
 
+// Renders a clickable theme tile for browse surfaces.
 export function ThemeTile({ href, name, slug }: ThemeTileProps) {
   return (
     <Link

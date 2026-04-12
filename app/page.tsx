@@ -1,3 +1,6 @@
+// Home page for the Musea app.
+// It assembles the featured artwork, featured movement, and emotion shortcuts from Supabase data.
+
 import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
 import { ArtworkCardSmall } from "@/components/artwork-card-small";
@@ -8,6 +11,8 @@ import { MovementCardSmall } from "@/components/movement-card-small";
 import { createSupabaseServerClient } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
+
+// === DATA SHAPES AND CONSTANTS ===
 
 type ArtworkRow = {
   id: string;
@@ -26,6 +31,8 @@ const ARTWORK_OF_THE_DAY_SLUG =
   "woman-with-a-parasol-madame-monet-and-her-son-claude-monet";
 const MOVEMENT_OF_THE_WEEK_SLUG = "impressionism";
 const HOME_OMITTED_ARTWORK_TITLES = new Set(["the origin of the world"]);
+
+// === PARSING HELPERS ===
 
 function isArtworkRow(value: unknown): value is ArtworkRow {
   if (!value || typeof value !== "object") {
@@ -46,6 +53,7 @@ function parseArtworkRows(value: unknown): ArtworkRow[] {
   return Array.isArray(value) ? value.filter(isArtworkRow) : [];
 }
 
+// Validates the lightweight tag rows used for the emotion shortcuts.
 function isTagRow(value: unknown): value is TagRow {
   if (!value || typeof value !== "object") {
     return false;
@@ -62,6 +70,7 @@ function parseTagRows(value: unknown): TagRow[] {
   return Array.isArray(value) ? value.filter(isTagRow) : [];
 }
 
+// Validates the joined artist row attached to the featured artwork query.
 function isRelatedArtist(value: unknown): value is {
   id: string;
   name: string;
@@ -89,6 +98,9 @@ function getRelatedArtist(value: unknown) {
   return isRelatedArtist(value) ? value : null;
 }
 
+// === DISPLAY HELPERS ===
+
+// Formats a movement year range for the featured movement card.
 function formatMovementYears(start?: number | null, end?: number | null) {
   if (start && end) {
     return `${start} - ${end}`;
@@ -106,6 +118,7 @@ function resolveMovementImage(slug?: string | null, iconUrl?: string | null) {
   return "";
 }
 
+// Normalizes tag labels into the title case used in the chip row.
 function formatTagLabel(name: string) {
   return name
     .split(" ")
@@ -118,10 +131,12 @@ function isAllowedHomeArtwork(artwork: ArtworkRow) {
   return !HOME_OMITTED_ARTWORK_TITLES.has(artwork.title.trim().toLowerCase());
 }
 
+// Fetches the home page data and renders the featured browse sections.
 export default async function Home() {
   noStore();
   const supabase = createSupabaseServerClient();
 
+  // Load the three hero datasets in parallel because they are independent.
   const [
     { data: artworkOfDay, error: artworkError },
     { data: movementOfWeek, error: movementError },
@@ -154,6 +169,7 @@ export default async function Home() {
     throw new Error(emotionError.message);
   }
 
+  // Fetch a small supporting grid for the featured movement.
   let movementArtworks: ArtworkRow[] = [];
   if (movementOfWeek?.id) {
     const { data } = await supabase
@@ -176,6 +192,7 @@ export default async function Home() {
   );
   const movementSlugOrId = movementOfWeek?.slug ?? movementOfWeek?.id ?? null;
   const movementHref = movementSlugOrId ? `/movement/${movementSlugOrId}` : null;
+  // Keep the movement section stable even if the DB does not have supporting artworks yet.
   const fallbackArtworks = [
     { id: "placeholder-1", slug: null, title: "Artwork Title", image_url: null },
     { id: "placeholder-2", slug: null, title: "Artwork Title", image_url: null },
@@ -201,7 +218,9 @@ export default async function Home() {
     <div className="relative flex w-full flex-col overflow-x-hidden bg-white">
       <HomeTopBar />
 
+      {/* === FEATURED SECTIONS === */}
       <div className="flex w-full flex-col gap-[32px] pb-[32px] pt-[100px]">
+        {/* Lead with a single hero artwork to make the home page feel editorial. */}
         <section className="flex w-full flex-col gap-[12px]">
           <div className="flex flex-col gap-[8px] px-[20px]">
             <p className="text-header-ui-page text-[#1e1e1e]">
@@ -227,6 +246,7 @@ export default async function Home() {
           />
         </section>
 
+        {/* Pair the featured movement card with a small supporting artwork grid. */}
         <section className="flex w-full flex-col gap-[16px] px-[20px]">
           <div className="flex w-full flex-col gap-[12px]">
             <div className="flex w-full flex-col gap-0">
@@ -270,6 +290,7 @@ export default async function Home() {
           </div>
         </section>
 
+        {/* Keep the last section lightweight so users can jump into themed browsing quickly. */}
         <section className="flex w-full flex-col gap-[12px] overflow-clip py-[32px]">
           <div className="flex w-full items-center px-[20px]">
             <p className="text-header-ui-overline text-[#757575]">

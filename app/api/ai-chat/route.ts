@@ -1,3 +1,6 @@
+// Streaming chat API for the artwork reflection panel.
+// It loads the system prompt, trims history, and relays Perplexity responses as SSE.
+
 import { NextRequest } from "next/server";
 import { promises as fs } from "fs";
 import path from "path";
@@ -12,10 +15,12 @@ type ChatMessage = {
   content: string;
 };
 
+// Validates chat roles coming from the client payload.
 function isChatRole(value: unknown): value is ChatMessage["role"] {
   return value === "assistant" || value === "user" || value === "system";
 }
 
+// Parses the incoming chat history into a safe message array.
 function parseChatMessages(value: unknown): ChatMessage[] {
   if (!Array.isArray(value)) {
     return [];
@@ -40,10 +45,12 @@ function parseChatMessages(value: unknown): ChatMessage[] {
   });
 }
 
+// Uses a rough character-based estimate to keep prompt history bounded.
 function approximateTokens(text: string) {
   return Math.ceil(text.length / 4);
 }
 
+// Keeps the newest messages that fit within the token budget.
 function trimMessagesToTokenLimit(messages: ChatMessage[], maxTokens: number) {
   let totalTokens = 0;
   const trimmed: ChatMessage[] = [];
@@ -59,6 +66,7 @@ function trimMessagesToTokenLimit(messages: ChatMessage[], maxTokens: number) {
   return trimmed.reverse();
 }
 
+// Reads the prompt template from disk and falls back to an empty prompt on failure.
 async function readSystemPrompt() {
   try {
     return await fs.readFile(SYSTEM_PROMPT_PATH, "utf8");
@@ -67,6 +75,7 @@ async function readSystemPrompt() {
   }
 }
 
+// Streams an assistant response for the artwork reflection chat UI.
 export async function POST(request: NextRequest) {
   const body = await request.json();
   const messages = parseChatMessages(body?.messages);
@@ -87,6 +96,7 @@ export async function POST(request: NextRequest) {
   }
 
   const trimmedMessages = trimMessagesToTokenLimit(messages, MAX_HISTORY_TOKENS);
+  // Replace prompt placeholders with the current artwork and artist names.
   const resolvedPrompt = systemPrompt
     .replace(/{{\s*artwork_title\s*}}/gi, artworkTitle)
     .replace(/{{\s*sertwork_title\s*}}/gi, artworkTitle)
@@ -123,6 +133,7 @@ export async function POST(request: NextRequest) {
   const decoder = new TextDecoder();
   const contentType = perplexityResponse.headers.get("content-type") ?? "";
 
+  // Some providers fall back to JSON instead of SSE, so normalize that into the same stream shape.
   if (!contentType.includes("text/event-stream")) {
     const data = await perplexityResponse.json();
     const errorMessage = data?.error?.message ?? data?.message ?? "";
@@ -176,10 +187,10 @@ export async function POST(request: NextRequest) {
             if (!line.startsWith("data:")) {
               continue;
             }
-            const payload = line.replace("data:", "").trim();
-            if (!payload) {
-              continue;
-            }
+          const payload = line.replace("data:", "").trim();
+          if (!payload) {
+            continue;
+          }
             if (payload === "[DONE]") {
               controller.enqueue(encoder.encode("data: [DONE]\n\n"));
               controller.close();

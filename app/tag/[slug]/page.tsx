@@ -1,3 +1,6 @@
+// Tag detail page that shows a banner, filter chips, and matching artworks.
+// It resolves a tag slug, applies optional movement and technique filters, and computes filter counts.
+
 import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
 import { TagFilters } from "@/components/tag-filters";
@@ -7,6 +10,8 @@ import { createSupabaseServerClient } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+
+// === DATA SHAPES ===
 
 type TagPageProps = {
   params: { slug: string };
@@ -50,6 +55,9 @@ type BannerArtworkRow = {
   image_url: string | null;
 };
 
+// === HELPER FUNCTIONS ===
+
+// Normalizes the tag title for headings and filter labels.
 function titleCase(value: string) {
   return value
     .split(" ")
@@ -82,6 +90,7 @@ const uuidRegex =
 
 const IN_CHUNK_SIZE = 100;
 
+// Intersects filter result sets while handling missing lists gracefully.
 function intersectIds(base: string[] | null | undefined, next?: string[] | null) {
   const safeBase = base ?? [];
   if (!next) {
@@ -101,6 +110,8 @@ function chunkArray<T>(items: T[], size = IN_CHUNK_SIZE) {
   }
   return chunks;
 }
+
+// === RESULT PARSING ===
 
 function isMovementRow(value: unknown): value is MovementRow {
   if (!value || typeof value !== "object") {
@@ -186,6 +197,7 @@ function isBannerArtworkRow(value: unknown): value is BannerArtworkRow {
   );
 }
 
+// Fetches the tag page data and applies the selected filter combination.
 export default async function TagPage({ params, searchParams }: TagPageProps) {
   noStore();
   const resolvedParams = await Promise.resolve(params);
@@ -207,6 +219,7 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
 
   const supabase = createSupabaseServerClient();
 
+  // Resolve the tag by slug first, then fall back to looser slug and name matching.
   let tagResult = await supabase
     .from("tags")
     .select("id,slug,name,description,banner,category")
@@ -338,6 +351,7 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
     (row) => row.artwork_id as string,
   );
 
+  // Start from all artworks on the base tag, then narrow down by selected filters.
   const baseArtworks: ArtworkRow[] = [];
   if (baseTagArtworkIds.length > 0) {
     for (const chunk of chunkArray(baseTagArtworkIds)) {
@@ -370,6 +384,7 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
 
   let artworks: ArtworkRow[] = baseArtworks;
 
+  // Apply optional medium and technique filters after the base tag query resolves.
   let mediumArtworkIds: string[] | null = null;
   if (mediumFilter) {
     const { data: mediumRows, error: mediumError } = await supabase
@@ -420,6 +435,7 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
   const mediumCounts: Record<string, number> = {};
   const techniqueCounts: Record<string, number> = {};
 
+  // Recompute available filter counts from the partially filtered result sets.
   let movementArtworkIds: string[] | null = null;
   if (movementFilter && baseTagArtworkIds.length > 0) {
     try {
@@ -533,6 +549,8 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
   return (
     <div className="flex w-full flex-col overflow-x-hidden bg-white">
       <TagTopBar />
+
+      {/* Start with a visual banner so the tag page feels more like a destination than a filter list. */}
       <section className="flex w-full flex-col">
         <div
           className={`flex h-[291px] w-full items-center justify-center bg-[#f5f5f5] ${
@@ -554,6 +572,7 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
       </section>
 
       <div className="flex w-full flex-col items-start px-[20px]">
+        {/* The intro block explains what this tag means before filtering begins. */}
         <section className="flex w-full flex-col gap-[10px] py-[16px]">
           <p className="text-header-content-h1 text-[#1e1e1e]">
             {titleCase(tag.name)}
@@ -565,6 +584,7 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
           </div>
         </section>
 
+        {/* Filters stay close to the intro so the artwork grid can be refined immediately. */}
         <section className="flex w-full flex-col gap-[8px] border-t border-[#d9d9d9] py-[16px]">
           <p className="text-header-ui-overline text-[#757575]">
             Filters
@@ -587,6 +607,7 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
           ) : null}
         </section>
 
+        {/* The artwork grid is the main payload of the tag page. */}
         <section className="flex w-full flex-col items-start justify-center">
           <div className="grid w-full grid-cols-2 justify-items-start gap-x-[20px] gap-y-[30px]">
             {artworks.length > 0 ? (

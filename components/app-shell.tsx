@@ -1,5 +1,8 @@
 "use client";
 
+// Outer mobile device shell that wraps the whole app.
+// It scales the phone frame to the viewport and mounts shared navigation, tabs, and cursor UI.
+
 import { Suspense, type ReactNode, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { BottomNav } from "@/components/bottom-nav";
@@ -17,9 +20,11 @@ const PHONE_HEIGHT = 874;
 const PHONE_MIN_SCALE = 0.8;
 const APP_PADDING = 16;
 
+// Renders the shared simulated phone shell around every route.
 export function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
   const [phoneScale, setPhoneScale] = useState(1);
+  // Detail-style screens own their own top controls, so the generic top nav stays hidden there.
   const hideTopNav =
     pathname?.startsWith("/artwork/") ||
     pathname?.startsWith("/artist") ||
@@ -31,6 +36,7 @@ export function AppShell({ children }: AppShellProps) {
     pathname?.startsWith("/tag");
 
   useEffect(() => {
+    // Scale the phone to fit smaller desktop windows while preserving the design ratio.
     const updatePhoneScale = () => {
       const availableWidth = Math.max(0, window.innerWidth - APP_PADDING * 2);
       const availableHeight = Math.max(0, window.innerHeight - APP_PADDING * 2);
@@ -55,7 +61,7 @@ export function AppShell({ children }: AppShellProps) {
   }, []);
 
   return (
-    <div className="min-h-dvh bg-[radial-gradient(circle_at_top,_#f2f2f2,_#e6e3dd)] p-4 text-foreground">
+    <div className="min-h-dvh bg-[#F5F5F5] p-4 text-foreground">
       <div
         className="relative mx-auto"
         style={{

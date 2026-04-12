@@ -1,3 +1,6 @@
+// Full-width artwork presentation block used on home, detail, and sheet surfaces.
+// It bundles the frame, title, artist chip, and optional artwork link in one component.
+
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { ArtworkFrameBig } from "@/components/artwork-frame-big";
@@ -20,6 +23,7 @@ type ArtworkFullProps = {
   artworkHref?: string | null;
 };
 
+// Renders a full artwork card with optional image and navigation links.
 export function ArtworkFull({
   title,
   year,
@@ -32,6 +36,7 @@ export function ArtworkFull({
   frameClassName,
   artworkHref,
 }: ArtworkFullProps) {
+  // Reuse the same frame markup whether the artwork is clickable or not.
   const frameContent = (
     <ArtworkFrameBig
       image={image}

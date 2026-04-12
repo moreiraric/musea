@@ -1,4 +1,9 @@
+// Compact artist pill used in cards, sheets, and detail pages.
+// It can render as either a link or a static badge depending on context.
+
 import Link from "next/link";
+
+// === TYPES AND CONSTANTS ===
 
 type ArtistChipProps = {
   name: string;
@@ -10,6 +15,7 @@ type ArtistChipProps = {
 
 const MAX_ARTIST_NAME_LENGTH = 20;
 
+// Keeps long artist names from breaking the chip layout.
 function truncateArtistName(name: string) {
   if (name.length <= MAX_ARTIST_NAME_LENGTH) {
     return name;
@@ -18,6 +24,7 @@ function truncateArtistName(name: string) {
   return `${name.slice(0, MAX_ARTIST_NAME_LENGTH).trimEnd()}...`;
 }
 
+// Renders the artist identity chip with optional navigation.
 export function ArtistChip({
   name,
   imageUrl,

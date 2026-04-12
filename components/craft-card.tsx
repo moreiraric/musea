@@ -1,3 +1,6 @@
+// Card used in craft-related horizontal lists and sheets.
+// It presents a labeled concept, supporting description, and trailing action glyph.
+
 type CraftCardProps = {
   label: string;
   title: string;
@@ -5,6 +8,7 @@ type CraftCardProps = {
   icon: string;
 };
 
+// Renders a single craft concept card.
 export function CraftCard({ label, title, description, icon }: CraftCardProps) {
   return (
     <article className="flex h-[300px] w-[250px] shrink-0 flex-col justify-between rounded-[16px] border border-[#d9d9d9] bg-white p-[16px]">

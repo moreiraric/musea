@@ -1,5 +1,8 @@
 "use client";
 
+// Reusable hook for desktop drag-to-scroll interactions.
+// It finds the right scroll target, tracks drag state, and suppresses clicks after a drag.
+
 import {
   useCallback,
   useEffect,
@@ -9,6 +12,7 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from "react";
 
+// Checks whether an element can actually scroll on the requested axis.
 function isScrollable(element: HTMLElement, axis: "x" | "y") {
   const style = window.getComputedStyle(element);
   const overflowValue = axis === "x" ? style.overflowX : style.overflowY;
@@ -21,6 +25,7 @@ function isScrollable(element: HTMLElement, axis: "x" | "y") {
   return canScroll && hasOverflow;
 }
 
+// Walks up the DOM to find the nearest usable scroll container.
 function findScrollableTarget(element: HTMLElement | null, axis: "x" | "y") {
   if (element && isScrollable(element, axis)) {
     return element;
@@ -46,6 +51,7 @@ type MouseDragScrollOptions = {
   allowInteractiveChildren?: boolean;
 };
 
+// Provides pointer handlers that turn mouse drags into scroll movement.
 export function useMouseDragScroll<T extends HTMLElement>(
   options: MouseDragScrollOptions = {},
 ) {
@@ -63,6 +69,7 @@ export function useMouseDragScroll<T extends HTMLElement>(
   const scrollStartTopRef = useRef(0);
   const previousUserSelectRef = useRef("");
 
+  // Clears drag state and restores any temporary selection or snapping changes.
   const finishPointerDrag = useCallback(() => {
     const scrollTarget = scrollTargetRef.current;
 
@@ -95,6 +102,7 @@ export function useMouseDragScroll<T extends HTMLElement>(
         didDragRef.current = true;
       }
 
+      // Move the scroll position opposite the pointer delta for direct-manipulation drag.
       if (axis === "x") {
         scrollTarget.scrollLeft = scrollStartLeftRef.current - delta;
       } else {
@@ -124,11 +132,13 @@ export function useMouseDragScroll<T extends HTMLElement>(
   const handlePointerDown = (event: ReactPointerEvent<T>) => {
     didDragRef.current = false;
 
+    // Only mouse drags opt into this behavior; touch keeps native scrolling.
     if (event.pointerType !== "mouse" || event.button !== 0) {
       return;
     }
 
     const target = event.target as HTMLElement | null;
+    // Interactive children keep their normal click behavior unless explicitly allowed.
     if (
       !allowInteractiveChildren &&
       target?.closest("button, a, input, select, textarea, label")
@@ -169,6 +179,7 @@ export function useMouseDragScroll<T extends HTMLElement>(
       return;
     }
 
+    // Prevent accidental clicks after the user was actually dragging.
     event.preventDefault();
     event.stopPropagation();
     didDragRef.current = false;

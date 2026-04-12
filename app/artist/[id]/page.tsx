@@ -1,3 +1,6 @@
+// Artist detail page with biography, movement context, tags, and artwork highlights.
+// It resolves the artist plus related movement essay data to build the full profile surface.
+
 import Link from "next/link";
 import { ArtistEssay } from "@/components/artist-essay";
 import { ArtistTopBar } from "@/components/artist-top-bar";
@@ -111,6 +114,9 @@ const countryCodeByName: Record<string, string> = {
   Russia: "RU",
 };
 
+// === HELPER FUNCTIONS ===
+
+// Buckets tag categories into a predictable lowercase key.
 function normalizeCategory(category?: string | null) {
   return (category ?? "other").toLowerCase();
 }
@@ -319,6 +325,7 @@ function pickHighlightArtwork(artworks: ArtworkRow[]) {
 
 const MAX_MASTERPIECES = 6;
 
+// Fetches the artist detail data and renders the profile page.
 export default async function ArtistDetailPage({ params }: ArtistPageProps) {
   const resolvedParams = await Promise.resolve(params);
   const artistParam = typeof resolvedParams?.id === "string" ? resolvedParams.id : "";
@@ -326,6 +333,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
   const supabase = createSupabaseServerClient();
   const adminSupabase = createSupabaseServerAdminClient();
 
+  // Resolve the artist from either a UUID route or a slug route.
   const artistQuery = supabase
     .from("artists")
     .select("id,slug,name,image_url,life_period,country,quote,bio,primary_movement_id")
@@ -366,6 +374,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
 
   const movementId = artist.primary_movement_id ?? highlightArtwork?.movement_id ?? null;
 
+  // Pull movement context and tag aggregates in parallel once the artist is known.
   const [
     movementResult,
     tagsResult,
@@ -450,6 +459,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
     console.warn(`No movement_essays row found for movement_id ${movementId}`);
   }
 
+  // Convert raw DB rows into the grouped display models used by the page sections.
   const movement = movementResult.data as MovementRow | null;
   const movements = parseMovementRows(movementsResult.data);
   const missingStartYears = movements.filter((row) => row.start_year === null);
@@ -563,6 +573,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
   }));
 
   const tagCounts = new Map<string, { tag: TagRow; count: number }>();
+  // Count tag frequency across the artist's artworks so the strongest themes rise first.
   (tagsResult.data ?? []).forEach((row) => {
     const tag = getRelatedTag((row as { tags?: unknown }).tags);
     if (!tag) {
@@ -651,6 +662,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
       </section>
 
       <div className="flex w-full flex-col gap-[16px] px-[20px] pb-[32px]">
+        {/* The first block introduces the artist before any deeper context appears. */}
         <section className="flex w-full flex-col gap-[16px] pt-[8px]">
           <p className="text-header-content-h1 text-black">
             {artist.name}
@@ -688,6 +700,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
         </section>
 
         {movement ? (
+          /* Movement context gives the biography a historical frame. */
           <MovementSheet
             movement={{
               id: movement.id,
@@ -713,6 +726,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
         ) : null}
 
         {hasTags ? (
+          /* Tags summarize what the artist is most known for across their works. */
           <section className="flex w-full flex-col gap-[16px] pt-[16px]">
             {knownForTags.length > 0 ? (
               <div className="flex w-full flex-col gap-[8px]">
@@ -771,6 +785,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
         ) : null}
 
         {artist.bio ? (
+          /* The biography section carries the longer-form profile writing. */
           <section className="flex w-full flex-col gap-[4px] border-t border-[#d9d9d9] pt-[16px]">
             <p className="text-header-ui-overline text-[#757575]">
               About
@@ -780,6 +795,7 @@ export default async function ArtistDetailPage({ params }: ArtistPageProps) {
         ) : null}
 
         {masterpieces.length > 0 ? (
+          /* End with artworks so the user can continue browsing from the profile. */
           <section className="flex w-full flex-col gap-[8px] pt-[16px]">
             <p className="text-header-ui-page text-[#1e1e1e]">
               Masterpieces

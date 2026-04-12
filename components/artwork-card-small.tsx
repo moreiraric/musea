@@ -1,3 +1,6 @@
+// Compact artwork card used in grids, carousels, and related artwork lists.
+// It pairs a small frame with a clamped title and optional artist name.
+
 import { ArtworkFrameSmall } from "@/components/artwork-frame-small";
 
 type ArtworkCardSmallProps = {
@@ -11,6 +14,7 @@ type ArtworkCardSmallProps = {
   showArtistName?: boolean;
 };
 
+// Renders a small artwork card for browse-heavy layouts.
 export function ArtworkCardSmall({
   title,
   artistName,

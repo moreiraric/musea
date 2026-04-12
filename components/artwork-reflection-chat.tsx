@@ -1,5 +1,8 @@
 "use client";
 
+// Reflection chat overlay for artwork pages.
+// It persists recent messages per artwork and streams assistant responses into the sheet UI.
+
 import { createPortal } from "react-dom";
 import {
   useEffect,
@@ -29,10 +32,12 @@ const MAX_INPUT_CHARS = 600;
 const MAX_HISTORY_TOKENS = 1500;
 const MAX_STORED_MESSAGES = 50;
 
+// Uses a rough character-based estimate to cap conversation history.
 function approximateTokens(text: string) {
   return Math.ceil(text.length / 4);
 }
 
+// Keeps the newest messages that fit within the outgoing token budget.
 function trimMessagesToTokenLimit(messages: ChatMessage[], maxTokens: number) {
   let totalTokens = 0;
   const trimmed: ChatMessage[] = [];
@@ -48,6 +53,7 @@ function trimMessagesToTokenLimit(messages: ChatMessage[], maxTokens: number) {
   return trimmed.reverse();
 }
 
+// Small animated loader shown while the assistant is thinking.
 function DotLoader() {
   return (
     <div className="flex items-center gap-[6px]">
@@ -58,6 +64,7 @@ function DotLoader() {
   );
 }
 
+// Applies lightweight inline emphasis for streamed markdown-ish text.
 function renderInlineMarkdown(text: string) {
   const segments = text.split(/(\*\*\*[^*]+\*\*\*|\*\*[^*]+\*\*|\*[^*]+\*)/g);
   let key = 0;
@@ -86,6 +93,7 @@ function renderInlineMarkdown(text: string) {
   });
 }
 
+// Splits streamed text into paragraph nodes while preserving line breaks.
 function renderMarkdown(text: string, className: string) {
   const paragraphs = text.split(/\n{2,}/);
   return paragraphs.map((paragraph, index) => {
@@ -107,6 +115,7 @@ function renderMarkdown(text: string, className: string) {
   });
 }
 
+// Renders the reflection chat trigger and the full overlay conversation UI.
 export function ArtworkReflectionChat({
   question,
   artworkTitle,
@@ -245,6 +254,7 @@ export function ArtworkReflectionChat({
       content.style.transform = `translateY(${value}px)`;
     };
 
+    // Adds the same elastic feel used in the main viewport to the chat transcript.
     const animateBack = () => {
       if (elasticRafRef.current !== null) {
         cancelAnimationFrame(elasticRafRef.current);
@@ -296,6 +306,7 @@ export function ArtworkReflectionChat({
     };
   }, [isOpen]);
 
+  // Stores only a capped slice of history per artwork in local storage.
   const saveMessages = (nextMessages: ChatMessage[]) => {
     if (typeof window === "undefined") {
       return;
@@ -341,6 +352,7 @@ export function ArtworkReflectionChat({
     setInputValue(next);
   };
 
+  // Append streamed assistant text to the placeholder assistant message.
   const appendToAssistant = (assistantId: string, delta: string) => {
     setMessages((prev) => {
       const next = prev.map((message) =>
@@ -407,6 +419,7 @@ export function ArtworkReflectionChat({
     }
   };
 
+  // Sends the current message, then streams the assistant reply back into state.
   const handleSend = async (overrideText?: string) => {
     if (isThinking) {
       return;

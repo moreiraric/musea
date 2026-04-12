@@ -1,10 +1,14 @@
 "use client";
 
+// Client-side error boundary UI for artwork detail failures.
+// It exposes the message and a retry action without leaving the current route.
+
 type ArtworkDetailErrorProps = {
   error: Error;
   reset: () => void;
 };
 
+// Renders the artwork error state and retry control.
 export default function ArtworkDetailError({
   error,
   reset,

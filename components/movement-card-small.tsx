@@ -1,3 +1,6 @@
+// Compact movement card used in lists, timelines, and artist or home surfaces.
+// It keeps the image and year range readable in a narrow horizontal layout.
+
 import Link from "next/link";
 
 type MovementCardSmallProps = {
@@ -11,6 +14,7 @@ type MovementCardSmallProps = {
   desaturateImage?: boolean;
 };
 
+// Renders a small movement summary card with optional linking.
 export function MovementCardSmall({
   name,
   years,
@@ -21,6 +25,7 @@ export function MovementCardSmall({
   compact = false,
   desaturateImage = false,
 }: MovementCardSmallProps) {
+  // Normalize spacing so different year sources render consistently.
   const resolvedYears = years && years.trim().length > 0 ? years : fallbackYears;
   const normalizedYears = resolvedYears
     ? resolvedYears.replace(/\s*-\s*/g, "-")

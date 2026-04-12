@@ -1,5 +1,8 @@
 "use client";
 
+// Filter chip row and bottom sheets for tag pages.
+// These controls keep the current filter state mirrored in the URL query string.
+
 import { createPortal } from "react-dom";
 import { useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -24,6 +27,7 @@ type TagFiltersProps = {
   techniqueCounts: Record<string, number>;
 };
 
+// Renders the small caret icon used on each filter chip.
 function CaretIcon() {
   return (
     <svg
@@ -51,6 +55,7 @@ type SheetProps = {
   counts: Record<string, number>;
 };
 
+// Bottom sheet used to pick a single filter value.
 function BottomSheet({
   label,
   options,
@@ -65,6 +70,7 @@ function BottomSheet({
   const [dragOffset, setDragOffset] = useState(0);
   const startYRef = useRef<number | null>(null);
 
+  // Track downward drag distance so the sheet can be dismissed with a swipe.
   const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
     startYRef.current = event.touches[0]?.clientY ?? null;
   };
@@ -90,6 +96,7 @@ function BottomSheet({
     return null;
   }
 
+  // Formats option labels into the title case used throughout the UI.
   const formatOptionLabel = (text: string) =>
     text
       .split(" ")
@@ -144,6 +151,7 @@ function BottomSheet({
   );
 }
 
+// Renders the filter chip row and coordinates which bottom sheet is open.
 export function TagFilters({
   movementOptions,
   mediumOptions,
@@ -160,6 +168,7 @@ export function TagFilters({
   const searchParams = useSearchParams();
   const [openSheet, setOpenSheet] = useState<"movement" | "medium" | "technique" | null>(null);
 
+  // Update the URL so filters stay shareable and back-button friendly.
   const updateParam = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString());
     if (value) {
@@ -245,7 +254,9 @@ export function TagFilters({
     </HorizontalDragScroll>
   );
 }
-  const formatChipLabel = (text: string) =>
+
+// Formats the chip label text shown in the collapsed filter row.
+const formatChipLabel = (text: string) =>
     text
       .split(" ")
       .filter(Boolean)

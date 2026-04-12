@@ -1,3 +1,6 @@
+// Search and discover page for artists, artworks, movements, and tag categories.
+// It serves both the blank discover state and the query-driven search results state.
+
 import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
 import { SearchResults } from "@/app/search/search-results";
@@ -16,6 +19,8 @@ import {
 export const dynamic = "force-dynamic";
 
 const SEARCH_CANDIDATE_LIMIT = 500;
+
+// === DATA SHAPES ===
 
 type SearchPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -56,6 +61,8 @@ type TagRow = {
   name: string;
   category: string | null;
 };
+
+// === RESULT PARSING ===
 
 function isSearchArtist(value: unknown): value is SearchArtist {
   if (!value || typeof value !== "object") {
@@ -115,6 +122,7 @@ function parseSearchArtists(value: unknown): SearchArtist[] {
   return Array.isArray(value) ? value.filter(isSearchArtist) : [];
 }
 
+// Validates movement rows used for the blank-state browse rail.
 function isMovementRow(value: unknown): value is MovementRow {
   if (!value || typeof value !== "object") {
     return false;
@@ -151,6 +159,8 @@ function isTagRow(value: unknown): value is TagRow {
   );
 }
 
+// === DISCOVER CONFIGURATION ===
+
 const categoryIconMap: Record<string, string> = {
   movement: "/images/ui/other/icon-movement-outline.svg",
   medium: "/images/ui/components_and_tags/icon-medium.png",
@@ -171,6 +181,9 @@ const representationSortOrder = new Map([
   ["abstract", 2],
 ]);
 
+// === DISPLAY HELPERS ===
+
+// Formats movement years for the discover movement rail.
 function formatMovementYears(start?: number | null, end?: number | null) {
   if (start && end) {
     return `${start} - ${end}`;
@@ -188,6 +201,7 @@ function resolveMovementImage(slug?: string | null, iconUrl?: string | null) {
   return "";
 }
 
+// Normalizes tag names into the UI's preferred title-cased labels.
 function formatTagLabel(name: string) {
   const normalized = name.trim().toLowerCase().replace(/\s+/g, " ");
   if (normalized === "semi abstract" || normalized === "semi-abstract") {
@@ -231,6 +245,7 @@ function sortMediumTags(tags: TagRow[]) {
   });
 }
 
+// Groups movement rows into columns for the blank discover grid.
 function chunk<T>(items: T[], size: number) {
   const result: T[][] = [];
   for (let index = 0; index < items.length; index += size) {
@@ -239,6 +254,7 @@ function chunk<T>(items: T[], size: number) {
   return result;
 }
 
+// Reads the query string value from either Next.js search params shape.
 function resolveQuery(
   searchParams: Record<string, string | string[] | undefined> | URLSearchParams,
 ) {
@@ -255,6 +271,7 @@ function resolveQuery(
   return (value ?? "").trim();
 }
 
+// Reads whether the discover search UI should start expanded.
 function resolveSearchOpen(
   searchParams: Record<string, string | string[] | undefined> | URLSearchParams,
 ) {
@@ -271,6 +288,7 @@ function resolveSearchOpen(
   return value === "1";
 }
 
+// Fetches either search results or discover browse content depending on the query.
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   noStore();
   const resolvedParams = await searchParams;
@@ -286,7 +304,9 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   let initialHasMoreArtworks = false;
   let initialHasMoreArtists = false;
 
+  // Query mode fetches and ranks matching artists and artworks.
   if (query) {
+    // Search first widens the candidate set, then local scoring narrows it back down.
     const tokens = buildSearchTokens(query);
     const titleFilter = buildSearchFilter(tokens, ["title"]);
     const artistFilter = buildSearchFilter(tokens, ["name"]);
@@ -391,7 +411,9 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   let emotionTags: TagRow[] = [];
   let themeTags: TagRow[] = [];
 
+  // Empty-query mode builds the discover landing sections instead of search results.
   if (!query) {
+    // The discover surface is assembled from independent category queries, so load them together.
     const [
       movementsResult,
       mediumTagsResult,
@@ -503,6 +525,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     <div className="relative flex w-full flex-col overflow-x-hidden bg-white pt-[100px]">
       <DiscoverSearchHeader query={query} isSearchOpen={isSearchOpen} />
 
+      {/* When the search UI is open, either show live results or an empty search canvas. */}
       {isSearchOpen ? (
         query ? (
           <SearchResults
@@ -526,6 +549,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             </p>
           </section>
           <div className="flex w-full flex-col gap-[32px]">
+            {/* Movements anchor the discover page because they define a broad art-history timeline. */}
             <section className="flex w-full flex-col gap-[12px] overflow-hidden">
             <div className="flex w-full items-center gap-[8px] px-[20px]">
               <div className="relative h-[24px] w-[24px]">
@@ -577,9 +601,10 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                 </div>
               ))}
             </HorizontalDragScroll>
-          </section>
+            </section>
 
-          {[
+            {/* Tag categories break browsing into quick visual entry points. */}
+            {[
             { label: "Medium", tags: mediumTags, icon: categoryIconMap.medium },
             { label: "Technique", tags: techniqueTags, icon: categoryIconMap.technique },
             {

@@ -1,3 +1,6 @@
+// Root Next.js layout for the app.
+// It loads the shared fonts, global styles, metadata, and the simulated phone shell.
+
 import type { Metadata } from "next";
 import {
   Geist,
@@ -10,6 +13,8 @@ import {
 import "./globals.css";
 import "./typography.css";
 import { AppShell } from "@/components/app-shell";
+
+// === FONT SETUP ===
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -50,6 +55,7 @@ export const metadata: Metadata = {
   description: "Musea",
 };
 
+// Renders the root HTML shell for every route.
 export default function RootLayout({
   children,
 }: Readonly<{

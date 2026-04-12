@@ -1,5 +1,8 @@
 "use client";
 
+// Tab-aware viewport that caches each root tab's rendered tree.
+// It lets home, discover, and saved preserve their own UI state between switches.
+
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { ElasticScroll } from "@/components/elastic-scroll";
@@ -12,6 +15,7 @@ type CacheEntry = {
 
 const TABS: TabId[] = ["home", "discover", "saved"];
 
+// Renders one live tab while caching the others in memory.
 export function TabViewport({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -47,6 +51,7 @@ export function TabViewport({ children }: { children: ReactNode }) {
     }
     setTabPath(activeTab, fullPath);
     recordTabPath(activeTab, fullPath);
+    // Cache the current route tree so returning to the tab restores the same UI.
     setCache((prev) => {
       const current = prev[activeTab];
       if (!current || current.path !== fullPath) {
@@ -73,6 +78,7 @@ export function TabViewport({ children }: { children: ReactNode }) {
       {TABS.map((tab) => {
         const isActive = tab === activeTab;
         const entry = cache[tab];
+        // During a tab switch, keep showing the cached tree until navigation catches up.
         const showLive =
           isActive && (!entry || entry.path !== fullPath) && !isTabSwitchWithoutNav;
         const node = showLive

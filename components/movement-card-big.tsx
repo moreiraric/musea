@@ -1,3 +1,6 @@
+// Large movement overview card used on detail pages and landing sections.
+// It highlights the movement artwork, years, and summary in one block.
+
 type MovementCardBigProps = {
   name: string;
   years?: string | null;
@@ -6,6 +9,7 @@ type MovementCardBigProps = {
   className?: string;
 };
 
+// Renders the primary movement summary card.
 export function MovementCardBig({
   name,
   years,

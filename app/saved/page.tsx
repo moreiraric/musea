@@ -1,5 +1,8 @@
 "use client";
 
+// Saved artworks tab backed by local storage.
+// It supports browsing saved works and a lightweight multi-select delete mode.
+
 import { createPortal } from "react-dom";
 import { useState } from "react";
 import Link from "next/link";
@@ -16,6 +19,7 @@ type SavedArtwork = {
 
 const STORAGE_KEY = "savedArtworks";
 
+// Renders the saved artworks grid and edit controls.
 export default function SavedPage() {
   const [savedArtworks, setSavedArtworks] = useState<SavedArtwork[]>(() => {
     if (typeof window === "undefined") {
@@ -38,9 +42,11 @@ export default function SavedPage() {
   const portalTarget =
     typeof document === "undefined" ? null : document.getElementById("app-viewport");
 
+  // Builds a stable key even for older saved rows that only have partial data.
   const getKey = (artwork: SavedArtwork, index: number) =>
     artwork.id ?? artwork.slug ?? `idx-${index}`;
 
+  // Toggles selection state while preserving the other selected items.
   const toggleSelection = (key: string) => {
     setSelectedKeys((prev) => {
       const next = new Set(prev);
@@ -53,6 +59,7 @@ export default function SavedPage() {
     });
   };
 
+  // Deletes the selected items from state and local storage together.
   const handleDelete = () => {
     if (selectedKeys.size === 0) {
       return;

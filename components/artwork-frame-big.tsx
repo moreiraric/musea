@@ -1,5 +1,10 @@
+// Large artwork frame used on detail screens and hero sections.
+// It handles custom content, regular images, and a broken-image fallback.
+
 import type { ReactNode } from "react";
 import { ImageWithFallback } from "@/components/image-with-fallback";
+
+// === CONSTANTS AND TYPES ===
 
 const brokenImageIconSrc = "/images/ui/other/image-broken.svg";
 
@@ -10,6 +15,7 @@ type ArtworkFrameBigProps = {
   className?: string;
 };
 
+// Renders a large framed artwork area with graceful fallbacks.
 export function ArtworkFrameBig({
   imageUrl,
   alt,

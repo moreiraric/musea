@@ -1,3 +1,6 @@
+// Search API used by the client-side infinite-loading results view.
+// It reuses the same fuzzy search helpers as the server-rendered search page.
+
 import { NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase";
 import {
@@ -11,6 +14,7 @@ export const runtime = "nodejs";
 
 const SEARCH_CANDIDATE_LIMIT = 500;
 
+// Validates the nested artist shape returned by Supabase joins.
 function isArtistRow(value: unknown): value is {
   id: string;
   slug: string | null;
@@ -31,6 +35,7 @@ function isArtistRow(value: unknown): value is {
   );
 }
 
+// Normalizes joined artist data whether Supabase returns one row or an array.
 function getRelatedArtist(value: unknown) {
   if (Array.isArray(value)) {
     return value.find(isArtistRow) ?? null;
@@ -38,6 +43,7 @@ function getRelatedArtist(value: unknown) {
   return isArtistRow(value) ? value : null;
 }
 
+// Parses artwork rows into the shape expected by the UI.
 function parseArtworks(value: unknown) {
   if (!Array.isArray(value)) {
     return [];
@@ -71,10 +77,12 @@ function parseArtworks(value: unknown) {
   });
 }
 
+// Parses the artist result set from Supabase.
 function parseArtists(value: unknown) {
   return Array.isArray(value) ? value.filter(isArtistRow) : [];
 }
 
+// Keeps paging values inside safe bounds before querying.
 function clampNumber(value: number, min: number, max: number) {
   if (Number.isNaN(value)) {
     return min;
@@ -82,6 +90,7 @@ function clampNumber(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
 }
 
+// Returns paginated search results for artworks and artists.
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const query = (searchParams.get("q") ?? "").trim();
@@ -105,6 +114,7 @@ export async function GET(request: NextRequest) {
   const artistFilter = buildSearchFilter(tokens, ["name"]);
   let matchingArtistIds: string[] = [];
 
+  // First collect matching artists so artwork results can match on artist name too.
   if (artistFilter) {
     const { data, error } = await supabase
       .from("artists")
@@ -194,6 +204,7 @@ export async function GET(request: NextRequest) {
       return a.title.localeCompare(b.title);
     });
 
+  // Rank artist names separately so horizontal artist results stay relevant.
   const rankedArtistRows = parseArtists(artistsResult.data)
     .filter((artist) => matchesSearchText(artist.name, query))
     .sort((a, b) => {

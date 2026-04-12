@@ -1,5 +1,10 @@
+// Small square artwork frame used in carousels, grids, and cards.
+// It mirrors the large frame behavior in a compact footprint.
+
 import type { ReactNode } from "react";
 import { ImageWithFallback } from "@/components/image-with-fallback";
+
+// === CONSTANTS AND TYPES ===
 
 const brokenImageIconSrc = "/images/ui/other/image-broken.svg";
 
@@ -12,6 +17,7 @@ type ArtworkFrameSmallProps = {
   className?: string;
 };
 
+// Renders a compact artwork frame with optional loading hints.
 export function ArtworkFrameSmall({
   imageUrl,
   alt,

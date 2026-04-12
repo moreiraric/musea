@@ -1,5 +1,9 @@
+// Skeleton loading state for the artwork detail route.
+// It preserves the page layout while the actual artwork content is loading.
+
 import { LoadingSpinner } from "@/components/loading-spinner";
 
+// Renders the artwork detail skeleton and spinner overlay.
 export default function ArtworkDetailLoading() {
   return (
     <div className="relative flex min-h-full w-full flex-col bg-white">

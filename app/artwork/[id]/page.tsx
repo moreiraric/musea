@@ -1,3 +1,6 @@
+// Artwork detail page with image viewer, slides, reflection chat, and movement context.
+// It combines artwork metadata with related tags, slides, and movement essay content.
+
 import Link from "next/link";
 import { ArtworkImageViewer } from "@/components/artwork-image-viewer";
 import { ArtworkReflectionChat } from "@/components/artwork-reflection-chat";
@@ -106,6 +109,9 @@ const craftCategoryConfig = [
 const uuidRegex =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
+// === PARSING HELPERS ===
+
+// Validates movement rows used for the main movement card and movement sheet.
 function isMovementRow(value: unknown): value is MovementRow {
   if (!value || typeof value !== "object") {
     return false;
@@ -130,10 +136,12 @@ function isMovementRow(value: unknown): value is MovementRow {
   );
 }
 
+// Parses the movement list used for the movement card and movement sheet timeline.
 function parseMovementRows(value: unknown): MovementRow[] {
   return Array.isArray(value) ? value.filter(isMovementRow) : [];
 }
 
+// Validates joined artist rows used in essay artwork cards.
 function isRelatedArtistRow(value: unknown): value is RelatedArtistRow {
   if (!value || typeof value !== "object") {
     return false;
@@ -150,6 +158,7 @@ function isRelatedArtistRow(value: unknown): value is RelatedArtistRow {
   );
 }
 
+// Normalizes joined artist data whether Supabase returns one row or an array.
 function getRelatedArtist(value: unknown): RelatedArtistRow | null {
   if (Array.isArray(value)) {
     return value.find(isRelatedArtistRow) ?? null;
@@ -158,6 +167,7 @@ function getRelatedArtist(value: unknown): RelatedArtistRow | null {
   return isRelatedArtistRow(value) ? value : null;
 }
 
+// Parses the essay artwork rows that can be embedded into movement essay sections.
 function parseEssayArtworkRows(value: unknown): EssayArtworkRow[] {
   if (!Array.isArray(value)) {
     return [];
@@ -194,6 +204,7 @@ function parseEssayArtworkRows(value: unknown): EssayArtworkRow[] {
   });
 }
 
+// Pulls the artist rows back out of the movement artwork join results.
 function parseMovementArtistRows(value: unknown): MovementArtistRow[] {
   if (!Array.isArray(value)) {
     return [];
@@ -208,6 +219,7 @@ function parseMovementArtistRows(value: unknown): MovementArtistRow[] {
   });
 }
 
+// Validates the movement artwork rows shown in the movement sheet.
 function isMovementArtworkRow(value: unknown): value is MovementArtworkRow {
   if (!value || typeof value !== "object") {
     return false;
@@ -225,10 +237,12 @@ function isMovementArtworkRow(value: unknown): value is MovementArtworkRow {
   );
 }
 
+// Parses the simple movement artwork rows shown in related movement surfaces.
 function parseMovementArtworkRows(value: unknown): MovementArtworkRow[] {
   return Array.isArray(value) ? value.filter(isMovementArtworkRow) : [];
 }
 
+// Validates artwork tags used to build display chips and craft cards.
 function isTagRow(value: unknown): value is TagRow {
   if (!value || typeof value !== "object") {
     return false;
@@ -251,6 +265,7 @@ function isTagRow(value: unknown): value is TagRow {
   );
 }
 
+// Normalizes joined tag data whether Supabase returns one row or an array.
 function getRelatedTag(value: unknown): TagRow | null {
   if (Array.isArray(value)) {
     return value.find(isTagRow) ?? null;
@@ -259,6 +274,7 @@ function getRelatedTag(value: unknown): TagRow | null {
   return isTagRow(value) ? value : null;
 }
 
+// Chooses the correct icon asset for a tag based on category, slug, or name.
 function resolveTagIcon(tag: TagRow) {
   const normalized =
     tag.category?.toLowerCase() ||
@@ -267,6 +283,7 @@ function resolveTagIcon(tag: TagRow) {
   return tagIconMap[normalized] ?? tagIconMap.theme;
 }
 
+// Formats tag labels into the title case used in the artwork page UI.
 function formatTagLabel(name: string) {
   return name
     .split(" ")
@@ -275,6 +292,7 @@ function formatTagLabel(name: string) {
     .join(" ");
 }
 
+// Formats a movement year range for the movement summary card.
 function formatMovementYears(start?: number | null, end?: number | null) {
   if (start && end) {
     return `${start} - ${end}`;
@@ -282,6 +300,7 @@ function formatMovementYears(start?: number | null, end?: number | null) {
   return start ? `${start}` : end ? `${end}` : "";
 }
 
+// Resolves the best movement image source from DB data or the local fallback asset set.
 function resolveMovementImage(slug?: string | null, iconUrl?: string | null) {
   if (iconUrl) {
     return iconUrl;
@@ -292,6 +311,7 @@ function resolveMovementImage(slug?: string | null, iconUrl?: string | null) {
   return "";
 }
 
+// Fetches the artwork detail data and renders the full immersive page.
 export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
   const resolvedParams = await Promise.resolve(params);
   const artworkParam = typeof resolvedParams?.id === "string" ? resolvedParams.id : "";
@@ -299,6 +319,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
   const supabase = createSupabaseServerClient();
   const adminSupabase = createSupabaseServerAdminClient();
 
+  // Resolve the artwork from either a UUID route or a slug route.
   const artworkQuery = supabase
     .from("artworks")
     .select("id,slug,title,year,image_url,artist_id,movement_id")
@@ -327,6 +348,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
 
   const movementId = artwork.movement_id;
 
+  // Load all supporting page data together once the artwork row is known.
   const [
     artistResult,
     movementResult,
@@ -388,10 +410,10 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
             .eq("movement_id", movementId)
             .order("year", { ascending: true, nullsFirst: false })
             .order("title", { ascending: true })
-        : Promise.resolve({ data: [], error: null }),
+      : Promise.resolve({ data: [], error: null }),
     ]);
 
-
+  // Build page-level UI data from the raw query payloads before rendering.
   const slides = Array.isArray(slidesResult.data?.slides)
     ? slidesResult.data?.slides
     : [];
@@ -457,6 +479,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
       } => Boolean(card),
     );
 
+  // Movement context is optional, but when present it powers the movement card and sheet.
   if (movementsResult.error) {
     throw new Error(movementsResult.error.message);
   }
@@ -485,6 +508,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
   }
   const movementYear = movement?.start_year ?? null;
 
+  // Find the neighboring movements so the top-level movement card can link onward.
   const [previousMovement, nextMovement] = await Promise.all([
     movementYear
       ? supabase
@@ -545,6 +569,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
     essayArtworks = parseEssayArtworkRows(data);
   }
   const essayArtworkMap = new Map(essayArtworks.map((row) => [row.id, row]));
+  // Rebuild the movement essay into UI-friendly blocks with linked artwork cards.
   const movementEssays = essayRow
     ? [
         {
@@ -659,6 +684,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
       </div>
 
       <div className="flex w-full flex-col px-[20px] pb-[16px]">
+        {/* Start with the guided slides so users can read before exploring outward. */}
         <section className="w-full border-t border-[#d9d9d9] pb-[32px] pt-[16px]">
           {slides.length > 0 ? (
             <ArtworkSlides slides={slides} />
@@ -697,6 +723,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
         ) : null}
 
         {reflectionQuestion ? (
+          /* Reflection chat is the page's interactive interpretation layer. */
           <section className="flex w-full flex-col py-[32px]">
             <ArtworkReflectionChat
               artworkId={artwork.id}
@@ -708,6 +735,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
         ) : null}
 
         {movement ? (
+          /* Movement context gives the artwork a larger historical frame. */
           <MovementSheet
             movement={{
               id: movement.id,
@@ -742,6 +770,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
         ) : null}
 
         {craftCards.length > 0 ? (
+          /* Craft cards expose medium, technique, and representation in a more guided format. */
           <section className="flex w-full flex-col gap-[8px] pb-[32px] pt-[32px]">
             <p className="text-header-ui-overline text-[#757575]">
               Craft

@@ -1,5 +1,8 @@
 "use client";
 
+// Horizontal drag-scroll wrapper used by rows, carousels, and chip lists.
+// It reuses the shared mouse-drag hook and can temporarily disable snapping while dragging.
+
 import {
   forwardRef,
   useRef,
@@ -12,6 +15,7 @@ type HorizontalDragScrollProps = HTMLAttributes<HTMLDivElement> & {
   disableSnapWhileDragging?: boolean;
 };
 
+// Renders a drag-scrollable div while forwarding the underlying DOM ref.
 export const HorizontalDragScroll = forwardRef<HTMLDivElement, HorizontalDragScrollProps>(
   function HorizontalDragScroll(
     { className, disableSnapWhileDragging = false, children, ...props },
@@ -32,6 +36,7 @@ export const HorizontalDragScroll = forwardRef<HTMLDivElement, HorizontalDragScr
       allowInteractiveChildren: true,
       onDragStart: disableSnapWhileDragging
         ? (scrollTarget) => {
+            // Snap and smooth scrolling are restored after drag end.
             previousSnapTypeRef.current = scrollTarget.style.scrollSnapType;
             previousScrollBehaviorRef.current = scrollTarget.style.scrollBehavior;
             scrollTarget.style.scrollSnapType = "none";
@@ -46,6 +51,7 @@ export const HorizontalDragScroll = forwardRef<HTMLDivElement, HorizontalDragScr
         : undefined,
     });
 
+    // Supports both callback refs and mutable refs from parent components.
     const assignRef = (ref: Ref<HTMLDivElement> | undefined, node: HTMLDivElement | null) => {
       if (!ref) {
         return;
@@ -59,6 +65,7 @@ export const HorizontalDragScroll = forwardRef<HTMLDivElement, HorizontalDragScr
       ref.current = node;
     };
 
+    // Keeps the hook ref and forwarded ref pointed at the same element.
     const setRef = (node: HTMLDivElement | null) => {
       localRef.current = node;
       containerRef.current = node;

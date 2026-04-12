@@ -1,9 +1,13 @@
+// Tag sheet API used by the craft-card overlay on artwork pages.
+// It resolves a tag, its banner artwork, and a grid of related artworks.
+
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase";
 
 const uuidRegex =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
+// Validates joined artist data returned inside artwork rows.
 function isRelatedArtist(value: unknown): value is {
   id: string;
   name: string;
@@ -24,6 +28,7 @@ function isRelatedArtist(value: unknown): value is {
   );
 }
 
+// Normalizes joined artist data regardless of Supabase array shape.
 function getRelatedArtist(value: unknown) {
   if (Array.isArray(value)) {
     return value.find(isRelatedArtist) ?? null;
@@ -31,6 +36,7 @@ function getRelatedArtist(value: unknown) {
   return isRelatedArtist(value) ? value : null;
 }
 
+// Parses the nested artwork rows returned by the artwork_tags join.
 function parseArtworks(value: unknown) {
   if (!Array.isArray(value)) {
     return [];
@@ -68,6 +74,7 @@ function parseArtworks(value: unknown) {
   });
 }
 
+// Returns the data needed to render a tag sheet overlay.
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const raw = searchParams.get("slug") ?? "";
@@ -102,6 +109,7 @@ export async function GET(request: Request) {
       .maybeSingle();
   }
 
+  // Try slug first, then case-insensitive slug, then a name guess from the URL text.
   const { data: tag, error: tagError } = tagResult;
   if (tagError) {
     return NextResponse.json({ error: tagError.message }, { status: 500 });

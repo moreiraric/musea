@@ -1,14 +1,20 @@
 "use client";
 
+// Floating header for movement pages rendered in the shared viewport portal.
+// It supports both tab-history back behavior and explicit route pushes.
+
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { useTabScope, useTabState } from "@/components/tab-state";
+
+// === TYPES ===
 
 type MovementTopBarProps = {
   backHref?: string;
   forceBackHref?: boolean;
 };
 
+// Renders the movement page top bar with back navigation.
 export function MovementTopBar({
   backHref,
   forceBackHref = false,
@@ -32,6 +38,7 @@ export function MovementTopBar({
         <button
           type="button"
           onClick={() => {
+            // Some entry points need a hard route push instead of tab history.
             if (forceBackHref && backHref) {
               router.push(backHref);
               return;

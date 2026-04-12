@@ -1,16 +1,23 @@
 "use client";
 
+// Search input used on browse surfaces to route users into discover results.
+// It normalizes empty submits by sending the user back to the default discover page.
+
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+
+// === TYPES ===
 
 type SearchFormProps = {
   initialQuery: string;
 };
 
+// Renders the shared search form and submit behavior.
 export function SearchForm({ initialQuery }: SearchFormProps) {
   const router = useRouter();
   const [value, setValue] = useState(initialQuery);
 
+  // Empty queries return to the generic discover surface instead of making a blank search.
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const query = value.trim();

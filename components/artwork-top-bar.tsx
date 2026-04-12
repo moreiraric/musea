@@ -1,5 +1,8 @@
 "use client";
 
+// Floating artwork detail header rendered through the shared viewport portal.
+// It handles back navigation, local saved state, and native sharing for the current artwork.
+
 import { createPortal } from "react-dom";
 import { useState } from "react";
 import { useTabScope, useTabState } from "@/components/tab-state";
@@ -20,6 +23,7 @@ type ArtworkTopBarProps = {
 
 const STORAGE_KEY = "savedArtworks";
 
+// Renders the artwork page top bar controls.
 export function ArtworkTopBar({ artwork, artist }: ArtworkTopBarProps) {
   const [isSaved, setIsSaved] = useState(() => {
     if (typeof window === "undefined") {
@@ -46,6 +50,7 @@ export function ArtworkTopBar({ artwork, artist }: ArtworkTopBarProps) {
     return null;
   }
 
+  // Mirrors the saved-artwork state into local storage so the Saved tab can read it.
   const handleSave = () => {
     if (typeof window === "undefined") {
       return;
@@ -83,6 +88,7 @@ export function ArtworkTopBar({ artwork, artist }: ArtworkTopBarProps) {
     }
   };
 
+  // Uses the browser share sheet when available.
   const handleShare = async () => {
     if (typeof window === "undefined") {
       return;

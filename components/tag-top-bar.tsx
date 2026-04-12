@@ -1,8 +1,12 @@
 "use client";
 
+// Portal-based top bar for tag pages.
+// It keeps the back control anchored to the app viewport instead of the page flow.
+
 import { createPortal } from "react-dom";
 import { useTabScope, useTabState } from "@/components/tab-state";
 
+// Renders the floating tag header inside the shared viewport portal.
 export function TagTopBar({ backHref }: { backHref?: string }) {
   const portalTarget =
     typeof document === "undefined" ? null : document.getElementById("app-viewport");

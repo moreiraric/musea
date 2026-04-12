@@ -1,5 +1,8 @@
 "use client";
 
+// Client-side search results view with infinite loading for artists and artworks.
+// It refreshes when the query changes and keeps the highest-relevance results near the top.
+
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { UIEvent } from "react";
@@ -40,6 +43,7 @@ type SearchResponse = {
   hasMoreArtists: boolean;
 };
 
+// Rewrites supported image URLs to lighter thumbnails for result grids.
 function getThumbnailUrl(url?: string | null, size = 360) {
   if (!url) {
     return null;
@@ -62,10 +66,12 @@ function getThumbnailUrl(url?: string | null, size = 360) {
   return url;
 }
 
+// Builds a stable key for artist de-duplication across result sources.
 function getArtistKey(artist: SearchArtist) {
   return artist.id || artist.slug || artist.name;
 }
 
+// Merges paginated batches without duplicating rows already on screen.
 function mergeUniqueByKey<T>(
   previous: T[],
   next: T[],
@@ -81,6 +87,7 @@ function mergeUniqueByKey<T>(
   return Array.from(map.values());
 }
 
+// Renders the interactive search results area.
 export function SearchResults({
   query,
   initialArtworks,
@@ -101,6 +108,7 @@ export function SearchResults({
 
   const tokens = useMemo(() => buildSearchTokens(query), [query]);
 
+  // Calls the API route that powers incremental "load more" requests.
   const fetchResults = useCallback(
     async (
       artworkOffset: number,
@@ -149,6 +157,7 @@ export function SearchResults({
     };
   }, [query, fetchResults, artworkPageSize, artistPageSize]);
 
+  // Derive artists from artwork joins so the artist rail stays complete.
   const derivedArtists = useMemo(() => {
     const map = new Map<string, SearchArtist>();
     artworks.forEach((artwork) => {
@@ -195,6 +204,7 @@ export function SearchResults({
     });
   }, [artworks, query, tokens]);
 
+  // Load the next page of artworks when the sentinel becomes visible.
   const loadMoreArtworks = useCallback(async () => {
     if (isLoadingArtworks || !hasMoreArtworks) {
       return;
@@ -222,6 +232,7 @@ export function SearchResults({
     isLoadingArtworks,
   ]);
 
+  // Load the next page of artist results when the horizontal rail nears the end.
   const loadMoreArtists = useCallback(async () => {
     if (isLoadingArtists || !hasMoreArtists) {
       return;

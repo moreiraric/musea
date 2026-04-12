@@ -1,5 +1,8 @@
 "use client";
 
+// Decorative cursor overlay used inside the simulated phone shell on desktop.
+// It tracks pointer position in viewport coordinates so scaling the phone still feels correct.
+
 import { useEffect, useRef, useState } from "react";
 
 type CursorPosition = {
@@ -7,6 +10,7 @@ type CursorPosition = {
   y: number;
 };
 
+// Renders the animated cursor overlay for desktop interactions.
 export function TapCursor() {
   const [position, setPosition] = useState<CursorPosition>({ x: 0, y: 0 });
   const [isVisible, setIsVisible] = useState(false);
@@ -24,6 +28,7 @@ export function TapCursor() {
       const rect = viewport.getBoundingClientRect();
       const viewportWidth = viewport.clientWidth || 1;
       const viewportHeight = viewport.clientHeight || 1;
+      // Translate from scaled screen coordinates back into the unscaled phone viewport.
       const scaleX = rect.width / viewportWidth;
       const scaleY = rect.height / viewportHeight;
       const next = {

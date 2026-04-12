@@ -1,5 +1,8 @@
 "use client";
 
+// Horizontal movement timeline used on movement pages.
+// It centers the active movement chip and supports drag-scrolling across the full sequence.
+
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { HorizontalDragScroll } from "@/components/horizontal-drag-scroll";
@@ -12,6 +15,7 @@ type MovementTimelineItem = {
   isActive?: boolean;
 };
 
+// Renders one movement chip with active and linked states.
 function MovementChip({
   name,
   iconUrl,
@@ -62,6 +66,7 @@ function MovementChip({
   );
 }
 
+// Renders the scrollable timeline and recenters the active chip when needed.
 export function MovementTimelineRow({
   items,
   className,
@@ -73,6 +78,7 @@ export function MovementTimelineRow({
   const activeChipRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
+    // Re-center after layout settles so the active item stays visible on load and resize.
     const centerActiveChip = (behavior: ScrollBehavior = "auto") => {
       const activeChip = activeChipRef.current;
       const timeline = timelineRef.current;

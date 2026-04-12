@@ -1,5 +1,8 @@
 "use client";
 
+// Floating discover header that toggles between a search trigger and active input.
+// It lives in the app viewport portal so the controls stay fixed over the content.
+
 import { createPortal } from "react-dom";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -10,6 +13,7 @@ type DiscoverSearchHeaderProps = {
   isSearchOpen: boolean;
 };
 
+// Renders the discover header in either collapsed or expanded search mode.
 export function DiscoverSearchHeader({
   query,
   isSearchOpen,
@@ -29,12 +33,14 @@ export function DiscoverSearchHeader({
     if (!isSearchOpen) {
       return;
     }
+    // Delay focus until the portal content is mounted and painted.
     const id = requestAnimationFrame(() => {
       inputRef.current?.focus();
     });
     return () => cancelAnimationFrame(id);
   }, [isSearchOpen]);
 
+  // Empty submits keep the user on discover while clearing the active query.
   const submitSearch = () => {
     const next = value.trim();
     if (!next) {

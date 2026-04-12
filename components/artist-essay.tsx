@@ -1,12 +1,18 @@
 "use client";
 
+// Expandable artist essay block with drag-friendly text scrolling.
+// It keeps long copy collapsed until the user asks to read more.
+
 import { useLayoutEffect, useRef, useState } from "react";
 import { useMouseDragScroll } from "@/components/use-mouse-drag-scroll";
+
+// === TYPES ===
 
 type ArtistEssayProps = {
   text: string;
 };
 
+// Renders the artist biography text with overflow detection.
 export function ArtistEssay({ text }: ArtistEssayProps) {
   const paragraphRef = useRef<HTMLParagraphElement | null>(null);
   const {
@@ -20,6 +26,7 @@ export function ArtistEssay({ text }: ArtistEssayProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isOverflowing, setIsOverflowing] = useState(false);
 
+  // Only show the "See More" affordance when the collapsed text actually overflows.
   useLayoutEffect(() => {
     if (!paragraphRef.current || isExpanded) {
       return;

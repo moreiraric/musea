@@ -1,5 +1,8 @@
 "use client";
 
+// Movement details bottom sheet used from artwork and artist pages.
+// It opens over the current route, preserves the current location in the URL, and shows related movement context.
+
 import type {
   KeyboardEvent as ReactKeyboardEvent,
   MouseEvent as ReactMouseEvent,
@@ -73,6 +76,7 @@ type MovementSheetProps = {
   artworks?: MovementArtwork[];
 };
 
+// Formats the movement year range for the sheet header.
 function formatMovementYears(start?: number | null, end?: number | null) {
   if (start && end) {
     return `${start} - ${end}`;
@@ -80,6 +84,7 @@ function formatMovementYears(start?: number | null, end?: number | null) {
   return start ? `${start}` : end ? `${end}` : "";
 }
 
+// Renders one movement chip inside the sheet timeline.
 function MovementChip({
   name,
   iconUrl,
@@ -135,6 +140,7 @@ function MovementChip({
   );
 }
 
+// Renders one essay section and its optional linked artwork.
 function MovementEssaySection({
   title,
   body,
@@ -197,6 +203,7 @@ function MovementEssaySection({
   );
 }
 
+// Normalizes artwork image URLs used in the sheet artwork grid.
 function getThumbnailUrl(url?: string | null) {
   if (!url) {
     return null;
@@ -209,6 +216,7 @@ function getThumbnailUrl(url?: string | null) {
   }
 }
 
+// Renders the trigger and the full movement details sheet.
 export function MovementSheet({
   movement,
   trigger,
@@ -234,6 +242,7 @@ export function MovementSheet({
     return query ? `${pathname}?${query}` : pathname;
   }, [pathname, searchParams]);
 
+  // Fall back to placeholder timeline content when the parent did not provide one.
   const resolvedTimeline = useMemo(() => {
     if (timeline && timeline.length > 0) {
       return timeline;
@@ -301,6 +310,7 @@ export function MovementSheet({
     });
   }, [isSheetOpen, resolvedTimeline]);
 
+  // Provide placeholder copy while movement essays are still missing in the DB.
   const resolvedEssays = useMemo(() => {
     const hasEssayContent = essays?.some(
       (essay) => essay.title.trim() || essay.body.trim(),
@@ -351,6 +361,7 @@ export function MovementSheet({
     ];
   }, [artworks]);
 
+  // Opening and closing the sheet is URL-driven so the browser back button works naturally.
   const openSheet = useCallback(() => {
     if (!isSheetOpen) {
       const params = new URLSearchParams(searchParams?.toString());

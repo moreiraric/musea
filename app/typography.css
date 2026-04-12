@@ -1,3 +1,7 @@
+/* Shared typography utility classes for the app UI and longform reading surfaces. */
+/* Components use these tokens to stay consistent across cards, sheets, and detail pages. */
+
+/* === CONTENT HEADINGS === */
 .text-header-content-h1 {
   font-family: var(--font-literata, "Literata", serif);
   font-size: 24px;
@@ -19,6 +23,7 @@
   line-height: 24px;
 }
 
+/* === UI HEADINGS === */
 .text-header-ui-page {
   font-family: var(--font-instrument-sans, "Instrument Sans", sans-serif);
   font-size: 20px;
@@ -35,6 +40,7 @@
   text-transform: uppercase;
 }
 
+/* === BODY COPY === */
 .text-body-default-serif {
   font-family: var(--font-literata, "Literata", serif);
   font-size: 16px;
@@ -71,6 +77,7 @@
   line-height: 28px;
 }
 
+/* === LABELS AND META === */
 .text-label-primary {
   font-family: var(--font-instrument-sans, "Instrument Sans", sans-serif);
   font-size: 16px;

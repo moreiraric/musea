@@ -1,11 +1,15 @@
 "use client";
 
+// Scroll container that adds a subtle elastic overscroll effect to the main viewport.
+// It also disables scrolling when an overlay sheet or modal is open.
+
 import { useEffect, useRef } from "react";
 
 type ElasticScrollProps = {
   children: React.ReactNode;
 };
 
+// Wraps page content in a scroll area with controlled overscroll behavior.
 export function ElasticScroll({ children }: ElasticScrollProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
@@ -21,11 +25,13 @@ export function ElasticScroll({ children }: ElasticScrollProps) {
       return;
     }
 
+    // Applies the current overscroll offset directly to the content layer.
     const setOffset = (value: number) => {
       offsetRef.current = value;
       content.style.transform = `translateY(${value}px)`;
     };
 
+    // Eases the content back into place after the user hits the top or bottom edge.
     const animateBack = () => {
       if (rafRef.current !== null) {
         cancelAnimationFrame(rafRef.current);
@@ -56,6 +62,7 @@ export function ElasticScroll({ children }: ElasticScrollProps) {
       const atBottom = container.scrollTop >= maxScroll - 1;
       const delta = event.deltaY;
 
+      // Only simulate elasticity when the wheel would push past a real scroll boundary.
       if ((atTop && delta < 0) || (atBottom && delta > 0)) {
         event.preventDefault();
         const next = offsetRef.current - delta * 0.3;
@@ -84,6 +91,7 @@ export function ElasticScroll({ children }: ElasticScrollProps) {
     initialOverflowRef.current = container.style.overflowY || "";
     initialPointerEventsRef.current = container.style.pointerEvents || "";
 
+    // Overlay sheets lock the main scroller so background content cannot move underneath them.
     const updateScrollLock = () => {
       const overlayOpen =
         viewport.getAttribute("data-overlay-open") === "true";

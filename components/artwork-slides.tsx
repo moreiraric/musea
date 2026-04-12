@@ -1,5 +1,8 @@
 "use client";
 
+// Horizontal slide deck for the guided artwork reading experience.
+// It disables snap during drag and then settles back onto the closest slide.
+
 import { useRef, useState } from "react";
 import { useMouseDragScroll } from "@/components/use-mouse-drag-scroll";
 
@@ -11,8 +14,10 @@ type Slide = {
 const slideWidth = 275;
 const slideGap = 64;
 
+// Renders the artwork reading slides with drag and snap behavior.
 export function ArtworkSlides({ slides }: { slides: Slide[] }) {
   const snapResetTimeoutRef = useRef<number | null>(null);
+  // Dragging temporarily disables snapping so the row feels direct and smooth.
   const handleDragStartState = (scrollTarget: HTMLElement) => {
     if (snapResetTimeoutRef.current !== null) {
       window.clearTimeout(snapResetTimeoutRef.current);
@@ -23,6 +28,7 @@ export function ArtworkSlides({ slides }: { slides: Slide[] }) {
     scrollTarget.style.scrollSnapType = "none";
   };
 
+  // When the drag ends, snap to the nearest slide and then restore default styles.
   const handleDragEndState = (scrollTarget: HTMLElement) => {
     const stride = slideWidth + slideGap;
     const maxIndex = Math.max(0, slides.length - 1);
@@ -55,6 +61,7 @@ export function ArtworkSlides({ slides }: { slides: Slide[] }) {
     });
   const [activeIndex, setActiveIndex] = useState(0);
 
+  // Keeps the counter in sync with the current scroll position.
   const handleScroll = () => {
     const container = containerRef.current;
     if (!container) {

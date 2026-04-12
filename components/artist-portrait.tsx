@@ -1,4 +1,9 @@
+// Portrait badge used for artist lists, carousels, and movement sheets.
+// It emphasizes the surname and keeps long names from overrunning the narrow layout.
+
 import Link from "next/link";
+
+// === TYPES AND CONSTANTS ===
 
 type ArtistPortraitAndNameProps = {
   name: string;
@@ -10,6 +15,7 @@ type ArtistPortraitAndNameProps = {
 const ARTIST_NAME_WRAP_THRESHOLD = 10;
 const ARTIST_NAME_TRUNCATE_LIMIT = 25;
 
+// Uses the surname or trailing name segment as the compact label.
 function formatSurname(fullName: string) {
   const parts = fullName.trim().split(/\s+/).filter(Boolean);
   if (parts.length <= 1) {
@@ -25,6 +31,7 @@ function formatSurname(fullName: string) {
     : remainder;
 }
 
+// Trims long labels so they fit inside the portrait caption area.
 function formatArtistNameLabel(fullName: string) {
   const surname = formatSurname(fullName).trim();
   if (surname.length <= ARTIST_NAME_TRUNCATE_LIMIT) {
@@ -33,6 +40,7 @@ function formatArtistNameLabel(fullName: string) {
   return `${surname.slice(0, ARTIST_NAME_TRUNCATE_LIMIT).trimEnd()}…`;
 }
 
+// Renders the portrait card with optional linking and caption.
 export function ArtistPortraitAndName({
   name,
   imageUrl,
@@ -77,4 +85,5 @@ export function ArtistPortraitAndName({
   );
 }
 
+// Keeps older imports working while sharing the same implementation.
 export const ArtistPortrait = ArtistPortraitAndName;

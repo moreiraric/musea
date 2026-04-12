@@ -1,5 +1,8 @@
 "use client";
 
+// Shared tab state for the app shell's home, discover, and saved tabs.
+// It tracks per-tab paths and history so tab switches feel like native app navigation.
+
 import {
   type ReactNode,
   createContext,
@@ -14,6 +17,8 @@ import { createPortal } from "react-dom";
 import { usePathname, useRouter } from "next/navigation";
 
 export type TabId = "home" | "discover" | "saved";
+
+// === CONTEXT SHAPES AND CONSTANTS ===
 
 type TabState = {
   activeTab: TabId;
@@ -51,6 +56,7 @@ const DEBUG_TAB_OVERLAY_DEFAULT = false;
 const TabContext = createContext<TabState | null>(null);
 const TabScopeContext = createContext<TabId | null>(null);
 
+// Infers which root tab owns the current pathname.
 function inferTabFromPath(pathname?: string | null) {
   if (pathname?.startsWith("/saved")) {
     return "saved";
@@ -67,6 +73,7 @@ function inferTabFromPath(pathname?: string | null) {
   return "home";
 }
 
+// Only returns a tab for true root-level routes that should reset tab history.
 function inferTabFromRootPath(pathname?: string | null) {
   if (!pathname) {
     return null;
@@ -83,6 +90,7 @@ function inferTabFromRootPath(pathname?: string | null) {
   return null;
 }
 
+// Pulls the pathname out of a stored history entry.
 function extractPathname(entry: string) {
   try {
     const base =
@@ -93,6 +101,7 @@ function extractPathname(entry: string) {
   }
 }
 
+// Removes the synthetic tab query param before persisting a path.
 function stripTabParam(entry: string) {
   try {
     const base =
@@ -114,6 +123,7 @@ function stripTabParam(entry: string) {
   }
 }
 
+// Ensures restored tab paths still belong to the correct root tab.
 function sanitizeTabPaths(paths: Partial<Record<TabId, string>>) {
   return (Object.keys(DEFAULT_PATHS) as TabId[]).reduce<Record<TabId, string>>(
     (acc, tab) => {
@@ -131,6 +141,7 @@ function sanitizeTabPaths(paths: Partial<Record<TabId, string>>) {
   );
 }
 
+// Drops history entries that belong to another root tab.
 function sanitizeHistoryState(state: TabHistoryState, tab: TabId): TabHistoryState {
   const kept: string[] = [];
   let nextIndex = 0;
@@ -157,6 +168,7 @@ function sanitizeHistoryState(state: TabHistoryState, tab: TabId): TabHistorySta
   return { entries: kept, index: nextIndex };
 }
 
+// Provides shared tab state, persistence, and debug tools to the app shell.
 export function TabProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -183,6 +195,7 @@ export function TabProvider({ children }: { children: ReactNode }) {
   const didInitRef = useRef(false);
   const [debugPortalTarget, setDebugPortalTarget] = useState<HTMLElement | null>(null);
 
+  // Collect debug events only when the in-browser tab debug overlay is enabled.
   const pushDebugEvent = useCallback((message: string) => {
     if (!debugEnabled) {
       return;
@@ -225,6 +238,7 @@ export function TabProvider({ children }: { children: ReactNode }) {
     setActiveTab(inferredTab);
   }, [inferredTab, pathname]);
 
+  // Sanitize histories whenever the active tab changes so cross-tab entries do not leak through.
   useEffect(() => {
     if (debugEnabled) {
       const homeState = tabHistory.home ?? DEFAULT_HISTORY.home;
@@ -300,6 +314,7 @@ export function TabProvider({ children }: { children: ReactNode }) {
     viewport?.removeAttribute("data-overlay-open");
   }, []);
 
+  // Expose the tab state API that components use to switch tabs and navigate within them.
   const value = useMemo(
     () => ({
       activeTab,
@@ -346,7 +361,8 @@ export function TabProvider({ children }: { children: ReactNode }) {
         return { ...prev, [tab]: { entries: nextEntries, index: nextEntries.length - 1 } };
       });
       },
-    goBackInTab: (tab: TabId, fallbackHref?: string) => {
+      // Walk backward through the current tab's history, falling back to the tab root when needed.
+      goBackInTab: (tab: TabId, fallbackHref?: string) => {
         const state = tabHistory[tab] ?? DEFAULT_HISTORY[tab];
         const fallback = fallbackHref ?? DEFAULT_PATHS[tab];
         if (state.index <= 0) {
@@ -483,6 +499,7 @@ export function TabProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// Reads the shared tab state and enforces provider usage.
 export function useTabState() {
   const ctx = useContext(TabContext);
   if (!ctx) {
@@ -491,6 +508,7 @@ export function useTabState() {
   return ctx;
 }
 
+// Provides a specific tab scope to subtree content rendered from the cached viewport.
 export function TabScopeProvider({
   tabId,
   children,
@@ -501,6 +519,7 @@ export function TabScopeProvider({
   return <TabScopeContext.Provider value={tabId}>{children}</TabScopeContext.Provider>;
 }
 
+// Returns the scoped tab when available, otherwise the active root tab.
 export function useTabScope() {
   const scope = useContext(TabScopeContext);
   const { activeTab } = useTabState();

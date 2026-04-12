@@ -1,3 +1,7 @@
+// Placeholder profile screen for the current MVP.
+// The page exists so navigation targets have a concrete route during prototyping.
+
+// Renders the temporary profile placeholder.
 export default function ProfilePage() {
   return (
     <div className="p-6">

@@ -1,7 +1,14 @@
+// Shared search helpers for query cleanup, fuzzy matching, and result scoring.
+// Routes use these helpers to keep search behavior consistent across endpoints.
+
+// === NORMALIZATION HELPERS ===
+
+// Normalizes casing and whitespace so searches compare against a stable shape.
 export function normalizeQuery(value: string) {
   return value.trim().toLowerCase().replace(/\s+/g, " ");
 }
 
+// Removes punctuation that would add noise to token matching.
 function sanitizeToken(value: string) {
   return value
     .replace(/[^a-z0-9\s]/gi, "")
@@ -9,6 +16,7 @@ function sanitizeToken(value: string) {
     .trim();
 }
 
+// Splits user input into clean words for exact and fuzzy comparisons.
 function getNormalizedWords(value: string) {
   const normalized = normalizeQuery(sanitizeToken(value));
   if (!normalized) {
@@ -18,6 +26,7 @@ function getNormalizedWords(value: string) {
   return normalized.split(" ").filter(Boolean);
 }
 
+// Calculates edit distance so near-matches like typos still score.
 function levenshteinDistance(a: string, b: string) {
   if (a === b) {
     return 0;
@@ -52,6 +61,7 @@ function levenshteinDistance(a: string, b: string) {
   return previous[b.length];
 }
 
+// Keeps fuzzy matching strict for short words and looser for longer ones.
 function getAllowedDistance(word: string) {
   if (word.length <= 3) {
     return 0;
@@ -62,10 +72,12 @@ function getAllowedDistance(word: string) {
   return 2;
 }
 
+// Finds the closest matching word in the candidate text.
 function findBestWordDistance(queryWord: string, textWords: string[]) {
   let bestDistance = Number.POSITIVE_INFINITY;
 
   textWords.forEach((textWord) => {
+    // Skip obviously distant words to avoid unnecessary edit-distance work.
     if (Math.abs(queryWord.length - textWord.length) > 2) {
       return;
     }
@@ -76,6 +88,9 @@ function findBestWordDistance(queryWord: string, textWords: string[]) {
   return bestDistance;
 }
 
+// === TOKEN BUILDERS ===
+
+// Builds a compact set of tokens for ilike filters and lightweight matching.
 export function buildSearchTokens(query: string) {
   const normalized = normalizeQuery(query);
   if (!normalized) {
@@ -96,6 +111,7 @@ export function buildSearchTokens(query: string) {
       tokens.add(cleaned.slice(0, 4));
     }
     if (cleaned.length >= 3) {
+      // Short prefixes help catch partial matches while keeping the token list small.
       tokens.add(cleaned.slice(0, 3));
     }
   });
@@ -103,6 +119,7 @@ export function buildSearchTokens(query: string) {
   return Array.from(tokens).filter(Boolean).slice(0, 12);
 }
 
+// Builds de-duplicated search words for exact and fuzzy checks.
 export function buildSearchWords(query: string) {
   const normalized = normalizeQuery(query);
   if (!normalized) {
@@ -119,6 +136,7 @@ export function buildSearchWords(query: string) {
   );
 }
 
+// Converts search tokens into a comma-separated Supabase OR filter.
 export function buildSearchFilter(tokens: string[], fields: string[]) {
   if (tokens.length === 0 || fields.length === 0) {
     return "";
@@ -136,6 +154,7 @@ export function buildSearchFilter(tokens: string[], fields: string[]) {
   return clauses.join(",");
 }
 
+// Scores how closely a piece of text matches the current query.
 export function scoreRelevance(text: string, query: string, tokens?: string[]) {
   if (!text) {
     return 0;
@@ -180,12 +199,14 @@ export function scoreRelevance(text: string, query: string, tokens?: string[]) {
   });
 
   if (queryWords.length > 0 && fuzzyWordMatches === queryWords.length) {
+    // Reward titles that match all words, even if some matches were fuzzy.
     score += 30;
   }
 
   return score;
 }
 
+// Returns a yes or no match check for lightweight filtering paths.
 export function matchesSearchText(text: string, query: string) {
   if (!text) {
     return false;
