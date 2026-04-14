@@ -13,6 +13,7 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from "react";
+import { AiInputBar } from "@/components/ai-input-bar";
 import { useTabScope, useTabState } from "@/components/tab-state";
 
 type ChatMessage = {
@@ -596,30 +597,7 @@ export function ArtworkReflectionChat({
 
   return (
     <>
-      <div
-        className="w-full rounded-full shadow-[0px_1px_10px_rgba(4,98,153,0.15),0px_-1px_10px_rgba(221,98,249,0.15)]"
-        style={{
-          background:
-            "linear-gradient(95deg, rgba(2,150,237,0.5) 0%, rgba(249,168,212,0.5) 42%, rgba(194,135,222,0.5) 100%)",
-          padding: "0.5px",
-        }}
-      >
-        <button
-          className="flex w-full items-end gap-[8px] rounded-full bg-[#f5f5f5] px-[20px] py-[16px] text-left"
-          type="button"
-          onClick={handleOpen}
-        >
-          <img
-            alt=""
-            aria-hidden="true"
-            className="h-[24px] w-[24px]"
-            src="/images/ui/other/icoon-sparkle-outline.svg"
-          />
-          <span className="text-body-default-sans text-[#707070]">
-            {question}
-          </span>
-        </button>
-      </div>
+      <AiInputBar label={question} onClick={handleOpen} />
 
       {portalTarget
         ? createPortal(
