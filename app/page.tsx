@@ -3,8 +3,8 @@
 
 import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
+import { ArtworkCard } from "@/components/artwork-card";
 import { ArtworkCardSmall } from "@/components/artwork-card-small";
-import { ArtworkFull } from "@/components/artwork-full";
 import { HomeTopBar } from "@/components/home-top-bar";
 import { HorizontalDragScroll } from "@/components/horizontal-drag-scroll";
 import { MovementCardSmall } from "@/components/movement-card-small";
@@ -221,34 +221,35 @@ export default async function Home() {
       {/* === FEATURED SECTIONS === */}
       <div className="flex w-full flex-col gap-[32px] pb-[32px] pt-[100px]">
         {/* Lead with a single hero artwork to make the home page feel editorial. */}
-        <section className="flex w-full flex-col gap-[12px]">
-          <div className="flex flex-col gap-[8px] px-[20px]">
+        <section className="flex w-full flex-col gap-[16px]">
+          <div className="px-[20px]">
             <p className="text-header-ui-page text-[#1e1e1e]">
               Welcome
             </p>
+          </div>
+          <div className="flex flex-col gap-[8px] px-[20px]">
             <p className="text-header-ui-overline text-[#757575]">
               Artwork of the day
             </p>
+            <ArtworkCard
+              className="w-full"
+              artworkHref={artworkHref}
+              title={artworkOfDay?.title ?? "Artwork Title"}
+              year={artworkOfDay?.year ?? "0000"}
+              imageUrl={artworkOfDay?.image_url ?? null}
+              imageAlt={artworkOfDay?.title ?? "Artwork of the day"}
+              artist={{
+                name: artworkArtist?.name ?? "Artist Name",
+                imageUrl: artworkArtist?.image_url ?? null,
+                href: artistHref,
+              }}
+            />
           </div>
-          <ArtworkFull
-            className="w-full"
-            frameClassName="w-full"
-            artworkHref={artworkHref}
-            title={artworkOfDay?.title ?? "Artwork Title"}
-            year={artworkOfDay?.year ?? "0000"}
-            imageUrl={artworkOfDay?.image_url ?? null}
-            imageAlt={artworkOfDay?.title ?? "Artwork of the day"}
-            artist={{
-              name: artworkArtist?.name ?? "Artist Name",
-              imageUrl: artworkArtist?.image_url ?? null,
-              href: artistHref,
-            }}
-          />
         </section>
 
         {/* Pair the featured movement card with a small supporting artwork grid. */}
-        <section className="flex w-full flex-col gap-[16px] px-[20px]">
-          <div className="flex w-full flex-col gap-[12px]">
+        <section className="flex w-full flex-col gap-[12px] px-[20px]">
+          <div className="flex w-full flex-col gap-[8px]">
             <div className="flex w-full flex-col gap-0">
               <p className="text-header-ui-overline text-[#757575]">
                 Movement of the week
@@ -260,6 +261,7 @@ export default async function Home() {
               fallbackYears="YYYY - YYYY"
               imageUrl={movementImage}
               href={movementHref ?? undefined}
+              compact
               className="w-full"
             />
           </div>
@@ -291,7 +293,7 @@ export default async function Home() {
         </section>
 
         {/* Keep the last section lightweight so users can jump into themed browsing quickly. */}
-        <section className="flex w-full flex-col gap-[12px] overflow-clip py-[32px]">
+        <section className="flex w-full flex-col gap-[8px] overflow-clip">
           <div className="flex w-full items-center px-[20px]">
             <p className="text-header-ui-overline text-[#757575]">
               Explore an emotion

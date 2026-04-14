@@ -176,7 +176,7 @@ function MovementEssaySection({
   return (
     <div
       ref={containerRef}
-      className="flex w-full cursor-grab flex-col gap-[16px] active:cursor-grabbing"
+      className="flex w-full cursor-grab flex-col gap-[8px] active:cursor-grabbing"
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
@@ -545,7 +545,7 @@ export function MovementSheet({
                       About
                     </p>
                   </div>
-                  <div className="flex w-full flex-col gap-0">
+                  <div className="flex w-full flex-col gap-[64px]">
                     {resolvedEssays.map((essay) => (
                       <MovementEssaySection key={essay.id} {...essay} />
                     ))}

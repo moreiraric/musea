@@ -288,7 +288,7 @@ function MovementEssaySection({ title, body, artwork }: MovementEssay) {
   );
 
   return (
-    <div className="flex w-full flex-col gap-[16px]">
+    <div className="flex w-full flex-col gap-[8px]">
       <div className="flex w-full flex-col gap-[4px] px-[20px]">
         <p className="text-header-content-h2 text-black">
           {title}

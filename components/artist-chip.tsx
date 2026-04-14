@@ -11,6 +11,7 @@ type ArtistChipProps = {
   href?: string | null;
   className?: string;
   disableLink?: boolean;
+  variant?: "default" | "plain";
 };
 
 const MAX_ARTIST_NAME_LENGTH = 20;
@@ -31,9 +32,13 @@ export function ArtistChip({
   href,
   className,
   disableLink = false,
+  variant = "default",
 }: ArtistChipProps) {
   const baseClassName = [
-    "flex items-center gap-[8px] rounded-full bg-[#f5f5f5] pl-[8px] pr-[16px] py-[8px]",
+    "flex items-center gap-[8px]",
+    variant === "default"
+      ? "rounded-full bg-[#f5f5f5] pl-[8px] pr-[16px] py-[8px]"
+      : "bg-transparent p-0",
     className,
   ]
     .filter(Boolean)
