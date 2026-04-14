@@ -629,7 +629,7 @@ export function ArtworkReflectionChat({
                 onClick={handleClose}
               />
               <div
-                className={`absolute bottom-0 left-0 right-0 flex h-[92%] flex-col rounded-t-[36px] bg-white shadow-[0_-16px_40px_rgba(0,0,0,0.18)] transition-transform duration-500 ease-out ${
+                className={`absolute bottom-0 left-0 right-0 flex h-[92%] flex-col overflow-hidden rounded-t-[36px] bg-white shadow-[0_-16px_40px_rgba(0,0,0,0.18)] transition-transform duration-500 ease-out ${
                   isOpen ? "translate-y-0" : "translate-y-full"
                 }`}
                 style={{ willChange: "transform" }}
