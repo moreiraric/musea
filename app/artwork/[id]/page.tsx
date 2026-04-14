@@ -724,7 +724,10 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
 
         {reflectionQuestion ? (
           /* Reflection chat is the page's interactive interpretation layer. */
-          <section className="flex w-full flex-col py-[32px]">
+          <section className="flex w-full flex-col gap-[8px] py-[32px]">
+            <p className="text-header-ui-overline text-[#757575]">
+              Ask AI
+            </p>
             <ArtworkReflectionChat
               artworkId={artwork.id}
               artworkTitle={artwork.title}
