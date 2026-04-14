@@ -18,11 +18,17 @@ export function AiInputBar({ label, onClick }: AiInputBarProps) {
           "linear-gradient(#ffffff, #ffffff) padding-box, linear-gradient(95deg, rgba(2,150,237,0.75) 0%, rgba(241,167,215,0.75) 52%, rgba(194,135,222,0.75) 100%) border-box",
       }}
     >
-      <img
-        alt=""
+      <span
         aria-hidden="true"
         className="h-[24px] w-[24px] shrink-0"
-        src="/images/ui/other/icoon-sparkle-outline.svg"
+        style={{
+          background:
+            "linear-gradient(95deg, rgb(2,150,237) 0%, rgb(241,167,215) 52%, rgb(194,135,222) 100%)",
+          WebkitMask:
+            "url('/images/ui/other/icoon-sparkle-outline.svg') center / contain no-repeat",
+          mask:
+            "url('/images/ui/other/icoon-sparkle-outline.svg') center / contain no-repeat",
+        }}
       />
       <span className="text-body-default-sans text-[#707070]">
         {label}
